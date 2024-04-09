@@ -6,6 +6,8 @@ Skrevet problemformulering og case.
 Oprettet projekt og indsat basisk struktur med nogle modeller
 Net gik ned, typisk.
 Glemte at lave git init først
+Net kom tilbage, lavet commit.
+Lavet tidsplan udkast
 
 
 //start hver dag med at skrive plan og til sidst hvad blev nået og for det der ikke blev, hvorfor

@@ -1,6 +1,12 @@
-# Apprentie Test Project
+# Apprentice Test Project
+
+This project was developed as part of my apprentice test.
 
 - [Run Project](#run-project)
+- [Docker](#docker)
+	- [MSSQL](#mssql)
+	- [RabbitMQ](#rabbitmq)
+	- [SEQ](#seq)
 
 ## Run Project
 
@@ -12,6 +18,7 @@ To run the project make sure that the following projects are sat to 'Start' unde
 
 ## Docker
 
+The project contains three different docker images, see the subchapters.
 
 ### MSSQL
 
@@ -22,4 +29,6 @@ To run the project make sure that the following projects are sat to 'Start' unde
 ## Serilogger
 
 ## Tests
+
+
 
