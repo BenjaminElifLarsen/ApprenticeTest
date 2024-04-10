@@ -11,10 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DL\Factories\Customer\" />
-    <Folder Include="DL\Factories\Menu\" />
-    <Folder Include="DL\Factories\Order\" />
-    <Folder Include="IPL\" />
+    <Folder Include="DL\Factories\CustomerFactory\" />
+    <Folder Include="DL\Factories\MenuFactory\" />
+    <Folder Include="DL\Factories\OrderFactory\" />
+    <Folder Include="IPL\UnitOfWork\" />
   </ItemGroup>
 
 </Project>

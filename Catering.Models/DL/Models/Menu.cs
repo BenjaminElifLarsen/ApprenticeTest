@@ -2,7 +2,7 @@
 
 namespace CateringDataProcessingPlatform.DL.Models;
 
-internal sealed class Menu : IAggregateRoot
+public sealed class Menu : IAggregateRoot
 {
     private Guid _id;
     private string _name;
@@ -27,7 +27,7 @@ internal sealed class Menu : IAggregateRoot
         _parts = new();
     }
 
-    public bool AddMenuPart(MenuPart part)
+    internal bool AddMenuPart(MenuPart part)
     {
         if (_parts.Any(x => x.Dish == part.Dish))
             throw new Exception();

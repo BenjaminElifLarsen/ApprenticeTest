@@ -1,4 +1,4 @@
-﻿namespace Shared.Models.Communication;
+﻿namespace Shared.Communication.Models;
 
 public sealed class OrderPlaceCommand
 {

@@ -3,7 +3,7 @@ using Shared.DDD;
 
 namespace CateringDataProcessingPlatform.DL.Models;
 
-internal class Customer
+public class Customer
 {
     private Guid _id;
     private CustomerLocation _location;

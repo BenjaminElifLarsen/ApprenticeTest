@@ -2,7 +2,7 @@
 
 namespace CateringDataProcessingPlatform.DL.Models;
 
-internal sealed record OrderTime : ValueObject
+public sealed record OrderTime : ValueObject
 {
     private DateTime _time; // UTC
 
@@ -13,7 +13,7 @@ internal sealed record OrderTime : ValueObject
         
     }
 
-    public OrderTime(DateTime time)
+    internal OrderTime(DateTime time)
     {
         _time = time;        
     }

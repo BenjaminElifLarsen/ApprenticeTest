@@ -3,7 +3,7 @@
 public abstract class Result<T>
 {
     public abstract T Data { get; }
-    public abstract BinaryFlag BinaryFlag { get; }
+    public abstract BinaryFlag Errors { get; }
     public abstract ResultType ResultType { get; }
 
     public static implicit operator bool(Result<T> result) => result is not null

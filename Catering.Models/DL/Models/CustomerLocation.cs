@@ -2,7 +2,7 @@
 
 namespace Catering.Models.DL.Models;
 
-internal sealed record CustomerLocation : ValueObject
+public sealed record CustomerLocation : ValueObject
 {
     private string _street;
     private string _city;

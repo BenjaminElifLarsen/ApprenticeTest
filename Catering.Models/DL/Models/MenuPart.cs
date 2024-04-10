@@ -2,7 +2,7 @@
 
 namespace CateringDataProcessingPlatform.DL.Models;
 
-internal sealed record MenuPart : ValueObject
+public sealed record MenuPart : ValueObject
 {
     private ReferenceId _dish;
     private uint _amount;
@@ -15,7 +15,7 @@ internal sealed record MenuPart : ValueObject
         
     }
 
-    public MenuPart(Guid dishId, uint amount)
+    internal MenuPart(Guid dishId, uint amount)
     {
         _dish = new ReferenceId(dishId);
         _amount = amount;        

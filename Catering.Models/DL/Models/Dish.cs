@@ -12,16 +12,16 @@ public sealed class Dish : IAggregateRoot
     public string Name { get => _name; private set => _name = value; }
     public IEnumerable<ReferenceId> Menues { get => _menues; private set => _menues = value.ToHashSet(); }
 
-    private Dish()
+    private Dish() // EF
     {
         
     }
 
-    public Dish(string name)
+    internal Dish(string name)
     {
         _name = name;
         _id = Guid.NewGuid();
-        _menues = new();        
+        _menues = [];        
     }
 
 }
