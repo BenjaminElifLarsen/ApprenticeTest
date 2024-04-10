@@ -1,7 +1,7 @@
 ﻿using CateringDataProcessingPlatform.DL.Models;
 using Shared.Patterns.CQRS.Queries;
 
-namespace Catering.Shared.IPL.Repositories;
+namespace Catering.Shared.IPL.Repositories.Interfaces;
 
 public interface IDishRepository
 {

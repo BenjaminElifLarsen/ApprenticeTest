@@ -21,6 +21,7 @@ public sealed class BinaryFlag
         return left;
     }
 
+    public static implicit operator long(BinaryFlag flag) => flag is not null ? flag._flag : -1;
 
     public static implicit operator bool(BinaryFlag flag) => flag is not null && flag._flag == 0;
 

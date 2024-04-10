@@ -3,7 +3,7 @@ using Shared.Patterns.CQRS.Queries;
 
 namespace Shared.Patterns.RepositoryPattern;
 
-public interface IBaseRepositroy<TEntity> where TEntity : class, IAggregateRoot
+public interface IBaseRepository<TEntity> where TEntity : class, IAggregateRoot
 {
     public void Create(TEntity entity);
     public void Update(TEntity entity);

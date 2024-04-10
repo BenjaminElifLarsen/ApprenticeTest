@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{AF2EBA73
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Test", "Shared.Test\Shared.Test.csproj", "{650B2639-B427-491A-8854-DD19AC716E6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catering.Shared.Test", "Catering.Shared.Test\Catering.Shared.Test.csproj", "{FF53AD7E-86C8-49E4-9C6F-FF75284F1C1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Catering.Shared.Test", "Catering.Shared.Test\Catering.Shared.Test.csproj", "{FF53AD7E-86C8-49E4-9C6F-FF75284F1C1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

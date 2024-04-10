@@ -10,11 +10,4 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DL\Factories\CustomerFactory\" />
-    <Folder Include="DL\Factories\MenuFactory\" />
-    <Folder Include="DL\Factories\OrderFactory\" />
-    <Folder Include="IPL\UnitOfWork\" />
-  </ItemGroup>
-
 </Project>

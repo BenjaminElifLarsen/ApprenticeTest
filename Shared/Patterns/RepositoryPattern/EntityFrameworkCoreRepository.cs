@@ -4,14 +4,14 @@ using Shared.Patterns.CQRS.Queries;
 
 namespace Shared.Patterns.RepositoryPattern;
 
-public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepositroy<TEntity> where TEntity : class, IAggregateRoot where TContext : DbContext
+public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<TEntity> where TEntity : class, IAggregateRoot where TContext : DbContext
 {
-    private readonly object _lock;
+    //private readonly object _lock;
     private readonly TContext _context; 
     private readonly DbSet<TEntity> _entities;
-    public EntityFrameworkCoreRepository(object lockObject, TContext context)
-    {
-        _lock = lockObject;        
+
+    public EntityFrameworkCoreRepository(TContext context)
+    {  
         _context = context;
         _entities = _context.Set<TEntity>();
     }

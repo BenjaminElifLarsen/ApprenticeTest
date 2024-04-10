@@ -15,12 +15,12 @@ public class DishFactory : IDishFactory
             flag += DishCreationErrors.RequestIsNull;
             return new BadRequestResult<Dish>(flag);
         }
-        if (string.IsNullOrEmpty(data.Name))
+        if (string.IsNullOrWhiteSpace(data.Name))
         {
             flag += DishCreationErrors.NameIsInvalid;
             return new BadRequestResult<Dish>(flag);
         }
-        if(validationData.NamesInUse.Any(x => string.Equals(x, data.Name)))
+        if(validationData.NamesInUse.Any(x => string.Equals(x.Name, data.Name)))
         {
             flag += DishCreationErrors.NameInUse;
             return new BadRequestResult<Dish>(flag);

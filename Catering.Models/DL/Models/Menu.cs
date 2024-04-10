@@ -24,10 +24,10 @@ public sealed class Menu : IAggregateRoot
     {
         _name = name;
         _description = description;
-        _parts = new();
+        _parts = [];
     }
 
-    internal bool AddMenuPart(MenuPart part)
+    public bool AddMenuPart(MenuPart part)
     {
         if (_parts.Any(x => x.Dish == part.Dish))
             throw new Exception();

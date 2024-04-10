@@ -22,7 +22,10 @@
 
   <ItemGroup>
     <Folder Include="Cases\Models\" />
-    <Folder Include="Cases\Factories\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Catering.Models\Catering.Shared.csproj" />
   </ItemGroup>
 
 </Project>

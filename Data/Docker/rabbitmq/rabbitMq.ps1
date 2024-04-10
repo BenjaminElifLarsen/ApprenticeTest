@@ -1,0 +1,1 @@
+docker run -d --hostname rabbitMqH6 --name rabbitMqH6 -p 5673:5672 -p 15673:15672 rabbitmq:3-management

@@ -1,4 +1,5 @@
-﻿using CateringDataProcessingPlatform.DL.Models;
+﻿using Catering.Shared.IPL.Repositories.Interfaces;
+using CateringDataProcessingPlatform.DL.Models;
 using Shared.Patterns.CQRS.Queries;
 using Shared.Patterns.RepositoryPattern;
 
@@ -6,11 +7,11 @@ namespace Catering.Shared.IPL.Repositories;
 
 public sealed class DishRepository : IDishRepository
 {
-    private readonly IBaseRepositroy<Dish> _repository;
+    private readonly IBaseRepository<Dish> _repository;
 
-    public DishRepository(IBaseRepositroy<Dish> repositroy)
+    public DishRepository(IBaseRepository<Dish> repository)
     {
-        _repository = repositroy;
+        _repository = repository;
     }
 
     public async Task<IEnumerable<TMapping>> AllAsync<TMapping>(BaseQuery<Dish, TMapping> query) where TMapping : BaseReadModel

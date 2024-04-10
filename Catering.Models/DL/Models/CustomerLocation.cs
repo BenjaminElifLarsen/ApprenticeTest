@@ -14,4 +14,10 @@ public sealed record CustomerLocation : ValueObject
     {
         
     }
+
+    internal CustomerLocation(string street, string city)
+    {
+        _street = street;
+        _city = city;
+    }
 }
