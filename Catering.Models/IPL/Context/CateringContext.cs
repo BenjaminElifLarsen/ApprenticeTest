@@ -21,20 +21,19 @@ public class CateringContext : DbContext
         modelBuilder.Entity<Customer>(e =>
         {
             e.ComplexProperty(e => e.Location);
-            e.ComplexProperty(e => e.Orders);
+            e.OwnsMany(e => e.Orders);
 
         });
 
         modelBuilder.Entity<Dish>(e =>
         {
-            e.ComplexProperty(e => e.Menues);
+            e.OwnsMany(e => e.Menues);
         });
 
         modelBuilder.Entity<Menu>(e =>
         {
-             e.ComplexProperty(e => e.Parts); //not sure if collection like this will work
+             e.OwnsMany(e => e.Parts).OwnsOne(x => x.Dish); //not sure if collection like this will work
         });
-
 
         modelBuilder.Entity<Order>(e =>
         {

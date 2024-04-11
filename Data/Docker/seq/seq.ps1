@@ -21,8 +21,5 @@ while($isRunning -eq 0)
 Start-Sleep -Seconds 10 # just to be sure it is ready for connections.
 $ip = docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $name
 $ip
-docker run --rm datalust/seqcli:latest apikey create -t MockServer --token 12345678901234567890 --property=ProgramSource=MockServer -s http://$ip -connect-username="Admin" --connect-password="Test123!"
-docker run --rm datalust/seqcli:latest apikey create -t MockClient --token 22345678901234567890 --property=ProgramSource=MockClient -s http://$ip -connect-username="Admin" --connect-password="Test123!"
-docker run --rm datalust/seqcli:latest apikey create -t MockApi --token 32345678901234567890 --property=ProgramSource=MockApi -s http://$ip -connect-username="Admin" --connect-password="Test123!"
-docker run --rm datalust/seqcli:latest apikey create -t MockLTP1 --token 42345678901234567890 --property=ProgramSource=MockLTP1 -s http://$ip -connect-username="Admin" --connect-password="Test123!"
-docker run --rm datalust/seqcli:latest apikey create -t MockLTP2 --token 52345678901234567890 --property=ProgramSource=MockLTP2 -s http://$ip -connect-username="Admin" --connect-password="Test123!"
+docker run --rm datalust/seqcli:latest apikey create -t cateringLTP --token 12345678901234567890 --property=ProgramSource=MockServer -s http://$ip -connect-username="Admin" --connect-password="Test123!"
+docker run --rm datalust/seqcli:latest apikey create -t userAPI --token 22345678901234567890 --property=ProgramSource=MockClient -s http://$ip -connect-username="Admin" --connect-password="Test123!"

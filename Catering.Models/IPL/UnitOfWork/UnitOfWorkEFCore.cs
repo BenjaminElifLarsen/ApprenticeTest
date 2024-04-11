@@ -18,16 +18,19 @@ public class UnitOfWorkEFCore : IUnitOfWork
     {
         _context = context;
         _dishRepository = new DishRepository(new EntityFrameworkCoreRepository<Dish, CateringContext>(_context));
+        _orderRepository = new OrderRepository(new EntityFrameworkCoreRepository<Order, CateringContext>(context));
+        _menuRepository = new MenuRepository(new EntityFrameworkCoreRepository<Menu,  CateringContext>(context));
+        _customerRepository = new CustomerRepository(new EntityFrameworkCoreRepository<Customer, CateringContext>(context));
         
     }
 
-    public ICustomerRepository CustomerRepository => throw new NotImplementedException();
+    public ICustomerRepository CustomerRepository => _customerRepository;
 
     public IDishRepository DishRepository => _dishRepository;
 
-    public IMenuRepository MenuRepository => throw new NotImplementedException();
+    public IMenuRepository MenuRepository => _menuRepository;
 
-    public IOrderRepository OrderRepository => throw new NotImplementedException();
+    public IOrderRepository OrderRepository => _orderRepository;
 
     public void Commit()
     {

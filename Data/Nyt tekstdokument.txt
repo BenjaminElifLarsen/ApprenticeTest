@@ -1,0 +1,9 @@
+dotnet ef migrations add init --project .\Catering.Models\ --startup-project .\CateringDataProcessingPlatform\
+
+dotnet ef database update --project .\Catering.Models\ --startup-project .\CateringDataProcessingPlatform\
+
+
+
+http://localhost:15673/#/
+
+http://localhost:81/#/
