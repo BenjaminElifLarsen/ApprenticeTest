@@ -20,7 +20,7 @@ internal sealed class ConfigurationManager : IConfigurationManager
 
     public string GetLogKey()
     {
-        return _configuration.GetConnectionString("12345678901234567890")!;
+        return _configuration.GetConnectionString("logKey")!;
     }
 
     public RabbitData GetRabbit()

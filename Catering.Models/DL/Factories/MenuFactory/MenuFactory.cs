@@ -15,7 +15,7 @@ public sealed class MenuFactory : IMenuFactory
             flag += MenuFactoryErrors.RequestIsNull;
             return new BadRequestResult<Menu>(flag);
         }
-        if(!request.Parts.Any(x => validationData.PermittedDishIds.Any(xx => x.Id == xx.Id)))
+        if(!request.Parts.Any(x => validationData.KnownDishes.Any(xx => x.Id == xx.Id)))
         {
             flag += MenuFactoryErrors.OneOrMoreDishesDoNotExist;
         }
@@ -23,7 +23,7 @@ public sealed class MenuFactory : IMenuFactory
             flag += MenuFactoryErrors.OneOrMoreDishesDoNotHaveAPrice;
         if (string.IsNullOrWhiteSpace(request.Name))
             flag += MenuFactoryErrors.NameIsNotValid;
-        if (validationData.NamesInUse.Any(x => string.Equals(x, request.Name)))
+        if (validationData.UsedNames.Any(x => string.Equals(x, request.Name)))
             flag += MenuFactoryErrors.NameInUse;
         if (request.Parts.Any(x => x.Amount <= 0))
             flag += MenuFactoryErrors.OneOrMoreDishesHaveInvalidAmount;
@@ -33,7 +33,8 @@ public sealed class MenuFactory : IMenuFactory
         Menu menu = new(request.Name, request.Description);
         foreach(var part in request.Parts)
         {
-            menu.AddMenuPart(new(part.Id, (uint)part.Amount, part.Price));
+            var dish = validationData.KnownDishes.First(x => part.Id == x.Id);
+            menu.AddMenuPart(new(part.Id, (uint)part.Amount, part.Price, dish.Name));
         }
 
         return new SuccessResult<Menu>(menu);

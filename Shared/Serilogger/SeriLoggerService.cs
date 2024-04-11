@@ -4,20 +4,28 @@ using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Shared.Serilogger;
 
-public sealed class SeriLoggerService
+public static class SeriLoggerService
 {
-    private static ILogger? s_logger;
+    private static readonly Dictionary<string, ILogger> s_loggers;
+
+    static SeriLoggerService()
+    {
+        s_loggers = [];        
+    }
+
     public static ILogger GenerateLogger(string key)
     {
-        if (s_logger is not null)
-            return s_logger;
+        if(s_loggers.TryGetValue(key, out ILogger? log))
+            return log;
 
         var levelSwitch = new LoggingLevelSwitch();
         var environment = "";
 #if !RELEASE
         environment = "DEBUG";
+        levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
 #else
         environment = "RELEASE";
+        levelSwitch.MaximumLevel = Serilog.Events.LogEventLevel.Information;
 #endif
         var config = new LoggerConfiguration()
             .Enrich.FromLogContext()
@@ -25,7 +33,8 @@ public sealed class SeriLoggerService
             .WriteTo.Console(theme: AnsiConsoleTheme.Code, outputTemplate: "[{Timestamp:HH:mm} {Level:u3}]: {Message:lj}{NewLine}{Exception}")
             .WriteTo.Seq("http://localhost:5341", apiKey: key, controlLevelSwitch: levelSwitch);
 
-        s_logger = Log.Logger = config.CreateLogger().ForContext("Environment", environment);
-        return s_logger;
+        log = config.CreateLogger().ForContext("Environment", environment);
+        s_loggers.Add(key, log);
+        return log;
     }
 }

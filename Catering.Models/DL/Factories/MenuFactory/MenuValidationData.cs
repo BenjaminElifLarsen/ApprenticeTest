@@ -6,13 +6,13 @@ namespace Catering.Shared.DL.Factories.MenuFactory;
 
 public sealed class MenuValidationData
 {
-    public IEnumerable<MenuData> NamesInUse { get; private set; }
-    public IEnumerable<MenuDishData> PermittedDishIds { get; private set; }
+    public IEnumerable<MenuData> UsedNames { get; private set; }
+    public IEnumerable<MenuDishData> KnownDishes { get; private set; }
 
     public MenuValidationData(IEnumerable<MenuData> namesInUse, IEnumerable<MenuDishData> permittedDishIds)
     {
-        NamesInUse = namesInUse;
-        PermittedDishIds = permittedDishIds;        
+        UsedNames = namesInUse;
+        KnownDishes = permittedDishIds;        
     }
 }
 
@@ -38,10 +38,12 @@ public sealed class MenuDataQuery : BaseQuery<Menu, MenuData>
 public sealed class MenuDishData : BaseReadModel
 {
     public Guid Id { get; private set; }
-
-    public MenuDishData(Guid id)
+    public string Name { get; private set; }
+    public MenuDishData(Guid id, string name)
     {
-        Id = id;        
+        Id = id;
+        Name = name;
+
     }
 }
 
@@ -49,6 +51,6 @@ public sealed class MenuDishDataQuery : BaseQuery<Dish, MenuDishData>
 {
     public override Expression<Func<Dish, MenuDishData>> Map()
     {
-        return e => new(e.Id);
+        return e => new(e.Id, e.Name);
     }
 }

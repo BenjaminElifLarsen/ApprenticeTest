@@ -4,7 +4,7 @@ using Shared.Patterns.ResultPattern;
 
 namespace Catering.Shared.DL.Factories.DishFactory;
 
-internal interface IDishFactory
+public interface IDishFactory
 {
     public Result<Dish> Build(DishCreationRequest data, DishValidationData validationData);
 }

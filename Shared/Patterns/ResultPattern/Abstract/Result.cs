@@ -8,6 +8,11 @@ public abstract class Result<T>
 
     public static implicit operator bool(Result<T> result) => result is not null
         && result.ResultType is ResultType.Success;
+
+    public override string ToString()
+    {
+        return Errors.ToString();
+    }
 }
 
 public abstract class Result : Result<object>

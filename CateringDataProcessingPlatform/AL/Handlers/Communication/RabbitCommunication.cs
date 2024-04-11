@@ -1,5 +1,4 @@
-﻿using Catering.Shared.IPL.UnitOfWork;
-using CateringDataProcessingPlatform.AL.Handlers.Contracts;
+﻿using Catering.Shared.DL.Factories;
 using CateringDataProcessingPlatform.IPL;
 using CateringDataProcessingPlatform.IPL.Appsettings;
 using CateringDataProcessingPlatform.IPL.Appsettings.Models;
@@ -8,6 +7,8 @@ using RabbitMQ.Client.Events;
 using Serilog;
 using Shared.Communication.Models;
 using Shared.Service;
+using System.Text;
+using System.Text.Json;
 
 namespace CateringDataProcessingPlatform.AL.Handlers.Communication;
 
@@ -17,17 +18,15 @@ internal sealed class RabbitCommunication : BaseService
     private IConnection _connection;
     private IModel _channel;
     private RabbitDataProcessing _processing;
-    private IConfigurationManager _configurationManager;
     private IContextFactory _contextFactory;
     private ILogger _logger;
 
-    public RabbitCommunication(IConfigurationManager configurationManager, IContextFactory contextFactory, RabbitData rabbitData, ILogger logger)
+    public RabbitCommunication(IConfigurationManager configurationManager, IContextFactory contextFactory, IFactoryCollection factoryCollection, RabbitData rabbitData, ILogger logger)
     {
         _logger = logger;
         _connectionFactory = new ConnectionFactory { HostName = rabbitData.Url, Port = rabbitData.Port };
-        _configurationManager = configurationManager;
         _contextFactory = contextFactory;
-        _processing = new RabbitDataProcessing(configurationManager, _contextFactory, logger);
+        _processing = new RabbitDataProcessing(configurationManager, _contextFactory, factoryCollection, logger);
         _channel = null!;
         _connection = null!;    
     }
@@ -55,17 +54,75 @@ internal sealed class RabbitCommunication : BaseService
 
     private void ReceivedForOrderPlacement(object? sender, BasicDeliverEventArgs e)
     {
-
+        var body = e.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
+        try
+        {
+            var request = JsonSerializer.Deserialize<OrderPlaceCommand>(message);
+            if(request is null)
+            {
+                _logger.Error("{Identifier}: {Message} could not be parsed to {CommandType}", _identifier, message, typeof(OrderPlaceCommand));
+                _channel.BasicAck(e.DeliveryTag, false);
+                return;
+            }
+            _processing.Process(request);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
+        }
+        _channel.BasicAck(e.DeliveryTag, false);
     }
 
     private void ReceivedForCustomerCreation(object? sender, BasicDeliverEventArgs e)
     {
-
+        var body = e.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
+        try
+        {
+            var request = JsonSerializer.Deserialize<UserCreationCommand>(message);
+            if(request is null)
+            {
+                _logger.Error("{Identifier}: {Message} could not be parsed to {CommandType}", _identifier, message, typeof(UserCreationCommand));
+                _channel.BasicAck(e.DeliveryTag, false);
+                return;
+            }
+            _processing.Process(request);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
+        }
+        _channel.BasicAck(e.DeliveryTag, false);
     }
 
     private void ReceivedForMenuRPC(object? sender, BasicDeliverEventArgs e)
     {
+        var body = e.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
+        try
+        {
+            var requestProps = e.BasicProperties;
+            var replyProps = _channel.CreateBasicProperties();
+            replyProps.CorrelationId = requestProps.CorrelationId;
 
+            var request = JsonSerializer.Deserialize<MenuListCommand>(message);
+
+            if(request is null)
+            {
+                _logger.Error("{Identifier}: {Message} could not be parsed to {CommandType}", _identifier, message, typeof(MenuListCommand));
+                _channel.BasicAck(e.DeliveryTag, false);
+                return;
+            }
+            var result = _processing.Process(request);
+            var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(result));
+            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo/*requestId.ToString()*/, basicProperties: replyProps, body: responseBytes);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
+        }
+        _channel.BasicAck(e.DeliveryTag, false);
     }
 
     //public OrderPlaceCommand ReceiveOrderPlaceCommand()
