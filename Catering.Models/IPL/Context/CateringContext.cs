@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Catering.Shared.IPL.Context;
 
-public class CateringContext : DbContext
+public sealed class CateringContext : DbContext
 {
     public CateringContext(DbContextOptions<CateringContext> options) : base(options)
     {
@@ -32,7 +32,7 @@ public class CateringContext : DbContext
 
         modelBuilder.Entity<Menu>(e =>
         {
-             e.OwnsMany(e => e.Parts).OwnsOne(x => x.Dish); //not sure if collection like this will work
+             e.OwnsMany(e => e.Parts).OwnsOne(x => x.Dish);
         });
 
         modelBuilder.Entity<Order>(e =>

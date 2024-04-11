@@ -25,7 +25,7 @@ public class UserFactory : IUserFactory
         _passwordMaxLength = 128;
     }
 
-    public Result<User> Build(UserCreationRequest request, UserValidationData validationData)
+    public Result<User> Build(UserCreationRequest request, UserValidationData validationData) // TODO: unit test
     {
         BinaryFlag flag = new();
         if(request is null)

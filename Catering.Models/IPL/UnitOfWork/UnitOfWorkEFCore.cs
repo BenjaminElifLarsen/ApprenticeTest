@@ -21,7 +21,6 @@ public class UnitOfWorkEFCore : IUnitOfWork
         _orderRepository = new OrderRepository(new EntityFrameworkCoreRepository<Order, CateringContext>(context));
         _menuRepository = new MenuRepository(new EntityFrameworkCoreRepository<Menu,  CateringContext>(context));
         _customerRepository = new CustomerRepository(new EntityFrameworkCoreRepository<Customer, CateringContext>(context));
-        
     }
 
     public ICustomerRepository CustomerRepository => _customerRepository;

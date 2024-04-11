@@ -2,7 +2,7 @@
 
 namespace UserPlatform.Shared.DL.Models;
 
-public sealed class User
+public sealed class User : IAggregateRoot
 {
     private Guid _id;
     private string _companyName;

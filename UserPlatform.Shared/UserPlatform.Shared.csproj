@@ -8,9 +8,6 @@
 
   <ItemGroup>
     <Folder Include="DL\Factories\Models\" />
-    <Folder Include="IPL\Context\" />
-    <Folder Include="IPL\UnitOfWork\" />
-    <Folder Include="IPL\Repository\" />
   </ItemGroup>
 
   <ItemGroup>
