@@ -40,7 +40,13 @@ internal sealed class RabbitDataProcessing : BaseService
             _logger.Warning("{Identifier}: Failed at creating order {OrderPlace} - {Errors}", _identifier, request, result);
             return;
         }
+        var menu = unitOfWork.MenuRepository.GetSingleAsync(x => x.Id == request.MenuId).Result;
+        var customer = unitOfWork.CustomerRepository.GetSingleAsync(x => x.Id == request.UserId).Result;
+        menu.AddOrder(result.Data.Id);
+        customer.AddOrder(result.Data.Id);
         unitOfWork.OrderRepository.Create(result.Data);
+        unitOfWork.MenuRepository.Update(menu);
+        unitOfWork.CustomerRepository.Update(customer);
         unitOfWork.Commit();
     }
 
@@ -50,7 +56,6 @@ internal sealed class RabbitDataProcessing : BaseService
         IUnitOfWork unitOfWork = _contextFactory.CreateUnitOfWork(_contextFactory.CreateDbContext([_configurationManager.GetDatabaseString()])); // TODO: improve this...
         var data = unitOfWork.MenuRepository.AllAsync(new MenuListQuery()).Result;
         return data;
-
     }
 
     internal void Process(UserCreationCommand request)

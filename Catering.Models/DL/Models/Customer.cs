@@ -24,4 +24,9 @@ public class Customer : IAggregateRoot
         _location = location;
         _orders = [];
     }
+
+    public bool AddOrder(Guid id)
+    {
+        return _orders.Add(new(id));
+    }
 }

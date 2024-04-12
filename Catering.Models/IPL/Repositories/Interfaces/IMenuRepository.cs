@@ -9,4 +9,5 @@ public interface IMenuRepository
     public Task<Menu> GetSingleAsync(Func<Menu, bool> predicate);
     public void Create(Menu menu);
     public void Delete(Menu menu);
+    public void Update(Menu menu);
 }

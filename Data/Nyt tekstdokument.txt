@@ -2,7 +2,9 @@ dotnet ef migrations add init --project .\Catering.Models\ --startup-project .\C
 
 dotnet ef database update --project .\Catering.Models\ --startup-project .\CateringDataProcessingPlatform\
 
+dotnet ef migrations add init --project .\UserPlatform.Shared\ --startup-project .\UserPlatform\
 
+dotnet ef database update --project .\UserPlatform.Shared\ --startup-project .\UserPlatform\
 
 http://localhost:15673/#/
 

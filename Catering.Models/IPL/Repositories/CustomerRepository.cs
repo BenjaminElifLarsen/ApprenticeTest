@@ -33,4 +33,9 @@ public sealed class CustomerRepository : ICustomerRepository
     {
         return await _repository.FindByPredicateAsync(predicate);
     }
+
+    public void Update(Customer customer)
+    {
+        _repository.Update(customer);
+    }
 }

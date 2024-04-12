@@ -9,4 +9,5 @@ public interface ICustomerRepository
     public Task<Customer> GetSingleAsync(Func<Customer, bool> predicate);
     public void Create(Customer customer);
     public void Delete(Customer customer);
+    public void Update(Customer customer);
 }

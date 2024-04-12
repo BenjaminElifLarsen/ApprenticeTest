@@ -32,7 +32,8 @@ public sealed class CateringContext : DbContext
 
         modelBuilder.Entity<Menu>(e =>
         {
-             e.OwnsMany(e => e.Parts).OwnsOne(x => x.Dish);
+            e.OwnsMany(e => e.Parts).OwnsOne(x => x.Dish);
+            e.OwnsMany(e => e.Orders); 
         });
 
         modelBuilder.Entity<Order>(e =>

@@ -33,4 +33,9 @@ public sealed class MenuRepository : IMenuRepository
     {
         return await _repository.FindByPredicateAsync(predicate);
     }
+
+    public void Update(Menu menu)
+    {
+        _repository.Update(menu);
+    }
 }
