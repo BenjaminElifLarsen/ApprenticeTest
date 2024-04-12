@@ -3,7 +3,9 @@ using UserPlatform.Shared.DL.Models;
 using UserPlatform.Shared.Helpers;
 
 namespace UserPlatform.Helpers;
-
+/// <summary>
+/// Kind of acts as a wrapper around Microsofts own PasswordHasher
+/// </summary>
 public sealed class PasswordHasher : IPasswordHasher
 {
     public string Hash(User user, string password)
@@ -14,7 +16,7 @@ public sealed class PasswordHasher : IPasswordHasher
     public bool VerifyPassword(User user, string providedPassword)
     {
         var result = new Hasher().VerifyHashedPassword(user, user.Password, providedPassword);
-        return result is PasswordVerificationResult.Failed ? false : true;
+        return result is not PasswordVerificationResult.Failed;
     }
 
     private class Hasher : PasswordHasher<User>

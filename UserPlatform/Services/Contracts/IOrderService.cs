@@ -6,5 +6,4 @@ namespace UserPlatform.Services.Contracts;
 public interface IOrderService
 {
     public Task<Result<IEnumerable<MenuListQueryResponse>>> GetMenuesAsync();
-    public Task<>
 }

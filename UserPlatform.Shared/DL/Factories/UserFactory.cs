@@ -21,8 +21,8 @@ public class UserFactory : IUserFactory
     {
         _passwordSmallLetter = new("[a-z]+");
         _passwordCapitalLetter = new("[A-Z]+");
-        _passwordDigit = new("[/d]+");
-        _passwordSpecial = new("[!|+|\\-|#|.|,|^|*]");
+        _passwordDigit = new("[0-9]+");
+        _passwordSpecial = new("[!|\\+|\\-|#|\\.|,|\\^|*]+");
         _passwordMinLength = 8;
         _passwordMaxLength = 128;
         _passwordHasher = passwordHasher;
@@ -48,13 +48,13 @@ public class UserFactory : IUserFactory
             flag += UserFactoryErrors.PasswordMissingSmall;
         if (!_passwordDigit.IsMatch(request.Password))
             flag += UserFactoryErrors.PasswordMissingDigit;
-        if (_passwordSpecial.IsMatch(request.Password))
+        if (!_passwordSpecial.IsMatch(request.Password))
             flag += UserFactoryErrors.PasswordMissingSpecial;
         if (request.Password.Length < _passwordMinLength)
             flag += UserFactoryErrors.PasswordToShort;
         if (request.Password.Length > _passwordMaxLength)
             flag += UserFactoryErrors.PasswordToLong;
-        if (string.Equals(request.Password, request.Password))
+        if (!string.Equals(request.Password, request.Password))
             flag += UserFactoryErrors.NotSamePassword;
         if (string.IsNullOrWhiteSpace(request.Phone) || string.IsNullOrWhiteSpace(request.Email))
             flag += UserFactoryErrors.NoContactInformationSat;
