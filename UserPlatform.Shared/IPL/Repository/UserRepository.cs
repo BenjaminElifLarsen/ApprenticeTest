@@ -1,4 +1,5 @@
-﻿using Shared.Patterns.RepositoryPattern;
+﻿using Shared.Patterns.CQRS.Queries;
+using Shared.Patterns.RepositoryPattern;
 using UserPlatform.Shared.DL.Models;
 using UserPlatform.Shared.IPL.Repository.Interfaces;
 
@@ -13,6 +14,11 @@ public sealed class UserRepository : IUserRepository
         _repository = repository;        
     }
 
+    public async Task<IEnumerable<TMapping>> AllAsync<TMapping>(BaseQuery<User, TMapping> query) where TMapping : BaseReadModel
+    {
+        return await _repository.AllAsync(query);
+    }
+
     public void Create(User user)
     {
         _repository.Create(user);
@@ -23,8 +29,8 @@ public sealed class UserRepository : IUserRepository
          _repository.Delete(user);
     }
 
-    public async Task<User> GetSingleAsync(string companyName, string hashedPassword)
+    public async Task<User> GetSingleAsync(string companyName)
     {
-        return await _repository.FindByPredicateAsync(x => string.Equals(x.CompanyName, companyName) && string.Equals(x.Password, hashedPassword));
+        return await _repository.FindByPredicateAsync(x => string.Equals(x.CompanyName, companyName));
     }
 }

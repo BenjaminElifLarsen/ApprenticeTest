@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using UserPlatform.Services.Contracts;
 
 namespace UserPlatform.Controllers;
 
@@ -6,17 +7,19 @@ namespace UserPlatform.Controllers;
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
+    private readonly IOrderService _orderService;
+
     private static readonly string[] Summaries = new[]
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    private readonly ILogger<WeatherForecastController> _logger;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    public WeatherForecastController(IOrderService orderService)
     {
-        _logger = logger;
+        _orderService = orderService;
     }
+
 
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
@@ -31,8 +34,9 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet("Test")]
-    public IActionResult GetTest()
+    public async Task<IActionResult> GetTest()
     {
-        return Ok("Test");
+        var result = await _orderService.GetMenuesAsync();
+        return Ok(result);
     }
 }

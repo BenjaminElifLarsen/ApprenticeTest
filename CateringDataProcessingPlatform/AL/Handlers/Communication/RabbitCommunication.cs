@@ -5,6 +5,7 @@ using CateringDataProcessingPlatform.IPL.Appsettings.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
+using Shared.Communication;
 using Shared.Communication.Models;
 using Shared.Service;
 using System.Text;
@@ -37,9 +38,9 @@ internal sealed class RabbitCommunication : BaseService
         _channel = _connection.CreateModel();
         _channel.BasicQos(0, 1, false);
 
-        DeclareQueueWithConsumer("OrderPlacement", ReceivedForOrderPlacement);
-        DeclareQueueWithConsumer("CustomerCreation", ReceivedForCustomerCreation);
-        DeclareQueueWithConsumer("MenuQuery", ReceivedForMenuRPC);
+        DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_PLACEMENT, ReceivedForOrderPlacement);
+        DeclareQueueWithConsumer(CommunicationQueueNames.CUSTOMER_CREATION, ReceivedForCustomerCreation);
+        DeclareQueueWithConsumer(CommunicationQueueNames.MENU_QUERY, ReceivedForMenuRPC);
 
         _logger.Information("{Identifier}: Initialised", _identifier);
     }
@@ -61,7 +62,7 @@ internal sealed class RabbitCommunication : BaseService
             var request = JsonSerializer.Deserialize<OrderPlaceCommand>(message);
             if(request is null)
             {
-                _logger.Error("{Identifier}: {Message} could not be parsed to {CommandType}", _identifier, message, typeof(OrderPlaceCommand));
+                _logger.Error("{Identifier}: {Message} could not be parsed to {OrderPlaceCommandType}", _identifier, message, typeof(OrderPlaceCommand));
                 _channel.BasicAck(e.DeliveryTag, false);
                 return;
             }
@@ -83,7 +84,7 @@ internal sealed class RabbitCommunication : BaseService
             var request = JsonSerializer.Deserialize<UserCreationCommand>(message);
             if(request is null)
             {
-                _logger.Error("{Identifier}: {Message} could not be parsed to {CommandType}", _identifier, message, typeof(UserCreationCommand));
+                _logger.Error("{Identifier}: {Message} could not be parsed to {UserCreationCommandType}", _identifier, message, typeof(UserCreationCommand));
                 _channel.BasicAck(e.DeliveryTag, false);
                 return;
             }
@@ -110,7 +111,7 @@ internal sealed class RabbitCommunication : BaseService
 
             if(request is null)
             {
-                _logger.Error("{Identifier}: {Message} could not be parsed to {CommandType}", _identifier, message, typeof(MenuListCommand));
+                _logger.Error("{Identifier}: {Message} could not be parsed to {MenuListCommandType}", _identifier, message, typeof(MenuListCommand));
                 _channel.BasicAck(e.DeliveryTag, false);
                 return;
             }
@@ -124,14 +125,4 @@ internal sealed class RabbitCommunication : BaseService
         }
         _channel.BasicAck(e.DeliveryTag, false);
     }
-
-    //public OrderPlaceCommand ReceiveOrderPlaceCommand()
-    //{
-    //    throw new NotImplementedException();
-    //}
-
-    //public UserCreationCommand ReceiveUserCreationCommand()
-    //{
-    //    throw new NotImplementedException();
-    //}
 }

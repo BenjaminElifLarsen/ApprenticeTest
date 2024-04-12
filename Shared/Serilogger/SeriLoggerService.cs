@@ -31,7 +31,7 @@ public static class SeriLoggerService
             .Enrich.FromLogContext()
             .MinimumLevel.ControlledBy(levelSwitch)
             .WriteTo.Console(theme: AnsiConsoleTheme.Code, outputTemplate: "[{Timestamp:HH:mm} {Level:u3}]: {Message:lj}{NewLine}{Exception}")
-            .WriteTo.Seq("http://localhost:5341", apiKey: key, controlLevelSwitch: levelSwitch);
+            .WriteTo.Seq("http://localhost:5341", apiKey: key, controlLevelSwitch: levelSwitch); // Normally, it would write to the SEQ only in the case of no debugger is attached.
 
         log = config.CreateLogger().ForContext("Environment", environment);
         s_loggers.Add(key, log);

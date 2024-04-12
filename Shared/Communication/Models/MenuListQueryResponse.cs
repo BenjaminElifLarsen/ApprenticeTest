@@ -21,7 +21,8 @@ public sealed class MenuListQueryResponse : BaseReadModel, ICommand
         Id = id;
         Name = name;
         Description = description;
-        Parts = parts;        
+        Parts = parts;       
+        Price = price;
     }
 }
 

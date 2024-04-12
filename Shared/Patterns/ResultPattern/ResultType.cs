@@ -6,6 +6,7 @@ public enum ResultType
     SuccessNoData = 2,
     BadRequest = 3,
     NotFound = 4,
+    Unhandled = 5,
 
     Unknown = 0,
 }

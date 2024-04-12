@@ -3,6 +3,7 @@ using Shared.Patterns.ResultPattern.BadRequest;
 using System.Text.RegularExpressions;
 using UserPlatform.Shared.Communication.Models;
 using UserPlatform.Shared.DL.Models;
+using UserPlatform.Shared.Helpers;
 
 namespace UserPlatform.Shared.DL.Factories;
 
@@ -14,8 +15,9 @@ public class UserFactory : IUserFactory
     private Regex _passwordSpecial;
     private byte _passwordMinLength;
     private byte _passwordMaxLength;
+    private IPasswordHasher _passwordHasher;
 
-    public UserFactory()
+    public UserFactory(IPasswordHasher passwordHasher)
     {
         _passwordSmallLetter = new("[a-z]+");
         _passwordCapitalLetter = new("[A-Z]+");
@@ -23,6 +25,7 @@ public class UserFactory : IUserFactory
         _passwordSpecial = new("[!|+|\\-|#|.|,|^|*]");
         _passwordMinLength = 8;
         _passwordMaxLength = 128;
+        _passwordHasher = passwordHasher;
     }
 
     public Result<User> Build(UserCreationRequest request, UserValidationData validationData) // TODO: unit test
@@ -58,10 +61,11 @@ public class UserFactory : IUserFactory
         if (!flag)
             return new BadRequestResult<User>(flag);
         // TODO: hash and salt password. Consider interface
-        var hashedPassword = "1234";
         UserLocation location = new(request.City, request.Street);
         UserContact contact = new(request.Email, request.Phone);
-        User user = new(request.CompanyName, contact, location, hashedPassword);
+        User user = new(request.CompanyName, contact, location);
+        var hashedPassword = _passwordHasher.Hash(user, request.Password);
+        user.SetPassword(hashedPassword);
         return new SuccessResult<User>(user);
     }
 

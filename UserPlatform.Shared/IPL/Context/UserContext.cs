@@ -10,6 +10,7 @@ public sealed class UserContext : DbContext
     }
 
     internal DbSet<User> Users { get; set; }
+    internal DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,6 +21,12 @@ public sealed class UserContext : DbContext
             e.ComplexProperty(e => e.Location);
             e.ComplexProperty(e => e.Contact);
             e.OwnsMany(e => e.Orders);
+            e.OwnsMany(e => e.RefreshTokens);
+        });
+
+        modelBuilder.Entity<RefreshToken>(e =>
+        {
+            e.ComplexProperty(e => e.User);
         });
     }
 
