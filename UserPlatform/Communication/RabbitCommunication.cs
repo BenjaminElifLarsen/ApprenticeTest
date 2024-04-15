@@ -15,7 +15,6 @@ using UserPlatform.Extensions;
 using UserPlatform.Models.Order.Requests;
 using UserPlatform.Shared.DL.Models;
 using UserPlatform.Sys.Appsettings.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using ILogger = Serilog.ILogger;
 
 namespace UserPlatform.Communication;
@@ -23,7 +22,6 @@ namespace UserPlatform.Communication;
 internal sealed class RabbitCommunication : BaseService, ICommunication, IDisposable  // TOOD: partial
 {
     private readonly ConnectionFactory _connectionFactory;
-    private readonly ILogger _logger;
     private readonly ConcurrentDictionary<string, TaskCompletionSource<IEnumerable<MenuListQueryResponse>>> _callbackMapperGetMenues = new();
     private readonly ConcurrentDictionary<string, TaskCompletionSource<GetOrdersQueryResponse>> _callbackMapperGetOrdersForUser = new();
 
@@ -33,9 +31,8 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
     private string _replyQueueNameGetMenues;
     private string _replyQueueNameGetOrdersForUser;
 
-    public RabbitCommunication(RabbitMqData rabbitMqData, ILogger logger)
+    public RabbitCommunication(RabbitMqData rabbitMqData, ILogger logger) : base(logger)
     {
-        _logger = logger;
         _connectionFactory = new ConnectionFactory { HostName = rabbitMqData.Url, Port = rabbitMqData.Port };
         _channel = null!;
         _connection = null!;
@@ -50,7 +47,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         _channel = _connection.CreateModel();
         _channel.BasicQos(0, 1, false);
         //_channel.ConfirmSelect();
-        _replyQueueNameGetMenues = _channel.QueueDeclare().QueueName; // Need to be done like this, attempting to set it to the actual queue's name has failed badly.
+        _replyQueueNameGetMenues = _channel.QueueDeclare().QueueName; // Need to be done like this, attempting to set it to the actual queue's name has failed badly. Took a check in the documentation and just how it nees to be done
         _replyQueueNameGetOrdersForUser = _channel.QueueDeclare().QueueName;
 
         DeclareQueueWithProducer(CommunicationQueueNames.ORDER_PLACEMENT, out _);
@@ -161,7 +158,6 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
             _logger.Warning(ex, "{Identifier}: Failed at querying for orders - {@OrdersGetForUser}", _identifier, gom);
             return new UnhandledResult<GetOrdersQueryResponse>(new BinaryFlag());
         }
-        
     }
 
     private Task<GetOrdersQueryResponse> CallAsync(GetOrdersCommand command)

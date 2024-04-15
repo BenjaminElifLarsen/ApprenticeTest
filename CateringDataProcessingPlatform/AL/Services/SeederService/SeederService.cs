@@ -14,11 +14,9 @@ namespace CateringDataProcessingPlatform.AL.Services.SeederService;
 internal sealed partial class SeederService : BaseService, ISeederService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger _logger;
-    public SeederService(IUnitOfWork unitOfWork, ILogger logger)
+    public SeederService(IUnitOfWork unitOfWork, ILogger logger) : base(logger)
     {
-        _unitOfWork = unitOfWork;        
-        _logger = logger;
+        _unitOfWork = unitOfWork;       
     }
 
     public void Seed()

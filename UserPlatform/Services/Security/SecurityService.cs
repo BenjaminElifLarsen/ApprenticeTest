@@ -18,15 +18,14 @@ namespace UserPlatform.Services.Security;
 
 internal sealed partial class SecurityService : BaseService, ISecurityService
 {
-    private JwtSettings _jwtSettings; // Not readonly to make it sunch that the values can be updated in runtime (with the correct setup)
+    private JwtSettings _jwtSettings; // Not readonly to make it such that the values can be updated in runtime (with the correct setup)
     private readonly IUnitOfWork _unitOfWork;
     private readonly JwtSecurityTokenHandler _jwtHandler;
     private readonly byte[] _jwtKey;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IRefreshTokenFactory _refreshTokenFactory;
-    private readonly ILogger _logger;
 
-    public SecurityService(IOptions<JwtSettings> jwtSettings, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IRefreshTokenFactory refreshTokenFactory, ILogger logger)
+    public SecurityService(IOptions<JwtSettings> jwtSettings, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IRefreshTokenFactory refreshTokenFactory, ILogger logger) : base(logger)
     {
         _jwtSettings = jwtSettings.Value;
         _unitOfWork = unitOfWork;
@@ -34,7 +33,6 @@ internal sealed partial class SecurityService : BaseService, ISecurityService
         _jwtKey = Encoding.UTF8.GetBytes(_jwtSettings.Key);
         _passwordHasher = passwordHasher;
         _refreshTokenFactory = refreshTokenFactory;
-        _logger = logger;
     }
 
     private string CreateToken(User user)

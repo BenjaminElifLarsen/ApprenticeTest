@@ -1,7 +1,6 @@
 ﻿using Shared.Patterns.ResultPattern;
 using UserPlatform.Models.User.Requests;
 using UserPlatform.Models.User.Responses;
-using UserPlatform.Shared.DL.Models;
 
 namespace UserPlatform.Services.Security;
 
@@ -21,7 +20,7 @@ internal sealed partial class SecurityService
         }
 
         var token = CreateToken(user);
-        var refreshToken = CreateRefreshToken(user); // TODO: if a user already got a refresh token, revoke it
+        var refreshToken = CreateRefreshToken(user);
         var rt = _refreshTokenFactory.Build(user.Id, refreshToken);
         user.AddRefreshToken(rt.Id);
         _unitOfWork.RefreshTokenRepository.Create(rt);

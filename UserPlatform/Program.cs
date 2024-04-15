@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Serilog;
 using Shared.Serilogger;
 using System.Text;
 using UserPlatform.Communication;
@@ -33,7 +32,7 @@ var dbConnection = builder.Configuration.GetConnectionString("database");
 builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(dbConnection)); // TODO: make this look pretty at some point
 var communicationData = builder.Configuration.GetSection("rabbit").Get<RabbitMqData>()!;
 var key = builder.Configuration.GetConnectionString("logKey")!;
-ILogger logger =  SeriLoggerService.GenerateLogger(key);
+ILogger logger = SeriLoggerService.GenerateLogger(key);
 RabbitCommunication communication = new(communicationData, logger);
 communication.Initialise();
 builder.Services.AddSingleton(logger);
@@ -46,7 +45,7 @@ builder.Services.AddScoped<IUserFactory, UserFactory>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWorkEFCore>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSwaggerGen(
-    c => // TODO: look more into this
+    c =>
     {
         var securitySchema = new OpenApiSecurityScheme
         {

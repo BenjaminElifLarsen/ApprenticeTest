@@ -15,8 +15,21 @@ internal sealed class ContextEFFactory : IDesignTimeDbContextFactory<CateringCon
         return new CateringContext(optionsBuilder.Options);
     }
 
+    public CateringContext CreateDbContext(string connectionString)
+    {
+        DbContextOptionsBuilder<CateringContext> optionsBuilder = new DbContextOptionsBuilder<CateringContext>()
+            .UseSqlServer(connectionString);
+        return new CateringContext(optionsBuilder.Options);
+    }
+
     public IUnitOfWork CreateUnitOfWork(CateringContext context)
     {
         return new UnitOfWorkEFCore(context);
+    }
+
+    public IUnitOfWork CreateUnitOfWork(string connectionString)
+    {
+        var context = CreateDbContext(connectionString);
+        return CreateUnitOfWork(context);
     }
 }

@@ -41,6 +41,12 @@ namespace UserPlatform.Controllers
         public async Task<IActionResult> RefreshToken([FromQuery] RefreshTokenRequest refreshToken)
         {
             return this.FromResult(await _userService.RefreshTokenAsync(refreshToken));
-        } // TODO: rememeber method to revoke refresh token (Logout)
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Logout([FromQuery] string token)
+        {
+            return this.FromResult(await _userService.UserLogoff(token));
+        }
     }
 }

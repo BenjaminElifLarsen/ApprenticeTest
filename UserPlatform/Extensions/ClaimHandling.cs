@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace UserPlatform.Extensions;
+﻿namespace UserPlatform.Extensions;
 
 public static class ClaimHandling
 {
@@ -17,7 +15,7 @@ public static class ClaimHandling
     {
         var claims = context.User.Claims;
         var claim = claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
-        Guid.TryParse(claim?.Value, out var userId);
+        _ = Guid.TryParse(claim?.Value, out var userId);
         return userId;
     }
 }

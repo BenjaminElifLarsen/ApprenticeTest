@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Order\Responses\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\UserPlatform.Shared\UserPlatform.Shared.csproj" />
   </ItemGroup>
 

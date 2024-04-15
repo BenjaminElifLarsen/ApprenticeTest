@@ -1,5 +1,4 @@
-﻿using Shared.Communication.Models.Order;
-using Shared.Patterns.ResultPattern;
+﻿using Shared.Patterns.ResultPattern;
 using UserPlatform.Models.Order.Requests;
 
 namespace UserPlatform.Services.OrderService;

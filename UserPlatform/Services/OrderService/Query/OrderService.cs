@@ -1,6 +1,7 @@
 ﻿using Shared.Communication.Models.Menu;
-using Shared.Communication.Models.Order;
 using Shared.Patterns.ResultPattern;
+using Shared.Patterns.ResultPattern.BadRequest;
+using UserPlatform.Models.Order.Responses;
 
 namespace UserPlatform.Services.OrderService;
 
@@ -12,11 +13,20 @@ internal sealed partial class OrderService
         return result;
     }
 
-    public async Task<Result<GetOrdersQueryResponse>> GetOrdersForUserAsync(Guid userId)
+    public async Task<Result<GetOrdersResponse>> GetOrdersForUserAsync(Guid userId)
     {
         var user = await _unitOfWork.UserRepository.GetSingleAsync(userId);
         if(user is null)
-            return new InvalidAuthentication<GetOrdersQueryResponse>();
-        return await _communication.GetOrdersForUser(user);
+        {
+            _logger.Error("{Identifier}: {Method} was activated without a found user {UserId}", _identifier, nameof(GetOrdersForUserAsync), userId);
+            return new InvalidAuthentication<GetOrdersResponse>();
+        }
+        var result = await _communication.GetOrdersForUser(user);
+        if (!result)
+        {
+            return new BadRequestResult<GetOrdersResponse>(result.Errors);
+        }
+        var orders = result.Data.Orders.Select(x => new GetOrdersMenuResponse(x));
+        return new SuccessResult<GetOrdersResponse>(new GetOrdersResponse(orders));
     }
 }

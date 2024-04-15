@@ -12,15 +12,13 @@ internal sealed partial class UserService : BaseService, IUserService
     private readonly ISecurityService _securityService;
     private readonly ICommunication _communication;
     private readonly IUserFactory _userFactory;
-    private readonly ILogger _logger;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UserService(ISecurityService securityService, ICommunication communication, IUserFactory userFactory, IUnitOfWork unitOfWork, ILogger logger)
+    public UserService(ISecurityService securityService, ICommunication communication, IUserFactory userFactory, IUnitOfWork unitOfWork, ILogger logger) : base(logger)
     {
         _securityService = securityService;
         _communication = communication;
         _userFactory = userFactory;
         _unitOfWork = unitOfWork;
-        _logger = logger;        
     }
 }

@@ -60,7 +60,6 @@ public class UserFactory : IUserFactory
             flag += UserFactoryErrors.NoContactInformationSat;
         if (!flag)
             return new BadRequestResult<User>(flag);
-        // TODO: hash and salt password. Consider interface
         UserLocation location = new(request.City, request.Street);
         UserContact contact = new(request.Email, request.Phone);
         User user = new(request.CompanyName, contact, location);

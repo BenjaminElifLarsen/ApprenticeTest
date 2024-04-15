@@ -1,4 +1,5 @@
 ﻿using Catering.Shared.DL.Factories;
+using CateringDataProcessingPlatform.AL.Handlers.Communication.DataProcessing;
 using CateringDataProcessingPlatform.IPL;
 using CateringDataProcessingPlatform.IPL.Appsettings;
 using CateringDataProcessingPlatform.IPL.Appsettings.Models;
@@ -23,11 +24,9 @@ internal sealed class RabbitCommunication : BaseService // TOOD: partial
     private IModel _channel;
     private RabbitDataProcessing _processing;
     private IContextFactory _contextFactory;
-    private ILogger _logger;
 
-    public RabbitCommunication(IConfigurationManager configurationManager, IContextFactory contextFactory, IFactoryCollection factoryCollection, RabbitData rabbitData, ILogger logger)
+    public RabbitCommunication(IConfigurationManager configurationManager, IContextFactory contextFactory, IFactoryCollection factoryCollection, RabbitData rabbitData, ILogger logger) : base(logger)
     {
-        _logger = logger;
         _connectionFactory = new ConnectionFactory { HostName = rabbitData.Url, Port = rabbitData.Port };
         _contextFactory = contextFactory;
         _processing = new RabbitDataProcessing(configurationManager, _contextFactory, factoryCollection, logger);
