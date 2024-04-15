@@ -28,4 +28,9 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
     {
         return await _repository.FindByPredicateAsync(x => string.Equals(x.Token, token));
     }
+
+    public async Task<RefreshToken> GetTokenAsync(Guid userId)
+    {
+        return await _repository.FindByPredicateAsync(x => x.User.Id == userId && x.Revoked == false);
+    }
 }

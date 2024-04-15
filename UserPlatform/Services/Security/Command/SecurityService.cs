@@ -14,6 +14,12 @@ internal sealed partial class SecurityService
         {
             return new InvalidAuthentication<UserAuthResponse>();
         }
+        var preexistingToken = await _unitOfWork.RefreshTokenRepository.GetTokenAsync(user.Id);
+        if(preexistingToken is not null)
+        {
+            _unitOfWork.RefreshTokenRepository.Delete(preexistingToken);
+        }
+
         var token = CreateToken(user);
         var refreshToken = CreateRefreshToken(user); // TODO: if a user already got a refresh token, revoke it
         var rt = _refreshTokenFactory.Build(user.Id, refreshToken);
