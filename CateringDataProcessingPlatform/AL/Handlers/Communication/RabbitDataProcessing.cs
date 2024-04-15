@@ -42,7 +42,7 @@ internal sealed class RabbitDataProcessing : BaseService
         }
         var menu = unitOfWork.MenuRepository.GetSingleAsync(x => x.Id == request.MenuId).Result;
         var customer = unitOfWork.CustomerRepository.GetSingleAsync(x => x.Id == request.UserId).Result;
-        menu.AddOrder(result.Data.Id);
+        menu.AddOrder(result.Data.Id, result.Data.Time.Time);
         customer.AddOrder(result.Data.Id);
         unitOfWork.OrderRepository.Create(result.Data);
         unitOfWork.MenuRepository.Update(menu);

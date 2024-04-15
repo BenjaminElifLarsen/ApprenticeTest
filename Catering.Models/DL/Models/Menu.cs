@@ -1,4 +1,5 @@
-﻿using Shared.DDD;
+﻿using Catering.Shared.DL.Models;
+using Shared.DDD;
 
 namespace CateringDataProcessingPlatform.DL.Models;
 
@@ -8,13 +9,13 @@ public sealed class Menu : IAggregateRoot
     private string _name;
     private string _description;
     private HashSet<MenuPart> _parts;
-    private HashSet<ReferenceId> _orders;
+    private HashSet<MenuOrder> _orders;
 
     public Guid Id { get => _id; private set => _id = value; }
     public string Name { get => _name; private set => _name = value; }
     public string Description { get => _description; private set => _description = value; }
     public IEnumerable<MenuPart> Parts { get => _parts; private set => _parts = value.ToHashSet(); }
-    public IEnumerable<ReferenceId> Orders { get => _orders; private set => _orders = value.ToHashSet(); }
+    public IEnumerable<MenuOrder> Orders { get => _orders; private set => _orders = value.ToHashSet(); }
 
     private Menu()
     {
@@ -28,9 +29,9 @@ public sealed class Menu : IAggregateRoot
         _parts = [];
     }
 
-    public bool AddOrder(Guid id)
+    public bool AddOrder(Guid id, DateTime time)
     {
-        return _orders.Add(new(id));
+        return _orders.Add(new(id, time));
     }
 
     public bool AddMenuPart(MenuPart part)

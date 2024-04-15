@@ -116,8 +116,9 @@ internal sealed class RabbitCommunication : BaseService
                 return;
             }
             var result = _processing.Process(request);
-            var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(result));
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo/*requestId.ToString()*/, basicProperties: replyProps, body: responseBytes);
+            Carrier carrier = new() { Data = JsonSerializer.Serialize(result), Error = 0, Result = CommandResult.Success };
+            var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(carrier));
+            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: responseBytes);
         }
         catch (Exception ex)
         {

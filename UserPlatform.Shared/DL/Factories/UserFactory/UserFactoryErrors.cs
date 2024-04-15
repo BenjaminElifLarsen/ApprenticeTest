@@ -1,4 +1,4 @@
-﻿namespace UserPlatform.Shared.DL.Factories;
+﻿namespace UserPlatform.Shared.DL.Factories.UserFactory;
 
 public enum UserFactoryErrors
 {

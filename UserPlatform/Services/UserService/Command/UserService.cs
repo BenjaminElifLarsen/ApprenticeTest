@@ -2,13 +2,13 @@
 using UserPlatform.Models.User.Requests;
 using UserPlatform.Models.User.Responses;
 using UserPlatform.Shared.Communication.Models;
-using UserPlatform.Shared.DL.Factories;
+using UserPlatform.Shared.DL.Factories.UserFactory;
 
 namespace UserPlatform.Services.UserService;
 
 internal sealed partial class UserService
 {
-    public async Task<Result<UserAuthResponse>> CreateUser(UserCreationRequest request)
+    public async Task<Result<UserAuthResponse>> CreateUserAsync(UserCreationRequest request)
     {
         var userData = await _unitOfWork.UserRepository.AllAsync(new UserDataQuery());
         UserValidationData uvd = new(userData);
@@ -19,17 +19,18 @@ internal sealed partial class UserService
         _unitOfWork.UserRepository.Create(user);
         _unitOfWork.Commit();
         var comResult = _communication.TransmitUser(user); // TODO: what to do if it fails
-        throw new NotImplementedException();
+        var authResult = await _securityService.AuthenticateAsync(new UserLoginRequest() { UserName = request.CompanyName, Password = request.Password });
+        return authResult;
     }
 
-    public Task<Result> UserLogin(UserLoginRequest request)
+    public async Task<Result<UserAuthResponse>> UserLogin(UserLoginRequest request)
     {
-        throw new NotImplementedException();
+        return await _securityService.AuthenticateAsync(request);
     }
 
-    public Task<Result> UserLogoff(Guid userId)
+    public async Task<Result> UserLogoff(string token)
     {
-        throw new NotImplementedException();
+        return await _securityService.RevokeRefreshTokenAsync(token);
     }
 
 }

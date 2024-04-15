@@ -7,6 +7,6 @@ public enum ResultType
     BadRequest = 3,
     NotFound = 4,
     Unhandled = 5,
-
+    InvalidAuthetication = 6,
     Unknown = 0,
 }

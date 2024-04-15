@@ -24,8 +24,7 @@ public class RefreshToken : IAggregateRoot
         _id = Guid.NewGuid();
         _token = token;
         _user = new(userId);
-        _revoked = false;
-        
+        _revoked = false;        
     }
 
     public void Revoke() => _revoked = true;

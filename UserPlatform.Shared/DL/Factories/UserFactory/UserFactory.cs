@@ -5,7 +5,7 @@ using UserPlatform.Shared.Communication.Models;
 using UserPlatform.Shared.DL.Models;
 using UserPlatform.Shared.Helpers;
 
-namespace UserPlatform.Shared.DL.Factories;
+namespace UserPlatform.Shared.DL.Factories.UserFactory;
 
 public class UserFactory : IUserFactory
 {
@@ -31,7 +31,7 @@ public class UserFactory : IUserFactory
     public Result<User> Build(UserCreationRequest request, UserValidationData validationData) // TODO: unit test
     {
         BinaryFlag flag = new();
-        if(request is null)
+        if (request is null)
         {
             flag += UserFactoryErrors.RequestIsNull;
             return new BadRequestResult<User>(flag);

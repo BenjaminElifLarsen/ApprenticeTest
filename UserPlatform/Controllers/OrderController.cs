@@ -6,5 +6,11 @@ namespace UserPlatform.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
+
+        [HttpGet]
+        public ActionResult Test()
+        {
+            return Ok();
+        }
     }
 }

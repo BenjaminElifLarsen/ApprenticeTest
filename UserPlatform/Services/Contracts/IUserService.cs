@@ -7,7 +7,7 @@ namespace UserPlatform.Services.Contracts;
 
 public interface IUserService
 {
-    public Task<Result<UserAuthResponse>> CreateUser(UserCreationRequest request);
-    public Task<Result> UserLogin(UserLoginRequest request);
-    public Task<Result> UserLogoff(Guid userId);
+    public Task<Result<UserAuthResponse>> CreateUserAsync(UserCreationRequest request);
+    public Task<Result<UserAuthResponse>> UserLogin(UserLoginRequest request);
+    public Task<Result> UserLogoff(string token);
 }

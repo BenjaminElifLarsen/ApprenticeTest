@@ -1,12 +1,23 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Shared.Serilogger;
+using System.Text;
 using UserPlatform.Communication;
 using UserPlatform.Communication.Contracts;
+using UserPlatform.Helpers;
 using UserPlatform.Services.Contracts;
 using UserPlatform.Services.OrderService;
+using UserPlatform.Services.Security;
+using UserPlatform.Services.UserService;
+using UserPlatform.Shared.DL.Factories.RefreshTokenFactory;
+using UserPlatform.Shared.DL.Factories.UserFactory;
+using UserPlatform.Shared.Helpers;
 using UserPlatform.Shared.IPL.Context;
+using UserPlatform.Shared.IPL.UnitOfWork;
+using UserPlatform.Sys;
 using UserPlatform.Sys.Appsettings.Models;
 using ILogger = Serilog.ILogger;
 
@@ -25,34 +36,61 @@ var key = builder.Configuration.GetConnectionString("logKey")!;
 ILogger logger =  SeriLoggerService.GenerateLogger(key);
 RabbitCommunication communication = new(communicationData, logger);
 communication.Initialise();
+builder.Services.AddSingleton<ILogger>(logger);
 builder.Services.AddSingleton<ICommunication>(communication);
 builder.Services.AddScoped<IOrderService, OrderService>();
-//builder.Services.AddSwaggerGen(c => // TODO: look more into this
-//{
-//    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-//    {
-//        Description = "JWT Authorisation using bearer token gained from Login endpoint",
-//        Name = "Authorization",
-//        In = ParameterLocation.Header,
-//        Type = SecuritySchemeType.Http,
-//        Scheme = "Bearer"
-//    });
-//    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-//    {
-//        {
-//            new OpenApiSecurityScheme
-//            {
-//                Reference = new OpenApiReference
-//                {
-//                    Type = ReferenceType.SecurityScheme,
-//                    Id = "Bearer",
-//                },
-//            },
-//            new List<string>()
-//        }
-//    });
-//});
-
+builder.Services.AddScoped<ISecurityService, SecurityService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRefreshTokenFactory, RefreshTokenFactory>();
+builder.Services.AddScoped<IUserFactory, UserFactory>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWorkEFCore>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddSwaggerGen(
+    c => // TODO: look more into this
+    {
+        var securitySchema = new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorisation using bearer token gained from Login endpoint. ",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Scheme = "Bearer",
+            Reference = new OpenApiReference
+            {
+                Type = ReferenceType.SecurityScheme,
+                Id = "Bearer"
+            }
+        };
+        c.AddSecurityDefinition("Bearer", securitySchema);
+        var securityRequirement = new OpenApiSecurityRequirement
+        {
+            { securitySchema, new[]{ "Bearer" } }
+        };
+        c.AddSecurityRequirement(securityRequirement);
+    }
+);
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(j =>
+{
+    var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
+    j.SaveToken = true;
+    j.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+    };
+});
+builder.Services.AddAuthorization(x =>
+{
+    x.AddPolicy(AccessLevels.DEFAULT_USER, policy => policy.RequireClaim("level").ToString());
+});
 
 var app = builder.Build();
 

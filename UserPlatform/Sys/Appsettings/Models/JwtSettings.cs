@@ -6,4 +6,6 @@ public class JwtSettings
     public string Audience { get; set; }
     public string Key { get; set; }
     public string RefreshKey { get; set; }
+    public int ExpireDurationMinutes { get; set; }
+    public int RefreshExpireDurationMinutes { get; set;}
 }

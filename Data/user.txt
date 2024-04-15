@@ -1,0 +1,9 @@
+{
+  "companyName": "Tester",
+  "email": "test@test.com",
+  "phone": "12345678",
+  "city": "City",
+  "street": "Street",
+  "password": "Test123!",
+  "passwordReentered": "Test123!"
+}

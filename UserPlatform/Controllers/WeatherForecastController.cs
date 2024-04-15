@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UserPlatform.Extensions;
 using UserPlatform.Services.Contracts;
+using UserPlatform.Sys;
 
 namespace UserPlatform.Controllers;
 
@@ -20,7 +23,7 @@ public class WeatherForecastController : ControllerBase
         _orderService = orderService;
     }
 
-
+    [Authorize(AccessLevels.DEFAULT_USER)]
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {
@@ -33,10 +36,11 @@ public class WeatherForecastController : ControllerBase
         .ToArray();
     }
 
+    [AllowAnonymous]
     [HttpGet("Test")]
     public async Task<IActionResult> GetTest()
     {
         var result = await _orderService.GetMenuesAsync();
-        return Ok(result);
+        return this.FromResult(result);
     }
 }

@@ -55,7 +55,14 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
                 return;
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
-            var response = JsonSerializer.Deserialize<MenuListQueryResponse[]>(message)!;
+            var fullMessage = JsonSerializer.Deserialize<Carrier>(message)!;
+            if(fullMessage.Result is not CommandResult.Success)
+            {
+                _logger.Warning("{Identifier}: Failed at getting menues - {Errors}", _identifier, Convert.ToString(fullMessage.Error, 2));
+                tcs.SetResult([]);
+                return;
+            }
+            var response = JsonSerializer.Deserialize<MenuListQueryResponse[]>(fullMessage.Data!)!;
             tcs.TrySetResult(response);
         };
         _channel.BasicConsume(consumer: consumer, queue: _replyQueueName, autoAck: true);

@@ -2,7 +2,7 @@
 using Shared.Communication.Models;
 using Shared.Patterns.ResultPattern;
 using UserPlatform.Shared.Communication.Models;
-using UserPlatform.Shared.DL.Factories;
+using UserPlatform.Shared.DL.Factories.UserFactory;
 using UserPlatform.Shared.DL.Models;
 using UserPlatform.Shared.Helpers;
 using Xunit.Abstractions;

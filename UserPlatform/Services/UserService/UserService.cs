@@ -1,7 +1,7 @@
 ﻿using Shared.Service;
 using UserPlatform.Communication.Contracts;
 using UserPlatform.Services.Contracts;
-using UserPlatform.Shared.DL.Factories;
+using UserPlatform.Shared.DL.Factories.UserFactory;
 using UserPlatform.Shared.IPL.UnitOfWork;
 using ILogger = Serilog.ILogger;
 

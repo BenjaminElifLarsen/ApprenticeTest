@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using UserPlatform.Shared.DL.Models;
 
-namespace UserPlatform.Shared.DL.Factories;
+namespace UserPlatform.Shared.DL.Factories.UserFactory;
 
 public class UserValidationData(IEnumerable<UserData> users)
 {

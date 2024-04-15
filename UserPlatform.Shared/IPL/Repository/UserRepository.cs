@@ -33,4 +33,14 @@ public sealed class UserRepository : IUserRepository
     {
         return await _repository.FindByPredicateAsync(x => string.Equals(x.CompanyName, companyName));
     }
+
+    public async Task<User> GetSingleAsync(Guid userId)
+    {
+        return await _repository.FindByPredicateAsync(x => x.Id == userId);
+    }
+
+    public void Update(User user)
+    {
+        _repository.Update(user);
+    }
 }
