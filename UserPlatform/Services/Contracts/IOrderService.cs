@@ -9,5 +9,5 @@ public interface IOrderService
 {
     public Task<Result<IEnumerable<MenuListQueryResponse>>> GetMenuesAsync();
     public Task<Result> PlaceOrderAsync(OrderPlacementRequest request);
-    public Task<Result<GetOrdersQueryResponse>> GetOrdersForUserAsync(Guid userId);
+    public Task<Result<GetOrdersQueryResponse>> GetOrdersForUserAsync(Guid userId); // TODO: map to own response
 }

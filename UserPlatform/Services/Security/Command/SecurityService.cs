@@ -15,7 +15,7 @@ internal sealed partial class SecurityService
             return new InvalidAuthentication<UserAuthResponse>();
         }
         var token = CreateToken(user);
-        var refreshToken = CreateRefreshToken(user);
+        var refreshToken = CreateRefreshToken(user); // TODO: if a user already got a refresh token, revoke it
         var rt = _refreshTokenFactory.Build(user.Id, refreshToken);
         user.AddRefreshToken(rt.Id);
         _unitOfWork.RefreshTokenRepository.Create(rt);

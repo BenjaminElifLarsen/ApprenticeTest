@@ -16,9 +16,11 @@ var connectionString = manager.GetDatabaseString();
 ContextEFFactory cf = new();
 var contextFactory = cf.CreateDbContext([connectionString]);
 IUnitOfWork unitOfWork = new UnitOfWorkEFCore(contextFactory);
+#if !RELEASE
 ISeederService seederService = new SeederService(unitOfWork, logger);
 seederService.Seed();
 seederService = null!;
+#endif
 var rabbit = manager.GetRabbit();
 
 IFactoryCollection factoryCollection = new FactoryCollection(time);
