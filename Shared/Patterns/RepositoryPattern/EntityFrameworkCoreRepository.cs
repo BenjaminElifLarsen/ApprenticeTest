@@ -36,7 +36,7 @@ public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<
         return (await _entities.ToArrayAsync()).FirstOrDefault(predicate)!;
     }
 
-    public async Task<IEnumerable<TMapping>> FindManyByPredicate<TMapping>(Func<TEntity, bool> predicate, BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
+    public async Task<IEnumerable<TMapping>> FindManyByPredicateAsync<TMapping>(Func<TEntity, bool> predicate, BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
     {
         return (await _entities.ToArrayAsync()).Where(predicate).AsQueryable().Select(query.Map());
     }

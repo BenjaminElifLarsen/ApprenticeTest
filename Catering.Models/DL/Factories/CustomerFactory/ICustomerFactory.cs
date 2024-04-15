@@ -1,5 +1,5 @@
 ﻿using CateringDataProcessingPlatform.DL.Models;
-using Shared.Communication.Models;
+using Shared.Communication.Models.User;
 using Shared.Patterns.ResultPattern;
 
 namespace Catering.Shared.DL.Factories.CustomerFactory;

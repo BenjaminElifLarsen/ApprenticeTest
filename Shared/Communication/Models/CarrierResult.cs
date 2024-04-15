@@ -1,6 +1,6 @@
 ﻿namespace Shared.Communication.Models;
 
-public enum CommandResult
+public enum CarrierResult
 {
     Success = 0,
     Error = 1,

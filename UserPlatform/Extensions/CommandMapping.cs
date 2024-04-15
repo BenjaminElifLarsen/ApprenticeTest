@@ -1,4 +1,5 @@
-﻿using Shared.Communication.Models;
+﻿using Shared.Communication.Models.Order;
+using Shared.Communication.Models.User;
 using UserPlatform.Models.Order.Requests;
 using UserPlatform.Shared.DL.Models;
 

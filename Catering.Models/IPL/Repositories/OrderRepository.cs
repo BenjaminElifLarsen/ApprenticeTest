@@ -19,6 +19,11 @@ public sealed class OrderRepository : IOrderRepository
         return await _repository.AllAsync(query);
     }
 
+    public async Task<IEnumerable<TMapping>> AllByPredicate<TMapping>(BaseQuery<Order, TMapping> query, Func<Order, bool> predicate) where TMapping : BaseReadModel
+    {
+        return await _repository.FindManyByPredicateAsync(predicate, query);
+    }
+
     public void Create(Order order)
     {
         _repository.Create(order);

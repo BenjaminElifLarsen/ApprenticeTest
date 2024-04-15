@@ -1,6 +1,6 @@
 ﻿using Catering.Models.DL.Models;
 using CateringDataProcessingPlatform.DL.Models;
-using Shared.Communication.Models;
+using Shared.Communication.Models.User;
 using Shared.Patterns.ResultPattern;
 using Shared.Patterns.ResultPattern.BadRequest;
 

@@ -1,7 +1,7 @@
 ﻿using Shared.Patterns.CQRS.Commands;
 using Shared.Patterns.CQRS.Queries;
 
-namespace Shared.Communication.Models;
+namespace Shared.Communication.Models.Menu;
 
 public sealed class MenuListQueryResponse : BaseReadModel, ICommand
 {
@@ -13,7 +13,7 @@ public sealed class MenuListQueryResponse : BaseReadModel, ICommand
 
     public MenuListQueryResponse()
     {
-        
+
     }
 
     public MenuListQueryResponse(Guid id, string name, string description, float price, IEnumerable<MenuListPartQueryResponse> parts)
@@ -21,7 +21,7 @@ public sealed class MenuListQueryResponse : BaseReadModel, ICommand
         Id = id;
         Name = name;
         Description = description;
-        Parts = parts;       
+        Parts = parts;
         Price = price;
     }
 }
@@ -33,12 +33,12 @@ public sealed class MenuListPartQueryResponse : BaseReadModel
 
     public MenuListPartQueryResponse()
     {
-        
+
     }
 
     public MenuListPartQueryResponse(string name, uint amount)
     {
         Name = name;
-        Amount = amount;        
+        Amount = amount;
     }
 }

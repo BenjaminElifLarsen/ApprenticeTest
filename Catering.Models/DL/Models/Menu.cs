@@ -22,7 +22,7 @@ public sealed class Menu : IAggregateRoot
         
     }
 
-    internal Menu(string name, string description) // TODO: use factory to set these
+    internal Menu(string name, string description)
     {
         _name = name;
         _description = description;
@@ -37,7 +37,7 @@ public sealed class Menu : IAggregateRoot
     public bool AddMenuPart(MenuPart part)
     {
         if (_parts.Any(x => x.Dish == part.Dish))
-            throw new Exception();
+            return true;
         return _parts.Add(part);
     }
 }

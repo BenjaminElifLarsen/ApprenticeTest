@@ -32,9 +32,15 @@ namespace UserPlatform.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
+        public async Task<IActionResult> Login([FromQuery] UserLoginRequest request)
         {
-            return this.FromResult(await _userService.UserLogin(request));
+            return this.FromResult(await _userService.UserLoginAsync(request));
         }
+
+        [HttpGet("RefreshToken")]
+        public async Task<IActionResult> RefreshToken([FromQuery] RefreshTokenRequest refreshToken)
+        {
+            return this.FromResult(await _userService.RefreshTokenAsync(refreshToken));
+        } // TODO: rememeber method to revoke refresh token (Logout)
     }
 }

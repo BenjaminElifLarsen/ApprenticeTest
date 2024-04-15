@@ -36,7 +36,7 @@ var key = builder.Configuration.GetConnectionString("logKey")!;
 ILogger logger =  SeriLoggerService.GenerateLogger(key);
 RabbitCommunication communication = new(communicationData, logger);
 communication.Initialise();
-builder.Services.AddSingleton<ILogger>(logger);
+builder.Services.AddSingleton(logger);
 builder.Services.AddSingleton<ICommunication>(communication);
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
@@ -50,7 +50,7 @@ builder.Services.AddSwaggerGen(
     {
         var securitySchema = new OpenApiSecurityScheme
         {
-            Description = "JWT Authorisation using bearer token gained from Login endpoint. ",
+            Description = "JWT Authorisation using bearer token gained from Login endpoint. <br> 'Bearer token'",
             Name = "Authorization",
             In = ParameterLocation.Header,
             Scheme = "Bearer",

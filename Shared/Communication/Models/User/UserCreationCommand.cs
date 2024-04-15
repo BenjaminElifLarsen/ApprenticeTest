@@ -1,4 +1,4 @@
-﻿namespace Shared.Communication.Models;
+﻿namespace Shared.Communication.Models.User;
 
 public sealed class UserCreationCommand
 {

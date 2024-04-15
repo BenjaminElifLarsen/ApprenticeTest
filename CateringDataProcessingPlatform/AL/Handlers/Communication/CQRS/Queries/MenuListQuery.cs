@@ -1,5 +1,5 @@
 ﻿using CateringDataProcessingPlatform.DL.Models;
-using Shared.Communication.Models;
+using Shared.Communication.Models.Menu;
 using Shared.Patterns.CQRS.Queries;
 using System.Linq.Expressions;
 

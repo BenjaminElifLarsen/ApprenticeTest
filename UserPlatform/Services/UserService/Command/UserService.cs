@@ -23,7 +23,7 @@ internal sealed partial class UserService
         return authResult;
     }
 
-    public async Task<Result<UserAuthResponse>> UserLogin(UserLoginRequest request)
+    public async Task<Result<UserAuthResponse>> UserLoginAsync(UserLoginRequest request)
     {
         return await _securityService.AuthenticateAsync(request);
     }
@@ -31,6 +31,11 @@ internal sealed partial class UserService
     public async Task<Result> UserLogoff(string token)
     {
         return await _securityService.RevokeRefreshTokenAsync(token);
+    }
+
+    public async Task<Result<UserAuthResponse>> RefreshTokenAsync(RefreshTokenRequest token)
+    {
+        return await _securityService.RefreshTokenAsync(token);
     }
 
 }

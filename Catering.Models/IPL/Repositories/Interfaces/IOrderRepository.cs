@@ -9,4 +9,5 @@ public interface IOrderRepository
     public Task<Order> GetSingleAsync(Func<Order, bool> predicate);
     public void Create(Order order);
     public void Delete(Order order);
+    public Task<IEnumerable<TMapping>> AllByPredicate<TMapping>(BaseQuery<Order, TMapping> query, Func<Order, bool> predicate) where TMapping : BaseReadModel;
 }

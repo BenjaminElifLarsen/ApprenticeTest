@@ -7,13 +7,16 @@ using RabbitMQ.Client.Events;
 using Serilog;
 using Shared.Communication;
 using Shared.Communication.Models;
+using Shared.Communication.Models.Menu;
+using Shared.Communication.Models.Order;
+using Shared.Communication.Models.User;
 using Shared.Service;
 using System.Text;
 using System.Text.Json;
 
 namespace CateringDataProcessingPlatform.AL.Handlers.Communication;
 
-internal sealed class RabbitCommunication : BaseService
+internal sealed class RabbitCommunication : BaseService // TOOD: partial
 {
     private readonly ConnectionFactory _connectionFactory;
     private IConnection _connection;
@@ -41,6 +44,7 @@ internal sealed class RabbitCommunication : BaseService
         DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_PLACEMENT, ReceivedForOrderPlacement);
         DeclareQueueWithConsumer(CommunicationQueueNames.CUSTOMER_CREATION, ReceivedForCustomerCreation);
         DeclareQueueWithConsumer(CommunicationQueueNames.MENU_QUERY, ReceivedForMenuRPC);
+        DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_GET_FOR_USER, ReceivedForMenuUserRPC);
 
         _logger.Information("{Identifier}: Initialised", _identifier);
     }
@@ -116,7 +120,7 @@ internal sealed class RabbitCommunication : BaseService
                 return;
             }
             var result = _processing.Process(request);
-            Carrier carrier = new() { Data = JsonSerializer.Serialize(result), Error = 0, Result = CommandResult.Success };
+            Carrier carrier = new() { Data = JsonSerializer.Serialize(result), Error = 0, Result = CarrierResult.Success };
             var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(carrier));
             _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: responseBytes);
         }
@@ -125,5 +129,36 @@ internal sealed class RabbitCommunication : BaseService
             _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
         }
         _channel.BasicAck(e.DeliveryTag, false);
+    }
+
+    private void ReceivedForMenuUserRPC(object? sender, BasicDeliverEventArgs e)
+    {
+        var body = e.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
+        try
+        {
+            var requestProps = e.BasicProperties;
+            var replyProps = _channel.CreateBasicProperties();
+            replyProps.CorrelationId = requestProps.CorrelationId;
+
+            var request = JsonSerializer.Deserialize<GetOrdersCommand>(message);
+
+            if (request is null)
+            {
+                _logger.Error("{Identifier}: {Message} could not be parsed to {GetOrdersCommandType}", _identifier, message, typeof(GetOrdersCommand));
+                _channel.BasicAck(e.DeliveryTag, false);
+                return;
+            }
+            var result = _processing.Process(request);
+            Carrier carrier = new() { Data = JsonSerializer.Serialize(result), Error = 0, Result = CarrierResult.Success };
+            var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(carrier));
+            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, responseBytes);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
+        }
+        _channel.BasicAck(e.DeliveryTag, false);
+
     }
 }

@@ -1,5 +1,5 @@
 ﻿using CateringDataProcessingPlatform.DL.Models;
-using Shared.Communication.Models;
+using Shared.Communication.Models.Order;
 using Shared.Helpers.Time;
 using Shared.Patterns.ResultPattern;
 using Shared.Patterns.ResultPattern.BadRequest;
