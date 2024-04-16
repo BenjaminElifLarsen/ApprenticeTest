@@ -31,8 +31,8 @@ namespace UserPlatform.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> Login([FromQuery] UserLoginRequest request)
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
         {
             return this.FromResult(await _userService.UserLoginAsync(request));
         }

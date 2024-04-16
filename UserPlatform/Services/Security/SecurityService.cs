@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
 using Shared.Service;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

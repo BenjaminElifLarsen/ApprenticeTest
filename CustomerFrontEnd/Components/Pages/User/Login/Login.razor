@@ -1,0 +1,26 @@
+﻿@page "/user/login"
+@rendermode InteractiveServer
+@using CustomerFrontEnd.Services.Contracts
+@using Microsoft.AspNetCore.Components.Authorization
+<h3>Login</h3>
+<button @onclick="LoginAsync">Login</button>
+
+@code {
+    [Inject]
+    private IUserService UserService { get; set; }
+    [Inject]
+    private IAuthenticationStorage AuthenticationStorage { get; set; }
+    [Inject]
+    private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
+    private async Task LoginAsync()
+    {
+        var result = await UserService.LoginAsync("Tester", "Test123!");
+        if(result is not null)
+        {
+            AuthenticationStorage.Token = result.Token;
+            AuthenticationStorage.RefreshToken = result.RefreshToken;
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        }
+    }
+}
