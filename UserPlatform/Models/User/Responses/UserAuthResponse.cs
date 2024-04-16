@@ -6,9 +6,9 @@ public sealed class UserAuthResponse
     public string Token { get; private set; }
     public string RefreshToken { get; private set; }
 
-    public UserAuthResponse(string userName, string token, string refreshToken)
+    public UserAuthResponse(string companyName, string token, string refreshToken)
     {
-        UserName = userName;
+        UserName = companyName;
         Token = token;
         RefreshToken = refreshToken;
     }

@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UserPlatform.Shared\UserPlatform.Shared.csproj" />
+    <ProjectReference Include="..\UserPlatform\UserPlatform.csproj" />
   </ItemGroup>
 
   <ItemGroup>

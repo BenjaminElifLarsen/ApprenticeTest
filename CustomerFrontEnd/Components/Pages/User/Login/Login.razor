@@ -1,4 +1,4 @@
-﻿@page "/user/login"
+﻿@* @page "/user/login"
 
 @rendermode InteractiveServer
 @using CustomerFrontEnd.Models.User.Requests
@@ -36,11 +36,12 @@
         if(result is not null)
         {
             //await AuthenticationStorage.SetTokenAsync(result.Token);
-            AuthenticationStorage.Token = result.Token;
-            AuthenticationStorage.RefreshToken = result.RefreshToken;
+            //AuthenticationStorage.Token = result.Token;
+            //AuthenticationStorage.RefreshToken = result.RefreshToken;
             //await AuthenticationStateProvider.GetAuthenticationStateAsync();
             /StateHasChanged();
             NavigationManager.NavigateTo("");
         }
     }
 }
+ *@
