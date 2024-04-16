@@ -1,0 +1,62 @@
+﻿@page "/user/create"
+@using CustomerFrontEnd.Models.User.Requests
+@using CustomerFrontEnd.Services.Contracts
+@inject NavigationManager NavigationManager
+
+<h3>CreateUser</h3>
+
+<EditForm Model="@request" OnSubmit=@CreateAsync>
+    <div>
+        <h3>Company Name</h3>
+        <InputText @bind-Value=request.CompanyName></InputText>
+    </div>
+    <div>
+        <h3>Password</h3>
+        <InputText @bind-Value=request.Password></InputText>
+    </div>
+    <div>
+        <h3>Reenter Password</h3>
+        <InputText @bind-Value=request.PasswordReentered></InputText>
+    </div>
+    <div>
+        <h3>Email</h3>
+        <InputText @bind-Value=request.Email></InputText>
+    </div>
+    <div>
+        <h3>Phone</h3>
+        <InputText @bind-Value=request.Phone></InputText>
+    </div>
+    <div>
+        <h3>Street</h3>
+        <InputText @bind-Value=request.Street></InputText>
+    </div>
+    <div>
+        <h3>City</h3>
+        <InputText @bind-Value=request.City></InputText>
+    </div>
+    <input type="submit" value="Create" />
+</EditForm>
+
+@code {
+    [Inject]
+    private IUserService UserService { get; set; }
+    [Inject]
+    private IAuthenticationStorage AuthenticationStorage { get; set; }
+    // [Inject]
+    // private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
+    UserRequest request = new();
+
+    private async Task CreateAsync()
+    {
+        var result = await UserService.CreateUserAsync(request);
+        if (result is not null)
+        {
+            //await AuthenticationStorage.SetTokenAsync(result.Token);
+            AuthenticationStorage.Token = result.Token;
+            //AuthenticationStorage.RefreshToken = result.RefreshToken;
+            //await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            NavigationManager.NavigateTo("");
+        }
+    }
+}

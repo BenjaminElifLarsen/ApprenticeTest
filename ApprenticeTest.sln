@@ -36,6 +36,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Catering.Shared.Test", "Cat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserPlatform.Shared", "UserPlatform.Shared\UserPlatform.Shared.csproj", "{4C36E826-1934-4924-8D70-8222B7537869}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserFrontend.Frontend", "UserFrontend.Frontend\UserFrontend.Frontend.csproj", "{21F3BA17-0A07-4A6D-9FC1-FB123A2D7046}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,10 @@ Global
 		{4C36E826-1934-4924-8D70-8222B7537869}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C36E826-1934-4924-8D70-8222B7537869}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C36E826-1934-4924-8D70-8222B7537869}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21F3BA17-0A07-4A6D-9FC1-FB123A2D7046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21F3BA17-0A07-4A6D-9FC1-FB123A2D7046}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21F3BA17-0A07-4A6D-9FC1-FB123A2D7046}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21F3BA17-0A07-4A6D-9FC1-FB123A2D7046}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +103,7 @@ Global
 		{650B2639-B427-491A-8854-DD19AC716E6A} = {AF2EBA73-8885-4A70-BF83-23AE7DBA5068}
 		{FF53AD7E-86C8-49E4-9C6F-FF75284F1C1C} = {0AC24DC4-B675-48D4-A27D-5B26204179F0}
 		{4C36E826-1934-4924-8D70-8222B7537869} = {00421B85-D8B7-4C9A-85A7-A0701CFD9339}
+		{21F3BA17-0A07-4A6D-9FC1-FB123A2D7046} = {00421B85-D8B7-4C9A-85A7-A0701CFD9339}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B3936278-AE67-4914-B9E7-EFB260534F7C}

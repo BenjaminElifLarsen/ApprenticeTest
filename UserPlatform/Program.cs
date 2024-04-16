@@ -91,6 +91,16 @@ builder.Services.AddAuthorization(x =>
     x.AddPolicy(AccessLevels.DEFAULT_USER, policy => policy.RequireClaim("level").ToString());
 });
 
+builder.Services.AddCors(c =>
+{
+    c.AddDefaultPolicy(p =>
+    {
+        p.AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -105,5 +115,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.UseCors();
 app.Run();

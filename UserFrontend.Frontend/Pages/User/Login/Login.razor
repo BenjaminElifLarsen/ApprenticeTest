@@ -1,9 +1,8 @@
 ﻿@page "/user/login"
 
-@rendermode InteractiveServer
 @using CustomerFrontEnd.Models.User.Requests
 @using CustomerFrontEnd.Services.Contracts
-@using Microsoft.AspNetCore.Components.Authorization
+@using System.Diagnostics
 @inject NavigationManager NavigationManager
 <h3>Login</h3>
 
@@ -24,8 +23,6 @@
     private IUserService UserService { get; set; }
     [Inject]
     private IAuthenticationStorage AuthenticationStorage { get; set; }
-    [Inject]
-    private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
     LoginRequest request = new();
 
@@ -38,8 +35,7 @@
             //await AuthenticationStorage.SetTokenAsync(result.Token);
             AuthenticationStorage.Token = result.Token;
             AuthenticationStorage.RefreshToken = result.RefreshToken;
-            //await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            /StateHasChanged();
+            StateHasChanged();
             NavigationManager.NavigateTo("");
         }
     }

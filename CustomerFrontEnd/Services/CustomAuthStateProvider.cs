@@ -16,6 +16,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        //string token = await _authenticationStorage.GetTokenAsync();
         string token = _authenticationStorage.Token;
 
         var identify = new ClaimsIdentity(token);
@@ -23,7 +24,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         if(!string.IsNullOrWhiteSpace(token))
         {
             var payload = token.Split('.')[1];
-            var bytes = Convert.FromBase64String(payload);
+            var bytes = HandleMissingPadding(payload);
             var keyValues = JsonSerializer.Deserialize<Dictionary<string, object>>(bytes)!;
             identify = new ClaimsIdentity(keyValues.Select(x => new Claim(x.Key, x.Value.ToString()!)));
         }
@@ -31,5 +32,15 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         var state = new AuthenticationState(user);
         NotifyAuthenticationStateChanged(Task.FromResult(state));
         return state;
+    }
+
+    private static byte[] HandleMissingPadding(string base64)
+    {
+        switch (base64.Length % 4)
+        {
+            case 2: base64 += "=="; break;
+            case 3: base64 += "="; break;
+        }
+        return Convert.FromBase64String(base64);
     }
 }

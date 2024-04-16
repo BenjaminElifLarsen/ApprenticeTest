@@ -6,10 +6,12 @@ using Microsoft.Extensions.Options;
 using Shared.Service;
 namespace CustomerFrontEnd.Services.UserService;
 
-public class UserService : HttpBaseService, IUserService
+public class UserService : IUserService
 {
-    public UserService(IOptions<UrlEndpoint> baseUrl) : base(baseUrl.Value.Url)
+    private readonly HttpClient _client;
+    public UserService(HttpClient client)
     {
+        _client = client;
     }
 
     public async Task<LoginResponse> CreateUserAsync(UserRequest body)
@@ -19,7 +21,7 @@ public class UserService : HttpBaseService, IUserService
         requestMessage.AttachBody(body);
         try
         {
-            responseMessage = await SendAsync(requestMessage);
+            responseMessage = await _client.SendAsync(requestMessage);
         }
         catch (Exception ex)
         {
@@ -40,7 +42,7 @@ public class UserService : HttpBaseService, IUserService
         requestMessage.AttachBody(body);
         try
         {
-            responseMessage = await SendAsync(requestMessage);            
+            responseMessage = await _client.SendAsync(requestMessage);            
         }
         catch (Exception ex)
         {
