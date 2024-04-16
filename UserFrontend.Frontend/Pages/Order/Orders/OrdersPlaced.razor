@@ -1,0 +1,30 @@
+﻿@page "/order/placed"
+@using UserFrontend.Frontend.Models.Order.Responses
+@using UserFrontend.Frontend.Services.Contracts
+<h3>Orders Placed</h3>
+
+@if(orderCollection is not null)
+{
+    @foreach(var order in orderCollection.Orders)
+    {
+        <OrderDetails Order="order"></OrderDetails>
+    }
+}
+
+@code {
+    private OrderCollectionResponse orderCollection;
+
+    [Inject]
+    public IOrderService OrderService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var result = await OrderService.GetOrders();
+        if (result)
+            orderCollection = result.Data;
+        else
+            orderCollection = null!;
+    }
+
+}

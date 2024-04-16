@@ -1,4 +1,4 @@
-﻿namespace CustomerFrontEnd.Models.User.Requests;
+﻿namespace UserFrontend.Frontend.Models.User.Requests;
 
 public class LoginRequest
 {
@@ -7,12 +7,12 @@ public class LoginRequest
 
     public LoginRequest()
     {
-        
+
     }
 
     public LoginRequest(string username, string password)
     {
         UserName = username;
-        Password = password;        
+        Password = password;
     }
 }

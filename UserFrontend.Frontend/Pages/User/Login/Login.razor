@@ -1,14 +1,12 @@
 ﻿@page "/user/login"
-
-@using CustomerFrontEnd.Models.User.Requests
-@using CustomerFrontEnd.Services.Contracts
-@using System.Diagnostics
+@using UserFrontend.Frontend.Models.User.Requests
+@using UserFrontend.Frontend.Services.Contracts
 @inject NavigationManager NavigationManager
 <h3>Login</h3>
 
 <EditForm Model="@request" OnSubmit=@LoginAsync>
     <div>
-        <h3>Username</h3>
+        <h3>Company Name</h3>
         <InputText @bind-Value=request.UserName></InputText>
     </div>
     <div>

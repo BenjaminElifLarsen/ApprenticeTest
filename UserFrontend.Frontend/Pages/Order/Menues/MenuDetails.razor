@@ -1,0 +1,31 @@
+﻿@using UserFrontend.Frontend.Models.Order.Responses
+
+<h5>@Menu.Name</h5>
+<div>
+    <p>Price: @Menu.Price</p>
+</div>
+<div>
+    @foreach(var part in Menu.Parts)
+    {
+        <div>
+            <p>Name: @part.Name</p>
+            <p>Amount: @part.Amount</p>
+        </div>
+    }
+</div>
+<div>
+    <button @onclick=SelectMenu>Select Menu</button>
+</div>
+
+@code {
+    [Parameter]
+    public MenuResponse Menu { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnMenuSelected { get; set; }
+
+    private async Task SelectMenu()
+    {
+        await OnMenuSelected.InvokeAsync(Menu.Id);
+    }
+}

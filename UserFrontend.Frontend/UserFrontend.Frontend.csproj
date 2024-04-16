@@ -12,12 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Order\Requests\" />
-    <Folder Include="Models\Order\Responses\" />
-    <Folder Include="Services\OrderService\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

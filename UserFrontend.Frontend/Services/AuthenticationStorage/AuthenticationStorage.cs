@@ -1,4 +1,4 @@
-﻿using CustomerFrontEnd.Services.Contracts;
+﻿using UserFrontend.Frontend.Services.Contracts;
 
 namespace CustomerFrontEnd.Services.AuthenticationStorage;
 

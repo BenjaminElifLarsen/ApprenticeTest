@@ -1,0 +1,75 @@
+﻿@page "/order"
+@using UserFrontend.Frontend.Models.Order.Requests
+@using UserFrontend.Frontend.Models.Order.Responses
+@using UserFrontend.Frontend.Services.Contracts
+<h3>Menues</h3>
+
+@if(menues is null)
+{
+    <p>Loading</p>
+}
+else
+{
+    <div>
+        @foreach (var menu in menues)
+        {
+            <MenuDetails Menu="menu" OnMenuSelected=@SetMenu></MenuDetails>
+        }
+    </div>
+    @if(selectedMenu is not null)
+    {
+        <div>
+            <h4>Selected Menu</h4>
+            <p>@selectedMenu.Name</p>
+        </div>
+        <div>
+            <EditForm Model="request">
+                <div>
+                    <label>Time</label>
+                    <InputDate Type="InputDateType.DateTimeLocal"
+                    min="@DateTime.UtcNow.AddDays(2).ToString("yyyy-MM-dd")"
+                    @bind-Value=@request.OrderedTo />
+                </div>
+            </EditForm>
+            <button @onclick=PlaceOrder>Place order</button>
+        </div>
+    }
+}
+
+@code {
+    private IEnumerable<MenuResponse> menues;
+    private MenuResponse selectedMenu;
+    private OrderRequest request = new();
+
+    [Inject]
+    private IOrderService OrderService { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var result = await OrderService.GetMenuesAsync();
+        if (result)
+            menues = result.Data;
+        else
+            menues = [];
+    }
+
+    private void SetMenu(Guid id)
+    {
+        selectedMenu = menues.FirstOrDefault(x => x.Id == id)!;
+        request.MenuId = id;
+    }
+
+    private async Task PlaceOrder()
+    {
+        if (selectedMenu is null)
+            return;
+        request.OrderedTo = request.OrderedTo.ToUniversalTime();
+        var result = await OrderService.PlaceOrderAsync(request);
+        if (result)
+        {
+            selectedMenu = null!;    
+        }
+    }
+}

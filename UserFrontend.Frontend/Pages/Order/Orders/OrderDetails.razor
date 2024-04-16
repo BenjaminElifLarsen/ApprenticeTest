@@ -1,0 +1,9 @@
+﻿@using UserFrontend.Frontend.Models.Order.Responses
+<div>
+    <p>@Order.Name</p>
+    <p>@Order.Time.ToLocalTime()</p>
+</div>
+@code {
+    [Parameter]
+    public OrderResponse Order { get; set; }
+}

@@ -1,4 +1,4 @@
-﻿namespace CustomerFrontEnd.Models.User.Requests;
+﻿namespace UserFrontend.Frontend.Models.User.Requests;
 
 public class UserRequest
 {

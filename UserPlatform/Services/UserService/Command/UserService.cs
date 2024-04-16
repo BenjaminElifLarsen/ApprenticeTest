@@ -1,4 +1,5 @@
 ﻿using Shared.Patterns.ResultPattern;
+using System.Diagnostics;
 using UserPlatform.Models.User.Requests;
 using UserPlatform.Models.User.Responses;
 using UserPlatform.Shared.Communication.Models;
@@ -25,7 +26,16 @@ internal sealed partial class UserService
 
     public async Task<Result<UserAuthResponse>> UserLoginAsync(UserLoginRequest request)
     {
-        return await _securityService.AuthenticateAsync(request);
+        TimeSpan sleepLength = TimeSpan.FromSeconds(0.5);
+        Stopwatch sw = new();
+        sw.Start();
+        var result = await _securityService.AuthenticateAsync(request);
+        sw.Stop();
+        var timePassed = sw.Elapsed; // TODO: unit test
+        var missingTime = sleepLength - timePassed;
+        if(missingTime.TotalMilliseconds > 0)
+        Thread.Sleep(missingTime);
+        return result;
     }
 
     public async Task<Result> UserLogoff(string token)

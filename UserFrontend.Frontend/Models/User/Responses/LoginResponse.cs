@@ -1,4 +1,4 @@
-﻿namespace CustomerFrontEnd.Models.User.Responses;
+﻿namespace UserFrontend.Frontend.Models.User.Responses;
 
 public class LoginResponse
 {

@@ -1,7 +1,7 @@
-﻿using CustomerFrontEnd.Models.User.Requests;
-using CustomerFrontEnd.Models.User.Responses;
+﻿using UserFrontend.Frontend.Models.User.Requests;
+using UserFrontend.Frontend.Models.User.Responses;
 
-namespace CustomerFrontEnd.Services.Contracts;
+namespace UserFrontend.Frontend.Services.Contracts;
 
 public interface IUserService
 {

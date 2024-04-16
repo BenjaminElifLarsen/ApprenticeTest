@@ -1,4 +1,4 @@
-﻿namespace CustomerFrontEnd.Services.Contracts;
+﻿namespace UserFrontend.Frontend.Services.Contracts;
 
 public interface IAuthenticationStorage
 {
