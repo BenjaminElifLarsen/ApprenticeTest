@@ -1,14 +1,21 @@
 ﻿@page "/order/placed"
 @using UserFrontend.Frontend.Models.Order.Responses
+@using UserFrontend.Frontend.Pages.Order.Orders.Details
 @using UserFrontend.Frontend.Services.Contracts
 <h3>Orders Placed</h3>
 
 @if(orderCollection is not null)
 {
-    @foreach(var order in orderCollection.Orders)
-    {
-        <OrderDetails Order="order"></OrderDetails>
-    }
+    <div class="container">
+        <div class="row">
+            @foreach (var order in orderCollection.Orders)
+            {
+                <div class="col-3">
+                    <OrderDetails Order="order"></OrderDetails>
+                </div>
+            }
+        </div>
+    </div>
 }
 
 @code {

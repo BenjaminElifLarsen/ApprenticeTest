@@ -1,6 +1,7 @@
 ﻿@page "/order"
 @using UserFrontend.Frontend.Models.Order.Requests
 @using UserFrontend.Frontend.Models.Order.Responses
+@using UserFrontend.Frontend.Pages.Order.Menues.Details
 @using UserFrontend.Frontend.Services.Contracts
 <h3>Menues</h3>
 
@@ -10,11 +11,15 @@
 }
 else
 {
-    <div>
-        @foreach (var menu in menues)
-        {
-            <MenuDetails Menu="menu" OnMenuSelected=@SetMenu></MenuDetails>
-        }
+    <div class="container">
+        <div class="row">
+            @foreach (var menu in menues)
+            {
+                <div class="col-3">
+                    <MenuDetails Menu="menu" OnMenuSelected=@SetMenu></MenuDetails>
+                </div>
+            }
+        </div>
     </div>
     @if(selectedMenu is not null)
     {
