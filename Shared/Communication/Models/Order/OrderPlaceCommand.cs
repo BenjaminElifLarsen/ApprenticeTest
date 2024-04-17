@@ -1,6 +1,8 @@
-﻿namespace Shared.Communication.Models.Order;
+﻿using Shared.Patterns.CQRS.Commands;
 
-public sealed class OrderPlaceCommand
+namespace Shared.Communication.Models.Order;
+
+public sealed class OrderPlaceCommand : ICommand
 {
     public Guid UserId { get; set; }
     public Guid MenuId { get; set; }

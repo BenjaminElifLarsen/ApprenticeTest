@@ -18,7 +18,8 @@ public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<
 
     public async Task<IEnumerable<TMapping>> AllAsync<TMapping>(BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
     {
-        return (await _entities.ToArrayAsync()).AsQueryable().Select(query.Map());
+        //return (await _entities.ToArrayAsync()).AsQueryable().Select(query.Map());
+        return (await _entities.Select(query.Map()).ToArrayAsync());
     }
 
     public void Create(TEntity entity)

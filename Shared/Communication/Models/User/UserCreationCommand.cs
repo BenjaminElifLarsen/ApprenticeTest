@@ -1,6 +1,8 @@
-﻿namespace Shared.Communication.Models.User;
+﻿using Shared.Patterns.CQRS.Commands;
 
-public sealed class UserCreationCommand
+namespace Shared.Communication.Models.User;
+
+public sealed class UserCreationCommand : ICommand
 {
     public Guid UserId { get; set; }
     public string City { get; set; }

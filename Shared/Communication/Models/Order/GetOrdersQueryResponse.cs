@@ -1,9 +1,6 @@
-﻿using Shared.Patterns.CQRS.Commands;
-using Shared.Patterns.CQRS.Queries;
+﻿namespace Shared.Communication.Models.Order;
 
-namespace Shared.Communication.Models.Order;
-
-public sealed class GetOrdersQueryResponse : ICommand
+public sealed class GetOrdersQueryResponse
 {
     public IEnumerable<GetOrdersMenuQueryResponse> Orders { get; set; }
 }
@@ -26,6 +23,5 @@ public sealed class GetOrdersMenuQueryResponse
         Name = name;
         Time = time;
         MenuId = menuId;
-
     }
 }

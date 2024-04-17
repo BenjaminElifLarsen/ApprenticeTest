@@ -31,10 +31,10 @@ internal sealed partial class UserService
         sw.Start();
         var result = await _securityService.AuthenticateAsync(request);
         sw.Stop();
-        var timePassed = sw.Elapsed; // TODO: unit test
+        var timePassed = sw.Elapsed; 
         var missingTime = sleepLength - timePassed;
         if(missingTime.TotalMilliseconds > 0)
-        Thread.Sleep(missingTime);
+            Thread.Sleep(missingTime);
         return result;
     }
 

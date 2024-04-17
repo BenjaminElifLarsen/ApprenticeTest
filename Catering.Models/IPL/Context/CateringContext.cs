@@ -22,7 +22,6 @@ public sealed class CateringContext : DbContext
         {
             e.ComplexProperty(e => e.Location);
             e.OwnsMany(e => e.Orders);
-
         });
 
         modelBuilder.Entity<Dish>(e =>

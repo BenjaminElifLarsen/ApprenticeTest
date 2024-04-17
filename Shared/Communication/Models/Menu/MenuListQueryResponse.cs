@@ -3,7 +3,7 @@ using Shared.Patterns.CQRS.Queries;
 
 namespace Shared.Communication.Models.Menu;
 
-public sealed class MenuListQueryResponse : BaseReadModel, ICommand
+public sealed class MenuListQueryResponse : BaseReadModel
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

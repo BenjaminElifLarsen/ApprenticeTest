@@ -29,4 +29,9 @@ public class Customer : IAggregateRoot
     {
         return _orders.Add(new(id));
     }
+
+    public void UpdateLocation(string city, string street)
+    { // TODO: handle case of null or whitespace
+        _location = new(street, city);
+    }
 }
