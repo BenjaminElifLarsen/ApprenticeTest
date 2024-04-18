@@ -10,8 +10,8 @@ namespace UserPlatform.Communication.Contracts;
 public interface ICommunication
 {
     public Result TransmitUser(User user);
-    public Task<Result<IEnumerable<MenuListQueryResponse>>> ReceiveAllMenues(User user);
+    public Task<Result<IEnumerable<MenuListQueryResponse>>> ReceiveAllMenuesAsync(User user);
     public Result TransmitPlaceOrder(OrderPlacementRequest orderPlacementRequest);
-    public Task<Result<GetOrdersQueryResponse>> GetOrdersForUser(User user);
+    public Task<Result<GetOrdersQueryResponse>> GetOrdersForUserAsync(User user);
     public Result TransmitUserChanges(UserUpdateDTO changes);
 }

@@ -1,4 +1,4 @@
-﻿namespace Shared.Patterns.ResultPattern.BadRequest;
+﻿namespace Shared.Patterns.ResultPattern;
 
 public sealed class BadRequestResult<T>(BinaryFlag error) : Result<T>
 {

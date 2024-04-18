@@ -9,6 +9,11 @@ public sealed class BinaryFlag
         _flag = 0;        
     }
 
+    public BinaryFlag(long errors)
+    {
+        _flag = errors;        
+    }
+
     private void AddFlag(long flag)
     {
         if ((_flag & flag) == 0)

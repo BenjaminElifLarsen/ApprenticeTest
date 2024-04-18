@@ -2,11 +2,9 @@
 using Shared.Communication.Models.User;
 using System.Text.Json;
 using System.Text;
-using System.Windows.Input;
 using UserPlatform.Models.Internal;
 using UserPlatform.Models.Order.Requests;
 using UserPlatform.Shared.DL.Models;
-using Shared.Patterns.CQRS.Commands;
 using ICommand = Shared.Patterns.CQRS.Commands.ICommand;
 
 namespace UserPlatform.Extensions;

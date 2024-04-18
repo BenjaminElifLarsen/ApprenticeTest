@@ -9,7 +9,7 @@ internal sealed partial class OrderService
 {
     public async Task<Result<IEnumerable<MenuListQueryResponse>>> GetMenuesAsync()
     {
-        var result = await _communication.ReceiveAllMenues(null!);
+        var result = await _communication.ReceiveAllMenuesAsync(null!);
         return result;
     }
 
@@ -21,7 +21,7 @@ internal sealed partial class OrderService
             _logger.Error("{Identifier}: {Method} was activated without a found user {UserId}", _identifier, nameof(GetOrdersForUserAsync), userId);
             return new InvalidAuthentication<GetOrdersResponse>();
         }
-        var result = await _communication.GetOrdersForUser(user);
+        var result = await _communication.GetOrdersForUserAsync(user);
         if (!result)
         {
             return new BadRequestResult<GetOrdersResponse>(result.Errors);

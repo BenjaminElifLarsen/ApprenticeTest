@@ -25,3 +25,5 @@ docker run --rm datalust/seqcli:latest apikey create -t cateringLTPDev --token 1
 docker run --rm datalust/seqcli:latest apikey create -t userAPIDev --token 22345678901234567890 --property=ProgramSource=DevUserAPI -s http://$ip -connect-username="Admin" --connect-password="Test123!"
 docker run --rm datalust/seqcli:latest apikey create -t cateringLTPLive --token 32345678901234567890 --property=ProgramSource=LiveCateringLTP -s http://$ip -connect-username="Admin" --connect-password="Test123!"
 docker run --rm datalust/seqcli:latest apikey create -t userAPILive --token 42345678901234567890 --property=ProgramSource=LiveUserAPI -s http://$ip -connect-username="Admin" --connect-password="Test123!"
+docker run --rm datalust/seqcli:latest apikey create -t cateringAPIDev --token 52345678901234567890 --property=ProgramSource=DevCateringAPI -s http://$ip -connect-username="Admin" --connect-password="Test123!"
+docker run --rm datalust/seqcli:latest apikey create -t cateringAPILive --token 62345678901234567890 --property=ProgramSource=LiveCateringAPI -s http://$ip -connect-username="Admin" --connect-password="Test123!"

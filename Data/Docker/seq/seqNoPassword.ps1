@@ -16,5 +16,9 @@ while($isRunning -eq 0)
 Start-Sleep -Seconds 10 # just to be sure it is ready for connections.
 $ip = docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $name
 $ip
-docker run --rm datalust/seqcli:latest apikey create -t cateringLTP --token 12345678901234567890 --property=ProgramSource=DevCateringLTP -s http://$ip
-docker run --rm datalust/seqcli:latest apikey create -t userAPI --token 22345678901234567890 --property=ProgramSource=DevUserAPI -s http://$ip
+docker run --rm datalust/seqcli:latest apikey create -t cateringLTPDev --token 12345678901234567890 --property=ProgramSource=DevCateringLTP -s http://$ip 
+docker run --rm datalust/seqcli:latest apikey create -t userAPIDev --token 22345678901234567890 --property=ProgramSource=DevUserAPI -s http://$ip 
+docker run --rm datalust/seqcli:latest apikey create -t cateringLTPLive --token 32345678901234567890 --property=ProgramSource=LiveCateringLTP -s http://$ip 
+docker run --rm datalust/seqcli:latest apikey create -t userAPILive --token 42345678901234567890 --property=ProgramSource=LiveUserAPI -s http://$ip 
+docker run --rm datalust/seqcli:latest apikey create -t cateringAPIDev --token 52345678901234567890 --property=ProgramSource=DevCateringAPI -s http://$ip 
+docker run --rm datalust/seqcli:latest apikey create -t cateringAPILive --token 62345678901234567890 --property=ProgramSource=LiveCateringAPI -s http://$ip 

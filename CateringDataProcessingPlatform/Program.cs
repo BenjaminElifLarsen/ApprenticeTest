@@ -1,6 +1,6 @@
 ﻿using Catering.Shared.DL.Factories;
 using Catering.Shared.IPL.UnitOfWork;
-using CateringDataProcessingPlatform.AL.Handlers.Communication;
+using CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication;
 using CateringDataProcessingPlatform.AL.Services.Contracts;
 using CateringDataProcessingPlatform.AL.Services.SeederService;
 using CateringDataProcessingPlatform.IPL;
@@ -24,7 +24,7 @@ seederService = null!;
 var rabbit = manager.GetRabbit();
 
 IFactoryCollection factoryCollection = new FactoryCollection(time);
-RabbitCommunication communication = new(manager, cf, factoryCollection, rabbit, logger);
+ConsumerRabbitCommunication communication = new(manager, cf, factoryCollection, rabbit, logger);
 communication.Initialise();
 while (true)
 {

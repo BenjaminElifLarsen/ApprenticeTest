@@ -5,7 +5,6 @@ using Shared.Communication.Models;
 using Shared.Communication.Models.Menu;
 using Shared.Communication.Models.Order;
 using Shared.Communication.Models.User;
-using Shared.Patterns.CQRS.Commands;
 using Shared.Patterns.ResultPattern;
 using Shared.Service;
 using System.Collections.Concurrent;
@@ -114,7 +113,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         _logger.Information("{Identifer}: Declared queue {QueueName}", _identifier, queueReplyName);
     }
 
-    public async Task<Result<IEnumerable<MenuListQueryResponse>>> ReceiveAllMenues(User user)
+    public async Task<Result<IEnumerable<MenuListQueryResponse>>> ReceiveAllMenuesAsync(User user)
     {
         _logger.Information("{Identifier}: Querying for menues", _identifier);
         MenuListCommand mlc = new() { Id =  Guid.NewGuid() };
@@ -146,7 +145,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         return tcs.Task;
     }
 
-    public async Task<Result<GetOrdersQueryResponse>> GetOrdersForUser(User user)
+    public async Task<Result<GetOrdersQueryResponse>> GetOrdersForUserAsync(User user)
     {
         _logger.Information("{Identifier}: Querying for user's orders", _identifier);
         GetOrdersCommand gom = new() { UserId = user.Id };

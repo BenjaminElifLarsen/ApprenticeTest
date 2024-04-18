@@ -28,4 +28,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="AL\Handlers\ApiCommunication\CQRS\" />
+  </ItemGroup>
+
 </Project>

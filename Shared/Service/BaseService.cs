@@ -4,7 +4,7 @@ namespace Shared.Service;
 
 public abstract class BaseService
 {
-    protected string _identifier { get; private set; }
+    protected readonly string _identifier;
     protected readonly ILogger _logger;
 
     protected BaseService(ILogger logger)
