@@ -9,7 +9,7 @@ internal sealed class ContextEFFactory : IDesignTimeDbContextFactory<CateringCon
 {
     public CateringContext CreateDbContext(string[] args)
     {
-        var connectionString = "Server=host.docker.internal,1433;Initial Catalog=Catering;User Id=SA; Password=Test123!;TrustServerCertificate=True;";//args[0];
+        var connectionString = "Server=host.docker.internal,1434;Initial Catalog=Catering;User Id=SA; Password=Test123!;TrustServerCertificate=True;";//args[0];
         DbContextOptionsBuilder<CateringContext> optionsBuilder = new DbContextOptionsBuilder<CateringContext>()
             .UseSqlServer(connectionString);
         return new CateringContext(optionsBuilder.Options);

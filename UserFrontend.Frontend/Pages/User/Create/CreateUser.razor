@@ -1,6 +1,7 @@
 ﻿@page "/user/create"
 @using UserFrontend.Frontend.Models.User.Requests
 @using UserFrontend.Frontend.Services.Contracts
+@using UserFrontend.Frontend.Services.UserAuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
 <h3>CreateUser</h3>
@@ -39,9 +40,7 @@
 
 @code {
     [Inject]
-    private IUserService UserService { get; set; }
-    [Inject]
-    private IAuthenticationStorage AuthenticationStorage { get; set; }
+    private UserAuthenticationStateProvider UserAuthenticationStateProvider { get; set; }
     // [Inject]
     // private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
@@ -49,14 +48,16 @@
 
     private async Task CreateAsync()
     {
-        var result = await UserService.CreateUserAsync(request);
-        if (result is not null)
-        {
-            //await AuthenticationStorage.SetTokenAsync(result.Token);
-            AuthenticationStorage.Token = result.Token;
-            //AuthenticationStorage.RefreshToken = result.RefreshToken;
-            //await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            NavigationManager.NavigateTo("");
-        }
+        await UserAuthenticationStateProvider.CreateAsync(request);
+        NavigationManager.NavigateTo("");
+        // var result = await UserService.CreateUserAsync(request);
+        // if (result is not null)
+        // {
+        //     //await AuthenticationStorage.SetTokenAsync(result.Token);
+        //     AuthenticationStorage.Token = result.Token;
+        //     //AuthenticationStorage.RefreshToken = result.RefreshToken;
+        //     //await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //     NavigationManager.NavigateTo("");
+        // }
     }
 }

@@ -1,6 +1,7 @@
 ﻿@page "/user/login"
 @using UserFrontend.Frontend.Models.User.Requests
 @using UserFrontend.Frontend.Services.Contracts
+@using UserFrontend.Frontend.Services.UserAuthenticationStateProvider
 @inject NavigationManager NavigationManager
 <h3>Login</h3>
 
@@ -16,25 +17,25 @@
     <input type="submit" value="Login"/>
 </EditForm>
 
+
 @code {
     [Inject]
-    private IUserService UserService { get; set; }
-    [Inject]
-    private IAuthenticationStorage AuthenticationStorage { get; set; }
+    private UserAuthenticationStateProvider UserAuthenticationStateProvider { get; set; }
 
     LoginRequest request = new();
 
 
     private async Task LoginAsync()
     {
-        var result = await UserService.LoginAsync(request);
-        if(result is not null)
-        {
-            //await AuthenticationStorage.SetTokenAsync(result.Token);
-            AuthenticationStorage.Token = result.Token;
-            AuthenticationStorage.RefreshToken = result.RefreshToken;
-            StateHasChanged();
-            NavigationManager.NavigateTo("");
-        }
+        /* var result =  */await UserAuthenticationStateProvider.LoginAsync(request);
+        NavigationManager.NavigateTo("");
+        // if(result is not null)
+        // {
+        //     //await AuthenticationStorage.SetTokenAsync(result.Token);
+        //     // AuthenticationStorage.Token = result.Token;
+        //     // AuthenticationStorage.RefreshToken = result.RefreshToken;
+        //     StateHasChanged();
+        //     NavigationManager.NavigateTo("");
+        // }
     }
 }
