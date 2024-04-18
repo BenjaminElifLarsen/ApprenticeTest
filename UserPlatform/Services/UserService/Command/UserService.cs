@@ -1,5 +1,6 @@
 ﻿using Shared.Patterns.ResultPattern;
 using System.Diagnostics;
+using UserPlatform.Models.Internal;
 using UserPlatform.Models.User.Requests;
 using UserPlatform.Models.User.Responses;
 using UserPlatform.Shared.Communication.Models;
@@ -19,7 +20,7 @@ internal sealed partial class UserService
         var user = result.Data;
         _unitOfWork.UserRepository.Create(user);
         _unitOfWork.Commit();
-        var comResult = _communication.TransmitUser(user); // TODO: what to do if it fails
+        var comResult = _communication.TransmitUser(user); // TODO: what to do if it fails. Sage handling? 
         var authResult = await _securityService.AuthenticateAsync(new UserLoginRequest() { UserName = request.CompanyName, Password = request.Password });
         return authResult;
     }
@@ -46,6 +47,23 @@ internal sealed partial class UserService
     public async Task<Result<UserAuthResponse>> RefreshTokenAsync(RefreshTokenRequest token)
     {
         return await _securityService.RefreshTokenAsync(token);
+    }
+
+    public async Task<Result> UpdateUserAsync(UserUpdateDTO request)
+    {
+        var user = await _unitOfWork.UserRepository.GetSingleAsync(request.Id);
+        if (user is null)
+        {
+            return new NotFoundResult(new());
+        }
+        if (request.Street is not null && !string.IsNullOrWhiteSpace(request.Street.Data))
+            user.UpdateStreet(request.Street.Data);
+        if (request.City is not null && !string.IsNullOrWhiteSpace(request.City.Data))
+            user.UpdateCity(request.City.Data);
+        _unitOfWork.UserRepository.Update(user);
+        _unitOfWork.Commit();
+        var comResult = _communication.TransmitUserChanges(request);
+        return comResult;
     }
 
 }

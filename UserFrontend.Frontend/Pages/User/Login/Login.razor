@@ -3,6 +3,7 @@
 @using UserFrontend.Frontend.Services.Contracts
 @using UserFrontend.Frontend.Services.UserAuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
 <h3>Login</h3>
 
 <EditForm Model="@request" OnSubmit=@LoginAsync>
@@ -27,15 +28,7 @@
 
     private async Task LoginAsync()
     {
-        /* var result =  */await UserAuthenticationStateProvider.LoginAsync(request);
+        await UserAuthenticationStateProvider.LoginAsync(request);
         NavigationManager.NavigateTo("");
-        // if(result is not null)
-        // {
-        //     //await AuthenticationStorage.SetTokenAsync(result.Token);
-        //     // AuthenticationStorage.Token = result.Token;
-        //     // AuthenticationStorage.RefreshToken = result.RefreshToken;
-        //     StateHasChanged();
-        //     NavigationManager.NavigateTo("");
-        // }
     }
 }

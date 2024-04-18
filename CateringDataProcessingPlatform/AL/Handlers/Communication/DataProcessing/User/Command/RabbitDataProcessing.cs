@@ -23,4 +23,18 @@ internal sealed partial class RabbitDataProcessing
         unitOfWork.Commit();
         _logger.Debug("{Identifier}: Processed request {@CustomerCreation}", _identifier, request);
     }
+
+    internal async void Process(UserUpdateCommand request)
+    {
+        _logger.Debug("{Identifier}: Processing request {@CustomerUpdate}", _identifier, request);
+        IUnitOfWork unitOfWork = _contextFactory.CreateUnitOfWork(_configurationManager.GetDatabaseString());
+        var customer = await unitOfWork.CustomerRepository.GetSingleAsync(x => x.Id == request.UserId);
+        if (!string.IsNullOrWhiteSpace(request.Street))
+            customer.UpdateStreet(request.Street!);
+        if (string.IsNullOrWhiteSpace(request.City))
+            customer.UpdateCity(request.City!);
+        unitOfWork.CustomerRepository.Update(customer);
+        unitOfWork.Commit();
+        _logger.Debug("{Identifier}: Processed request {@CustomerUpdate}", _identifier, request);
+    }
 }

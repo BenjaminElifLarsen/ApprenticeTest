@@ -8,4 +8,5 @@ public interface IUserService
     public Task<LoginResponse> LoginAsync(LoginRequest body);
     public Task<LoginResponse> CreateUserAsync(UserRequest body);
     public Task LogoffAsync(string token);
+    public Task UpdateAsync(UserUpdateRequest body);
 }

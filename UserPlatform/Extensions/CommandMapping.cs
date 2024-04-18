@@ -1,7 +1,13 @@
 ﻿using Shared.Communication.Models.Order;
 using Shared.Communication.Models.User;
+using System.Text.Json;
+using System.Text;
+using System.Windows.Input;
+using UserPlatform.Models.Internal;
 using UserPlatform.Models.Order.Requests;
 using UserPlatform.Shared.DL.Models;
+using Shared.Patterns.CQRS.Commands;
+using ICommand = Shared.Patterns.CQRS.Commands.ICommand;
 
 namespace UserPlatform.Extensions;
 
@@ -27,5 +33,23 @@ public static class CommandMapping
             OrderedTo = request.OrderedTo,
         };
         return command;
+    }
+
+    public static UserUpdateCommand ToCommand(this UserUpdateDTO request)
+    {
+        UserUpdateCommand command = new()
+        {
+            City = request.City?.Data,
+            Street = request.Street?.Data,
+            UserId = request.Id,
+        };
+        return command;
+    }
+
+    public static byte[] ToBody<T>(this T command) where T : ICommand
+    {
+        var message = JsonSerializer.Serialize(command);
+        var body = Encoding.UTF8.GetBytes(message);
+        return body;
     }
 }

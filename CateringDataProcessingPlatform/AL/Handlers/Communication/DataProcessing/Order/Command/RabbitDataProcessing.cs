@@ -3,6 +3,7 @@ using Catering.Shared.IPL.UnitOfWork;
 using CateringDataProcessingPlatform.AL.Handlers.Communication.CQRS.Queries;
 using Shared.Communication.Models.Menu;
 using Shared.Communication.Models.Order;
+using Shared.Communication.Models.User;
 
 namespace CateringDataProcessingPlatform.AL.Handlers.Communication.DataProcessing;
 

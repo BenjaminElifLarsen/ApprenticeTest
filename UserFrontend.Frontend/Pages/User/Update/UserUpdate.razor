@@ -1,0 +1,45 @@
+﻿@page "/user/update"
+@using UserFrontend.Frontend.Models
+@using UserFrontend.Frontend.Models.User.Requests
+@using UserFrontend.Frontend.Pages.User.Details
+@using UserFrontend.Frontend.Services.Contracts
+<h3>UserUpdate</h3>
+<div>
+    <div>
+        <h4>Current Information</h4>
+        <UserDetails User=UserAuthenticationStateProvider.CurrentUser />
+    </div>
+    <div>
+        <EditForm Model="@request" OnSubmit="UpdateAsync">
+            <div>
+                <label>City</label>
+                <InputText @bind-Value=request.City></InputText>
+            </div>
+            <div>
+                <label>Street</label>
+                <InputText @bind-Value=request.Street></InputText>
+            </div>
+            <input type="submit" value="Create" />
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private UserAuthenticationStateProvider UserAuthenticationStateProvider { get; set; }
+
+    [Inject]
+    private IUserService UserService { get; set; }
+
+    private UserUpdateRequest request { get; set; } = new();
+
+    private async Task UpdateAsync()
+    {
+        await UserService.UpdateAsync(request);
+        var user = UserAuthenticationStateProvider.CurrentUser;
+        if (!string.IsNullOrWhiteSpace(request.City))
+            user.City = request.City;
+        if (!string.IsNullOrWhiteSpace(request.Street))
+            user.Street = request.Street;
+    }
+}

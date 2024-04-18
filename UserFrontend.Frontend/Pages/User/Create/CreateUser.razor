@@ -1,8 +1,7 @@
 ﻿@page "/user/create"
 @using UserFrontend.Frontend.Models.User.Requests
-@using UserFrontend.Frontend.Services.Contracts
-@using UserFrontend.Frontend.Services.UserAuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
 
 <h3>CreateUser</h3>
 
@@ -41,8 +40,6 @@
 @code {
     [Inject]
     private UserAuthenticationStateProvider UserAuthenticationStateProvider { get; set; }
-    // [Inject]
-    // private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
     UserRequest request = new();
 
@@ -50,14 +47,5 @@
     {
         await UserAuthenticationStateProvider.CreateAsync(request);
         NavigationManager.NavigateTo("");
-        // var result = await UserService.CreateUserAsync(request);
-        // if (result is not null)
-        // {
-        //     //await AuthenticationStorage.SetTokenAsync(result.Token);
-        //     AuthenticationStorage.Token = result.Token;
-        //     //AuthenticationStorage.RefreshToken = result.RefreshToken;
-        //     //await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        //     NavigationManager.NavigateTo("");
-        // }
     }
 }

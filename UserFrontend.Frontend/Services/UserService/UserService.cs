@@ -2,14 +2,18 @@
 using UserFrontend.Frontend.Models.User.Requests;
 using UserFrontend.Frontend.Models.User.Responses;
 using UserFrontend.Frontend.Services.Contracts;
+using UserFrontend.Frontend.Services.OrderService;
 namespace UserFrontend.Frontend.Services.UserService;
 
 public class UserService : IUserService
 {
     private readonly HttpClient _client;
-    public UserService(HttpClient client)
+    private readonly IAuthenticationStorage _authenticationStorage;
+
+    public UserService(HttpClient client, IAuthenticationStorage authenticationStorage)
     {
         _client = client;
+        _authenticationStorage = authenticationStorage;
     }
 
     public async Task<LoginResponse> CreateUserAsync(UserRequest body)
@@ -54,9 +58,37 @@ public class UserService : IUserService
         return null!;
     }
 
-    public Task LogoffAsync(string token)
+    public async Task LogoffAsync(string token)
     {
-        throw new NotImplementedException();
+        HttpResponseMessage responseMessage = null!;
+        using HttpRequestMessage requestMessage = new(HttpMethod.Delete, $"api/user?token={token}");
+        requestMessage.AddBearerToken(_authenticationStorage.Token);
+        try
+        {
+            responseMessage = await _client.SendAsync(requestMessage);
+        }
+        catch (Exception ex)
+        {
+            return;
+        }
+        return;
+    }
+
+    public async Task UpdateAsync(UserUpdateRequest body)
+    {
+        HttpResponseMessage responseMessage = null!;
+        using HttpRequestMessage requestMessage = new(HttpMethod.Put, "api/User");
+        requestMessage.AttachBody(body);
+        requestMessage.AddBearerToken(_authenticationStorage.Token);
+        try
+        {
+            responseMessage = await _client.SendAsync(requestMessage);
+        }
+        catch (Exception ex)
+        {
+            return;
+        }
+        return;
     }
 
     // TODO: refresh 

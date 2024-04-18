@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Helpers.Time;
 using Shared.Service;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -23,8 +24,9 @@ internal sealed partial class SecurityService : BaseService, ISecurityService
     private readonly byte[] _jwtKey;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IRefreshTokenFactory _refreshTokenFactory;
+    private readonly ITime _time;
 
-    public SecurityService(IOptions<JwtSettings> jwtSettings, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IRefreshTokenFactory refreshTokenFactory, ILogger logger) : base(logger)
+    public SecurityService(IOptions<JwtSettings> jwtSettings, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IRefreshTokenFactory refreshTokenFactory, ITime time, ILogger logger) : base(logger)
     {
         _jwtSettings = jwtSettings.Value;
         _unitOfWork = unitOfWork;
@@ -32,6 +34,7 @@ internal sealed partial class SecurityService : BaseService, ISecurityService
         _jwtKey = Encoding.UTF8.GetBytes(_jwtSettings.Key);
         _passwordHasher = passwordHasher;
         _refreshTokenFactory = refreshTokenFactory;
+        _time = time;
     }
 
     private string CreateToken(User user)
@@ -44,6 +47,8 @@ internal sealed partial class SecurityService : BaseService, ISecurityService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()), // TODO: explain what these are
             new(ClaimTypes.NameIdentifier, user.CompanyName),
             new("level", AccessLevels.DEFAULT_USER),
+            new("city", user.Location.City),
+            new("street", user.Location.Street),
         };
 
         var token = new JwtSecurityToken(_jwtSettings.Issuer, _jwtSettings.Audience, claims, null!, DateTime.UtcNow.AddMinutes(_jwtSettings.ExpireDurationMinutes), credentials);

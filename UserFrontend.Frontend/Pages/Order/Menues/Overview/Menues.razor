@@ -4,8 +4,7 @@
 @using UserFrontend.Frontend.Pages.Order.Menues.Details
 @using UserFrontend.Frontend.Services.Contracts
 <h3>Menues</h3>
-
-@if(menues is null)
+@if (menues is null)
 {
     <p>Loading</p>
 }
@@ -21,19 +20,19 @@ else
             }
         </div>
     </div>
-    @if(selectedMenu is not null)
+    @if (selectedMenu is not null)
     {
         <div>
             <h4>Selected Menu</h4>
             <p>@selectedMenu.Name</p>
         </div>
         <div>
-            <EditForm Model="request">
+            <EditForm Model="request" Context="another_name">
                 <div>
                     <label>Time</label>
                     <InputDate Type="InputDateType.DateTimeLocal"
-                    min="@DateTime.UtcNow.AddDays(2).ToString("yyyy-MM-dd")"
-                    @bind-Value=@request.OrderedTo />
+                               min="@DateTime.UtcNow.AddDays(2).Date.ToString("yyyy-MM-dd")"
+                               @bind-Value=@request.OrderedTo />
                 </div>
             </EditForm>
             <button @onclick=PlaceOrder>Place order</button>
@@ -44,7 +43,7 @@ else
 @code {
     private IEnumerable<MenuResponse> menues;
     private MenuResponse selectedMenu;
-    private OrderRequest request = new();
+    private OrderRequest request = new() {OrderedTo = DateTime.UtcNow.AddDays(2)};
 
     [Inject]
     private IOrderService OrderService { get; set; }

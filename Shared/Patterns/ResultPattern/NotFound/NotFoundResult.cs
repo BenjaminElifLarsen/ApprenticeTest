@@ -1,4 +1,4 @@
-﻿namespace Shared.Patterns.ResultPattern.NotFound;
+﻿namespace Shared.Patterns.ResultPattern;
 
 public sealed class NotFoundResult<T>(BinaryFlag error) : Result<T>
 {

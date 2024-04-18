@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Shared.Helpers.Time;
 using Shared.Serilogger;
 using System.Text;
 using UserPlatform.Communication;
@@ -44,6 +45,7 @@ builder.Services.AddScoped<IRefreshTokenFactory, RefreshTokenFactory>();
 builder.Services.AddScoped<IUserFactory, UserFactory>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWorkEFCore>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<ITime, Time>();
 builder.Services.AddSwaggerGen(
     c =>
     {

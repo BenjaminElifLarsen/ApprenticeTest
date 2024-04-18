@@ -1,4 +1,5 @@
 ﻿using Shared.Patterns.ResultPattern;
+using UserPlatform.Models.Internal;
 using UserPlatform.Models.User.Requests;
 using UserPlatform.Models.User.Responses;
 using UserPlatform.Shared.Communication.Models;
@@ -11,4 +12,5 @@ public interface IUserService
     public Task<Result<UserAuthResponse>> UserLoginAsync(UserLoginRequest request);
     public Task<Result> UserLogoff(string token);
     public Task<Result<UserAuthResponse>> RefreshTokenAsync(RefreshTokenRequest token);
+    public Task<Result> UpdateUserAsync(UserUpdateDTO request);
 }

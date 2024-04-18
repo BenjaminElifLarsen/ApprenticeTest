@@ -5,6 +5,7 @@ using Shared.Communication.Models;
 using Shared.Communication.Models.Menu;
 using Shared.Communication.Models.Order;
 using Shared.Communication.Models.User;
+using Shared.Patterns.CQRS.Commands;
 using Shared.Patterns.ResultPattern;
 using Shared.Service;
 using System.Collections.Concurrent;
@@ -12,6 +13,7 @@ using System.Text;
 using System.Text.Json;
 using UserPlatform.Communication.Contracts;
 using UserPlatform.Extensions;
+using UserPlatform.Models.Internal;
 using UserPlatform.Models.Order.Requests;
 using UserPlatform.Shared.DL.Models;
 using UserPlatform.Sys.Appsettings.Models;
@@ -54,6 +56,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         DeclareQueueWithProducer(CommunicationQueueNames.CUSTOMER_CREATION, out _);
         DeclareQueueWithProducer(CommunicationQueueNames.MENU_QUERY, out _);
         DeclareQueueWithProducer(CommunicationQueueNames.ORDER_GET_FOR_USER, out _);
+        DeclareQueueWithProducer(CommunicationQueueNames.CUSTOMER_UPDATE, out _);
 
         SetGetMenuesConsumer();
         SetGetOrdersForUser();
@@ -123,7 +126,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         catch (Exception ex)
         {
             _logger.Warning(ex, "{Identifier}: Failed at querying for menues - {@MenuGetAllMessage}", _identifier, mlc);
-            return new UnhandledResult<IEnumerable<MenuListQueryResponse>>(new BinaryFlag());
+            return new UnhandledResult<IEnumerable<MenuListQueryResponse>>(new());
         }
     }
 
@@ -133,12 +136,11 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         var correlationId = command.Id.ToString();
         props.CorrelationId = correlationId;
         props.ReplyTo = _replyQueueNameGetMenues;
-        var message = JsonSerializer.Serialize(command);
-        var messageBytes = Encoding.UTF8.GetBytes(message);
+        var body = command.ToBody();
         var tcs = new TaskCompletionSource<IEnumerable<MenuListQueryResponse>>();
         _callbackMapperGetMenues.TryAdd(correlationId, tcs);
 
-        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.MENU_QUERY, basicProperties: props, body: messageBytes);
+        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.MENU_QUERY, basicProperties: props, body: body);
 
         cancellationToken.Register(() => _callbackMapperGetMenues.TryRemove(correlationId, out _));
         return tcs.Task;
@@ -166,12 +168,11 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         var correlationId = command.UserId.ToString();
         props.CorrelationId = correlationId;
         props.ReplyTo = _replyQueueNameGetOrdersForUser;
-        var message = JsonSerializer.Serialize(command);
-        var messageBytes = Encoding.UTF8.GetBytes(message);
+        var body = command.ToBody();
         var tcs = new TaskCompletionSource<GetOrdersQueryResponse>();
         _callbackMapperGetOrdersForUser.TryAdd(correlationId, tcs);
 
-        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.ORDER_GET_FOR_USER, basicProperties: props, body: messageBytes);
+        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.ORDER_GET_FOR_USER, basicProperties: props, body: body);
 
         return tcs.Task;
     }
@@ -180,8 +181,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
     {
         _logger.Information("{Identifier}: Transmitting user", _identifier);
         UserCreationCommand command = user.ToCommand();
-        var message = JsonSerializer.Serialize(command);
-        var body = Encoding.UTF8.GetBytes(message);
+        var body = command.ToBody();
         try
         {
             _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.CUSTOMER_CREATION, basicProperties: null!, body: body);
@@ -189,8 +189,25 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         }
         catch (Exception ex)
         {
-            _logger.Warning(ex, "{Identifier}: Failed at transmitting user - {UserCreateMessage}", _identifier, command);
-            return new UnhandledResult(new BinaryFlag());
+            _logger.Warning(ex, "{Identifier}: Failed at transmitting user - {@UserCreateMessage}", _identifier, command);
+            return new UnhandledResult(new());
+        }
+    }
+
+    public Result TransmitUserChanges(UserUpdateDTO changes)
+    {
+        _logger.Information("{Identifier}: Transmitting user changes", _identifier);
+        UserUpdateCommand command = changes.ToCommand();
+        var body = command.ToBody();
+        try
+        {
+            _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.CUSTOMER_UPDATE, basicProperties: null!, body: body);
+            return new SuccessNoDataResult();
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "{Identifier}: Failed at transmitting user changes - {@UserUpdateMessage}", _identifier, command);
+            return new UnhandledResult(new());
         }
     }
 
@@ -198,8 +215,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
     {
         _logger.Information("{Identifier}: Transmitting order placement", _identifier);
         OrderPlaceCommand command = orderPlacementRequest.ToCommand();
-        var message = JsonSerializer.Serialize(command);
-        var body = Encoding.UTF8.GetBytes(message);
+        var body = command.ToBody();
         try
         {
             _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.ORDER_PLACEMENT, basicProperties: null!, body: body);
@@ -207,8 +223,8 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         }
         catch (Exception ex)
         {
-            _logger.Warning(ex, "{Identifier}: Failed at transmitting order - {OrderPlaceMessage}", _identifier, command);
-            return new UnhandledResult(new BinaryFlag());
+            _logger.Warning(ex, "{Identifier}: Failed at transmitting order - {@OrderPlaceMessage}", _identifier, command);
+            return new UnhandledResult(new());
         }
     }
 

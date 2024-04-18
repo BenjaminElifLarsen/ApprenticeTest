@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserPlatform.Extensions;
+using UserPlatform.Models.Internal;
 using UserPlatform.Models.User.Requests;
 using UserPlatform.Services.Contracts;
 using UserPlatform.Shared.Communication.Models;
@@ -47,6 +48,18 @@ namespace UserPlatform.Controllers
         public async Task<IActionResult> Logout([FromQuery] string token)
         {
             return this.FromResult(await _userService.UserLogoff(token));
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] UserUpdateRequest request)
+        {
+            var userId = ClaimHandling.GetUserId(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+            UserUpdateDTO uud = new(userId, request);
+            return this.FromResult(await _userService.UpdateUserAsync(uud));
         }
     }
 }

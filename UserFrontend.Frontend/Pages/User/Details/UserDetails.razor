@@ -1,0 +1,13 @@
+﻿@using UserFrontend.Frontend.Models
+<h4>@User.CompanyName</h4>
+<div>
+    <h5>City</h5>
+    <p>@User.City</p>
+    <h5>Street</h5>
+    <p>@User.Street</p>
+</div>
+
+@code {
+    [Parameter]
+    public UserData User { get; set; }
+}

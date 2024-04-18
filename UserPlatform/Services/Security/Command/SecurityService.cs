@@ -27,7 +27,7 @@ internal sealed partial class SecurityService
         _unitOfWork.UserRepository.Update(user);
         _unitOfWork.Commit();
         UserAuthResponse response = new(user.CompanyName, token, refreshToken);
-        _logger.Information("{Identifier}: User logged in at {Time}", _identifier, DateTime.UtcNow);
+        _logger.Information("{Identifier}: User logged in at {Time}", _identifier, _time.GetCurrentTimeUtc());
         return new SuccessResult<UserAuthResponse>(response);
     }
 
@@ -40,7 +40,7 @@ internal sealed partial class SecurityService
         }
         var tokenData = _jwtHandler.ReadJwtToken(request.Token);
         var exp = tokenData.ValidTo;
-        if(exp <= DateTime.UtcNow)
+        if(exp <= _time.GetCurrentTimeUtc())
         {
             await RevokeRefreshTokenAsync(request.Token);
             return new InvalidAuthentication<UserAuthResponse>();
@@ -67,7 +67,7 @@ internal sealed partial class SecurityService
         _unitOfWork.Commit();
 
         UserAuthResponse response = new(user.CompanyName, token, refreshToken);
-        _logger.Information("{Identifier}: User refreshed token at {Time}", _identifier, DateTime.UtcNow);
+        _logger.Information("{Identifier}: User refreshed token at {Time}", _identifier, _time.GetCurrentTimeUtc());
         return new SuccessResult<UserAuthResponse>(response);
     }
 
@@ -80,6 +80,7 @@ internal sealed partial class SecurityService
             _unitOfWork.RefreshTokenRepository.Delete(foundToken);
             _unitOfWork.Commit();
         }
+        _logger.Information("{Identifier}: Revoked token at {Time}", _identifier, _time.GetCurrentTimeUtc());
         return new SuccessNoDataResult();
     }
 }

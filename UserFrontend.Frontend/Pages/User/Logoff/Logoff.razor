@@ -1,0 +1,19 @@
+﻿@page "/user/logoff"
+@using UserFrontend.Frontend.Models.User.Requests
+@using UserFrontend.Frontend.Services.Contracts
+@using UserFrontend.Frontend.Services.UserAuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
+<h3>Logoff</h3>
+<button @onclick=LogoffAsync>Logoff</button>
+
+@code {
+    [Inject]
+    private UserAuthenticationStateProvider UserAuthenticationStateProvider { get; set; }
+
+    private async Task LogoffAsync()
+    {
+        await UserAuthenticationStateProvider.LogOffAsync();
+        NavigationManager.NavigateTo("");
+    }
+}

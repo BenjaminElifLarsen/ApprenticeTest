@@ -30,8 +30,19 @@ public class Customer : IAggregateRoot
         return _orders.Add(new(id));
     }
 
-    public void UpdateLocation(string city, string street)
-    { // TODO: handle case of null or whitespace
-        _location = new(street, city);
+    public bool UpdateStreet(string street)
+    {
+        if (string.IsNullOrWhiteSpace(street))
+            return false;
+        _location = new CustomerLocation(_location.City, street);
+        return true;
+    }
+
+    public bool UpdateCity(string city)
+    {
+        if (string.IsNullOrWhiteSpace(city))
+            return false;
+        _location = new CustomerLocation(city, _location.Street);
+        return true;
     }
 }

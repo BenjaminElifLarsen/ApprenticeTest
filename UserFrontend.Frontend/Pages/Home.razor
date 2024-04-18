@@ -1,15 +1,22 @@
 ﻿@page "/"
+@attribute [AllowAnonymous]
+@using UserFrontend.Frontend.Pages.User
+@using UserFrontend.Frontend.Pages.User.Details
 @using UserFrontend.Frontend.Services.UserAuthenticationStateProvider
 
 <PageTitle>Home</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
-<div>
-    <p>@UserAuthenticationStateProvider.CurrentUser.CompanyName</p>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div>
+            <UserDetails User=UserAuthenticationStateProvider.CurrentUser />
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div>
+            <p>Please login or create a user.</p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code{
     [Inject]

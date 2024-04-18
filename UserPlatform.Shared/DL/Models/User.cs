@@ -50,4 +50,20 @@ public sealed class User : IAggregateRoot
     {
         _refreshTokens.Add(new ReferenceId(id));
     }
+
+    public bool UpdateStreet(string street)
+    {
+        if(string.IsNullOrWhiteSpace(street))
+            return false;
+        _location = new UserLocation(_location.City, street);
+        return true;
+    }
+
+    public bool UpdateCity(string city)
+    {
+        if (string.IsNullOrWhiteSpace(city))
+            return false;
+        _location = new UserLocation(city, _location.Street);
+        return true;
+    }
 }
