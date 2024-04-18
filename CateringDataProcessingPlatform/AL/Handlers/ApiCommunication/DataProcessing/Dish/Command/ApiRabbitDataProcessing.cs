@@ -15,7 +15,7 @@ internal partial class ApiRabbitDataProcessing
         var existingDishes = unitOfWork.DishRepository.AllAsync(new DishDataQuery()).Result;
         DishValidationData dvd = new(existingDishes);
         var factory = _factories.DishFactory;
-        var result = factory.Build(command.ToRequest(), dvd); // TODO: update factories to use requests and then map from commands to requests
+        var result = factory.Build(command.ToRequest(), dvd);
         if (!result)
         {
             _logger.Warning("{Identifier}: failed at creating dish {@DishCreation} - {Errors}", _identifier, command, result);
@@ -26,6 +26,6 @@ internal partial class ApiRabbitDataProcessing
             unitOfWork.Commit();
         }
         _logger.Debug("{Identifier}: Processed request {@DishCreation}", _identifier, command);
-        return result.ToGeneric(); // TODO: map
+        return result.ToGeneric();
     }
 }

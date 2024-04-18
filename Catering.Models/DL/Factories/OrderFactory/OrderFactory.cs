@@ -2,7 +2,6 @@
 using Shared.Communication.Models.Order;
 using Shared.Helpers.Time;
 using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 
 namespace Catering.Shared.DL.Factories.OrderFactory;
 

@@ -1,7 +1,6 @@
 ﻿using Catering.Shared.DL.Communication.Models;
 using CateringDataProcessingPlatform.DL.Models;
 using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 
 namespace Catering.Shared.DL.Factories.MenuFactory;
 
@@ -34,7 +33,7 @@ public sealed class MenuFactory : IMenuFactory
         foreach(var part in request.Parts)
         {
             var dish = validationData.KnownDishes.First(x => part.Id == x.Id);
-            menu.AddMenuPart(new(part.Id, (uint)part.Amount, part.Price, dish.Name));
+            menu.AddMenuPart(new(part.Id, part.Amount, part.Price, dish.Name));
         }
 
         return new SuccessResult<Menu>(menu);

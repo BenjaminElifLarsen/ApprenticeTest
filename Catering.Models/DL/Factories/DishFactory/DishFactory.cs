@@ -1,7 +1,6 @@
 ﻿using Catering.Shared.DL.Communication.Models;
 using CateringDataProcessingPlatform.DL.Models;
 using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 
 namespace Catering.Shared.DL.Factories.DishFactory;
 

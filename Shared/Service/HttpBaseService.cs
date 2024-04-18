@@ -1,10 +1,12 @@
-﻿using Serilog;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace Shared.Service;
 
+/// <summary>
+/// Base service with identification, logger, and httpClient.
+/// </summary>
 public abstract class HttpBaseService
 {
     private static readonly Dictionary<Type, HttpClient> s_clients;

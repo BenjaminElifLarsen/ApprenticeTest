@@ -4,15 +4,15 @@ using CateringDataProcessingPlatform.IPL.Appsettings;
 using Serilog;
 using Shared.Service;
 
-namespace CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication.DataProcessing;
+namespace CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication.DataProcessing;
 
-internal sealed partial class ConsumerRabbitDataProcessing : BaseService 
+internal sealed partial class CustomerRabbitDataProcessing : BaseService 
 {
     private IConfigurationManager _configurationManager;
     private IContextFactory _contextFactory;
     private IFactoryCollection _factories;
 
-    public ConsumerRabbitDataProcessing(IConfigurationManager configurationManager, IContextFactory contextFactory, IFactoryCollection factoryCollection, ILogger logger) : base(logger)
+    public CustomerRabbitDataProcessing(IConfigurationManager configurationManager, IContextFactory contextFactory, IFactoryCollection factoryCollection, ILogger logger) : base(logger)
     {
         _configurationManager = configurationManager;
         _contextFactory = contextFactory;

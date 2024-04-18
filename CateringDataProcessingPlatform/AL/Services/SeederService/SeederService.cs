@@ -45,13 +45,17 @@ internal sealed partial class SeederService : BaseService, ISeederService
             _logger.Warning("{Identifier}: Found no menues. Seeding", _identifier);
             MenuFactory menuFactory = new();
             MenuValidationData mvd = new([], dishes.Select(x => new MenuDishData(x.Id, x.Name)));
-            var menu1 = menuFactory.Build(new MenuCreationRequest { Name = "En del æg", Description = "Hvis man er til æg", Parts = [new MenuPartCreation { Id = dishes[0].Id, Amount =  50, Price = 10} ] }, mvd).Data;
+            var menu1 = menuFactory.Build(new MenuCreationRequest { Name = "En del æg", Description = "Hvis man er til æg", Parts =
+                [
+                new MenuPartCreationRequest { Id = dishes[0].Id, Amount =  50, Price = 10} 
+                ] 
+            }, mvd).Data;
             var menu2 = menuFactory.Build(new MenuCreationRequest { Name = "Frokost", Description = "Frokost menu", Parts = 
                 [
-                new MenuPartCreation { Id = dishes[0].Id, Amount = 40, Price = 12},
-                new MenuPartCreation { Id = dishes[1].Id, Amount = 1, Price = 100},
-                new MenuPartCreation { Id = dishes[2].Id, Amount = 27, Price = 20},
-                new MenuPartCreation { Id = dishes[3].Id, Amount = 3, Price = 0.5f},
+                new MenuPartCreationRequest { Id = dishes[0].Id, Amount = 40, Price = 12},
+                new MenuPartCreationRequest { Id = dishes[1].Id, Amount = 1, Price = 100},
+                new MenuPartCreationRequest { Id = dishes[2].Id, Amount = 27, Price = 20},
+                new MenuPartCreationRequest { Id = dishes[3].Id, Amount = 3, Price = 0.5f},
                 ],
             }, mvd).Data;
             _unitOfWork.MenuRepository.Create(menu1);

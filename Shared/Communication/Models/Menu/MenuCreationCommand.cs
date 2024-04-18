@@ -12,7 +12,6 @@ public sealed class MenuCreationCommand : ICommand
 public sealed class MenuPartCreationCommand : ICommand
 {
     public Guid DishId { get; set; }
-    public string Name { get; set; }
     public float Price { get; set; }
-    public uint Amount { get; set; }
+    public ushort Amount { get; set; }
 }

@@ -13,7 +13,8 @@ This project was developed as part of my apprentice test.
 To run the project make sure that the following projects are sat to 'Start' under Muultiple startup projects in 'properties/Common properties/Startup project' in the solution.
 
 - CateringDataProcessingPlatform
-- CustomerFrontEnd
+- Catering.API
+- UserFrontend.Frontend
 - UserPlatform
 
 ## Docker

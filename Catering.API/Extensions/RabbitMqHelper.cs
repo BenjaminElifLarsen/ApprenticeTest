@@ -31,7 +31,7 @@ public static class RabbitMqHelper
                 DishId = x.DishId,
                 Amount = x.Amount,
                 Price = x.Price,
-                Name = x.Name,
+                //Name = x.Name,
             }),
         };
         return command;

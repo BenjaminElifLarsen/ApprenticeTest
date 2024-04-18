@@ -1,4 +1,5 @@
 using CustomerFrontEnd.Services.AuthenticationStorage;
+using CustomerFrontEnd.Settings;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -13,7 +14,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7298/") });
+var url = builder.Configuration.GetSection("url").Get<UrlEndpoint>()!;
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(url.Url) });
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();

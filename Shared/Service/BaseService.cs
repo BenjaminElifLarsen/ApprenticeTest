@@ -2,6 +2,9 @@
 
 namespace Shared.Service;
 
+/// <summary>
+/// Base service with logger and service identification
+/// </summary>
 public abstract class BaseService
 {
     protected readonly string _identifier;

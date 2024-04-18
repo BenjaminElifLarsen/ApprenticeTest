@@ -2,9 +2,9 @@
 using Catering.Shared.IPL.UnitOfWork;
 using Shared.Communication.Models.User;
 
-namespace CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication.DataProcessing;
+namespace CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication.DataProcessing;
 
-internal sealed partial class ConsumerRabbitDataProcessing
+internal sealed partial class CustomerRabbitDataProcessing
 {
     internal void Process(UserCreationCommand request)
     {

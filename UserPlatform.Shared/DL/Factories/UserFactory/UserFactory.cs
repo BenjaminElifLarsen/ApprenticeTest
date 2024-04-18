@@ -1,5 +1,4 @@
 ﻿using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 using System.Text.RegularExpressions;
 using UserPlatform.Shared.Communication.Models;
 using UserPlatform.Shared.DL.Models;

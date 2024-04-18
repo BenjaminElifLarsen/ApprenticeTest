@@ -1,5 +1,6 @@
 ﻿using Catering.Shared.DL.Communication.Models;
 using Shared.Communication.Models.Dish;
+using Shared.Communication.Models.Menu;
 
 namespace CateringDataProcessingPlatform.Extensions;
 
@@ -9,5 +10,21 @@ internal static class CommandToRequestExtensions
     {
         DishCreationRequest request = new() { Name = command.Name };
         return request;
-    } 
+    }
+
+    public static MenuCreationRequest ToRequest(this MenuCreationCommand command)
+    {
+        MenuCreationRequest request = new()
+        {
+            Description = command.Description,
+            Name = command.Name,
+            Parts = command.Dishes.Select(x => new MenuPartCreationRequest()
+            {
+                Amount = x.Amount,
+                Id = x.DishId,
+                Price = x.Price,
+            })
+        };
+        return request;
+    }
 }

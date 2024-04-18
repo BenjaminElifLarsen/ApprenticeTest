@@ -4,12 +4,12 @@ public sealed class MenuCreationRequest
 {
     public string Name { get; set; }
     public string Description { get; set; }
-    public IEnumerable<MenuPartCreation> Parts { get; set; }
+    public IEnumerable<MenuPartCreationRequest> Parts { get; set; }
 }
 
-public sealed class MenuPartCreation
+public sealed class MenuPartCreationRequest
 {
     public Guid Id { get; set; }
     public float Price { get; set; }
-    public int Amount { get; set; }
+    public ushort Amount { get; set; }
 }

@@ -5,12 +5,12 @@ namespace CateringDataProcessingPlatform.DL.Models;
 public sealed record MenuPart : ValueObject
 {
     private ReferenceId _dish;
-    private uint _amount;
+    private ushort _amount;
     private float _price;
     private string _name;
 
     public ReferenceId Dish { get => _dish; set => _dish = value; }
-    public uint Amount { get => _amount; set => _amount = value; }
+    public ushort Amount { get => _amount; set => _amount = value; }
     public float Price { get => _price; set => _price = value; }
     public string Name { get => _name; set => _name = value; }
 
@@ -19,7 +19,7 @@ public sealed record MenuPart : ValueObject
         
     }
 
-    internal MenuPart(Guid dishId, uint amount, float price, string name)
+    internal MenuPart(Guid dishId, ushort amount, float price, string name)
     {
         _dish = new ReferenceId(dishId);
         _amount = amount;        

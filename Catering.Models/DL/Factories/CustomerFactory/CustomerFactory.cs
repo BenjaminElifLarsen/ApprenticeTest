@@ -2,7 +2,6 @@
 using CateringDataProcessingPlatform.DL.Models;
 using Shared.Communication.Models.User;
 using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 
 namespace Catering.Shared.DL.Factories.CustomerFactory;
 

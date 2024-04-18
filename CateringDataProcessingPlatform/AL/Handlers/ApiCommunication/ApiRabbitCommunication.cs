@@ -8,16 +8,13 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
 using Shared.Communication;
-using Shared.Communication.Models;
 using Shared.Communication.Models.Dish;
 using Shared.Communication.Models.Menu;
-using Shared.Patterns.ResultPattern;
 using Shared.Service;
-using System.Threading;
 
 namespace CateringDataProcessingPlatform.AL.Handlers.ApiCommunication;
 
-internal sealed class ApiRabbitCommunication : BaseService
+internal sealed class ApiRabbitCommunication : BaseService, IDisposable
 {
     private readonly ConnectionFactory _connectionFactory;
     private IConnection _connection;
@@ -105,6 +102,11 @@ internal sealed class ApiRabbitCommunication : BaseService
         {
             _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
         }
-        throw new NotImplementedException();
+        _channel.BasicAck(e.DeliveryTag, false);
+    }
+
+    public void Dispose()
+    {
+        _connection.Close();
     }
 }

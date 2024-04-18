@@ -1,5 +1,4 @@
 ﻿using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 using Shared.Service;
 using UserFrontend.Frontend.Models.Order.Requests;
 using UserFrontend.Frontend.Models.Order.Responses;

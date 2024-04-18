@@ -11,10 +11,8 @@ using Shared.Communication.Models.Dish;
 using Shared.Communication.Models.Menu;
 using Shared.Patterns.CQRS.Commands;
 using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 using Shared.Service;
 using System.Collections.Concurrent;
-using System.Text.Json;
 using ILogger = Serilog.ILogger;
 
 namespace Catering.API.Communication;
@@ -80,7 +78,6 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
     //{
 
     //}
-
 
     private void DeclareQueueWithProducer(string name)
     {

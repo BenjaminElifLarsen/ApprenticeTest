@@ -10,7 +10,7 @@ public sealed class MenuCreateRequest
 public sealed class MenuPartCreateRequest
 {
     public Guid DishId { get; set; }
-    public string Name { get; set; }
+    //public string Name { get; set; }
     public float Price { get; set; }
-    public uint Amount { get; set; }
+    public ushort Amount { get; set; }
 }

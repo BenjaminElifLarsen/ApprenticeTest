@@ -1,5 +1,5 @@
 ﻿using Catering.Shared.DL.Factories;
-using CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication.DataProcessing;
+using CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication.DataProcessing;
 using CateringDataProcessingPlatform.Extensions;
 using CateringDataProcessingPlatform.IPL;
 using CateringDataProcessingPlatform.IPL.Appsettings;
@@ -16,16 +16,16 @@ using Shared.Service;
 using System.Text;
 using System.Text.Json;
 
-namespace CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication;
+namespace CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication;
 
-internal sealed class ConsumerRabbitCommunication : BaseService // TOOD: partial
+internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // TOOD: partial
 {
     private readonly ConnectionFactory _connectionFactory; 
     private IConnection _connection;
     private IModel _channel;
-    private ConsumerRabbitDataProcessing _processing;
+    private CustomerRabbitDataProcessing _processing;
 
-    public ConsumerRabbitCommunication(IConfigurationManager configurationManager, IContextFactory contextFactory, IFactoryCollection factoryCollection, RabbitData rabbitData, ILogger logger) : base(logger)
+    public CustomerRabbitCommunication(IConfigurationManager configurationManager, IContextFactory contextFactory, IFactoryCollection factoryCollection, RabbitData rabbitData, ILogger logger) : base(logger)
     {
         _connectionFactory = new ConnectionFactory { HostName = rabbitData.Url, Port = rabbitData.Port };
         _processing = new(configurationManager, contextFactory, factoryCollection, logger);
@@ -176,5 +176,10 @@ internal sealed class ConsumerRabbitCommunication : BaseService // TOOD: partial
         }
         _channel.BasicAck(e.DeliveryTag, false);
 
+    }
+
+    public void Dispose()
+    {
+        _connection.Close();
     }
 }

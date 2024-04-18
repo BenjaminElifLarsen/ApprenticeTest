@@ -2,7 +2,7 @@
 using Shared.Patterns.CQRS.Queries;
 using System.Linq.Expressions;
 
-namespace CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication.CQRS.Queries;
+namespace CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication.CQRS.Queries;
 
 internal class OrderForCustomer : BaseReadModel
 {

@@ -1,6 +1,5 @@
 ﻿using Shared.Communication.Models.Menu;
 using Shared.Patterns.ResultPattern;
-using Shared.Patterns.ResultPattern.BadRequest;
 using UserPlatform.Models.Order.Responses;
 
 namespace UserPlatform.Services.OrderService;

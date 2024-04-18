@@ -30,7 +30,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 var dbConnection = builder.Configuration.GetConnectionString("database");
-builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(dbConnection)); // TODO: make this look pretty at some point
+builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(dbConnection));
 var communicationData = builder.Configuration.GetSection("rabbit").Get<RabbitMqData>()!;
 var key = builder.Configuration.GetConnectionString("logKey")!;
 ILogger logger = SeriLoggerService.GenerateLogger(key);

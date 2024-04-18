@@ -1,11 +1,11 @@
 ﻿using Catering.Shared.IPL.UnitOfWork;
-using CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication.CQRS.Queries;
+using CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication.CQRS.Queries;
 using Shared.Communication.Models.Menu;
 using Shared.Communication.Models.Order;
 
-namespace CateringDataProcessingPlatform.AL.Handlers.Communication.ConsumerCommunication.DataProcessing;
+namespace CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication.DataProcessing;
 
-internal sealed partial class ConsumerRabbitDataProcessing
+internal sealed partial class CustomerRabbitDataProcessing
 {
 
     internal IEnumerable<MenuListQueryResponse> Process(MenuListCommand request)
