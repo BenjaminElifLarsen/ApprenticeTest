@@ -62,7 +62,22 @@ internal sealed partial class SeederService : BaseService, ISeederService
             _unitOfWork.MenuRepository.Create(menu2);
             _unitOfWork.Commit();
             menues = [new(menu1.Id), new(menu2.Id)];
-        }
+
+            var dish1 = _unitOfWork.DishRepository.GetSingleAsync(x => x.Id == dishes[0].Id).Result;
+            var dish2 = _unitOfWork.DishRepository.GetSingleAsync(x => x.Id == dishes[1].Id).Result;
+            var dish3 = _unitOfWork.DishRepository.GetSingleAsync(x => x.Id == dishes[2].Id).Result;
+            var dish4 = _unitOfWork.DishRepository.GetSingleAsync(x => x.Id == dishes[3].Id).Result;
+            dish1.AddMenu(menu1.Id);
+            dish1.AddMenu(menu2.Id);
+            dish2.AddMenu(menu2.Id);
+            dish3.AddMenu(menu2.Id);
+            dish4.AddMenu(menu2.Id);
+            _unitOfWork.DishRepository.Update(dish1);
+            _unitOfWork.DishRepository.Update(dish2);
+            _unitOfWork.DishRepository.Update(dish3);
+            _unitOfWork.DishRepository.Update(dish4);
+            _unitOfWork.Commit();
+        } // TODO: give the dishes the menu ids; 
         _logger.Debug("{Identifier}: The following menues are present in the context: {Menues}", _identifier, menues.Select(x => x.Id));
     }
 

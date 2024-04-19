@@ -53,7 +53,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
 
         DeclareQueueWithProducer(CommunicationQueueNames.ORDER_PLACEMENT, out _);
         DeclareQueueWithProducer(CommunicationQueueNames.CUSTOMER_CREATION, out _);
-        DeclareQueueWithProducer(CommunicationQueueNames.MENU_QUERY, out _);
+        DeclareQueueWithProducer(CommunicationQueueNames.MENU_QUERY_USER, out _);
         DeclareQueueWithProducer(CommunicationQueueNames.ORDER_GET_FOR_USER, out _);
         DeclareQueueWithProducer(CommunicationQueueNames.CUSTOMER_UPDATE, out _);
 
@@ -139,7 +139,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
         var tcs = new TaskCompletionSource<IEnumerable<MenuListQueryResponse>>();
         _callbackMapperGetMenues.TryAdd(correlationId, tcs);
 
-        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.MENU_QUERY, basicProperties: props, body: body);
+        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.MENU_QUERY_USER, basicProperties: props, body: body);
 
         cancellationToken.Register(() => _callbackMapperGetMenues.TryRemove(correlationId, out _));
         return tcs.Task;

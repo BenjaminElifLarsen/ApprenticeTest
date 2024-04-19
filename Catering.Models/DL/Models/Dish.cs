@@ -24,4 +24,8 @@ public sealed class Dish : IAggregateRoot
         _menues = [];        
     }
 
+    public void AddMenu(Guid id)
+    {
+        _menues.Add(new(id));
+    }
 }

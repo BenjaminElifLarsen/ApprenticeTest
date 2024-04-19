@@ -21,8 +21,6 @@ internal static class RabbitMqExtensions
         return JsonSerializer.Deserialize<T>(message)!;
     }
 
-
-
     public static Carrier ToCarrier(this Result result)
     {
         if (result)
@@ -31,7 +29,26 @@ internal static class RabbitMqExtensions
             return new() { Data = string.Empty, Error = result.Errors, Result = CarrierResult.Error };
     }
 
+    public static Carrier ToCarrier<T>(this Result<T> result)
+    {
+        if (result)
+        {
+            var data = JsonSerializer.Serialize(result.Data);
+            return new() { Data = data, Error = 0, Result = CarrierResult.Success };
+        }
+        else
+        {
+            return new() { Data = string.Empty, Error = result.Errors, Result = CarrierResult.Error };
+        }
+    }
+
     public static byte[] ToBody(this Result result)
+    {
+        var carrier = result.ToCarrier();
+        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(carrier));
+    }
+
+    public static byte[] ToBody<T>(this Result<T> result)
     {
         var carrier = result.ToCarrier();
         return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(carrier));

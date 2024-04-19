@@ -1,5 +1,5 @@
 ﻿using Catering.Shared.IPL.UnitOfWork;
-using CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication.CQRS.Queries;
+using CateringDataProcessingPlatform.AL.Handlers.CustomerCommunication.CQRS.Queries;
 using Shared.Communication.Models.Menu;
 using Shared.Communication.Models.Order;
 
@@ -26,7 +26,7 @@ internal sealed partial class CustomerRabbitDataProcessing
         foreach (var order in orders)
         {
             var menu = unitOfWork.MenuRepository.GetSingleAsync(x => x.Orders.Any(xx => xx.Order.Id == order.Id)).Result;
-            menues.Add(new GetOrdersMenuQueryResponse() { OrderId = order.Id, Time = order.Time, Name = menu.Name, MenuId = menu.Id });
+            menues.Add(new GetOrdersMenuQueryResponse(order.Id, menu.Name, order.Time, menu.Id));
         }
         _logger.Debug("{Identifier}: Processed request {@GetOrders}", _identifier, request);
         return new GetOrdersQueryResponse() { Orders = menues };

@@ -7,6 +7,7 @@ public sealed class User : IAggregateRoot
     private Guid _id;
     private string _companyName;
     private string _password;
+    private DateTime? _lastLogin;
     private UserContact _contact;
     private UserLocation _location;
     private HashSet<ReferenceId> _orders;
@@ -15,6 +16,7 @@ public sealed class User : IAggregateRoot
     public Guid Id { get => _id; private set => _id = value; }
     public string CompanyName { get => _companyName; private set => _companyName = value; }
     public string Password { get => _password; private set => _password = value; }
+    public DateTime? LastLogin { get => _lastLogin; private set => _lastLogin = value; }
     public UserContact Contact { get => _contact; private set => _contact = value; }
     public UserLocation Location { get => _location; private set => _location = value; }
     public IEnumerable<ReferenceId> Orders { get => _orders; private set => _orders = value.ToHashSet(); }
@@ -65,5 +67,10 @@ public sealed class User : IAggregateRoot
             return false;
         _location = new UserLocation(city, _location.Street);
         return true;
+    }
+
+    public void SetLastLogin(DateTime time)
+    {
+        _lastLogin = time;
     }
 }

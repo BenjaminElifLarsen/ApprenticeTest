@@ -1,7 +1,7 @@
 ﻿using Catering.Shared.DL.Factories.CustomerFactory;
 using CateringDataProcessingPlatform.DL.Models;
 using Shared.Communication.Models.User;
-using Shared.Patterns.ResultPattern.BadRequest;
+using Shared.Patterns.ResultPattern;
 
 namespace Catering.Shared.Test.Cases.Factories;
 
@@ -20,14 +20,16 @@ public class CustomerFactoryTests
 		// Arrange
 		string dummyCity = "City"!;
 		string dummyStreet = "Street"!;
+		string dummyName = "Name";
 		UserCreationCommand request = new()
 		{
 			City = dummyCity,
 			Street = dummyStreet,
+			UserName = dummyName,
 			UserId = default!,
 		};
 
-		IEnumerable<CustomerData> dummyCustomerData = Array.Empty<CustomerData>();
+        IEnumerable<CustomerData> dummyCustomerData = [];
 		CustomerValidationData dummyValidationData = new(dummyCustomerData);
 
 		// Act

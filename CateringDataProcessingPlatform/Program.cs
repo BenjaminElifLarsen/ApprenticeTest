@@ -1,7 +1,7 @@
 ﻿using Catering.Shared.DL.Factories;
 using Catering.Shared.IPL.UnitOfWork;
 using CateringDataProcessingPlatform.AL.Handlers.ApiCommunication;
-using CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication;
+using CateringDataProcessingPlatform.AL.Handlers.CustomerCommunication;
 using CateringDataProcessingPlatform.AL.Services.Contracts;
 using CateringDataProcessingPlatform.AL.Services.SeederService;
 using CateringDataProcessingPlatform.IPL;
@@ -17,7 +17,7 @@ ApiRabbitCommunication apiCommunication = null!;
 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
-time = new Time();
+time = new Time("Romance Standard Time");
 IConfigurationManager manager = new ConfigurationManager();
 logger = SeriLoggerService.GenerateLogger(manager.GetLogKey());
 logger.Information("{ProcessName} starting at {Time}", AppDomain.CurrentDomain.FriendlyName, time.GetCurrentTimeUtc());
@@ -36,7 +36,7 @@ seederService = null!;
 #endif
 
 customerCommunication = new(manager, cf, factoryCollection, rabbit, logger);
-apiCommunication = new(manager, cf, factoryCollection, rabbit, logger);
+apiCommunication = new(manager, cf, factoryCollection, rabbit, time, logger);
 customerCommunication.Initialise();
 apiCommunication.Initialise();
 

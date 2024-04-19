@@ -18,6 +18,7 @@ public static class CommandMapping
             UserId = user.Id,
             City = user.Location.City,
             Street = user.Location.Street,
+            UserName = user.CompanyName
         };
         return command;
     }

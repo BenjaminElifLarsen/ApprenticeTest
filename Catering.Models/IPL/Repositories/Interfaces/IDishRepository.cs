@@ -11,9 +11,6 @@ public interface IDishRepository
 
     public void Create(Dish dish);
     public void Delete(Dish dish);
-
     public Task<bool> IsNameUnique(string name);
-
-
-
+    public void Update(Dish dish);
 }

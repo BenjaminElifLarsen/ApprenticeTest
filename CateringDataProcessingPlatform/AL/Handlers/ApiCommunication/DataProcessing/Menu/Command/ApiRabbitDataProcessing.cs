@@ -10,7 +10,7 @@ internal partial class ApiRabbitDataProcessing
 {
     internal Result Process(MenuCreationCommand command)
     {
-        _logger.Debug("{Identifier}: Processing request {@DMenuCreation}", _identifier, command);
+        _logger.Debug("{Identifier}: Processing request {@MenuCreation}", _identifier, command);
         IUnitOfWork unitOfWork = _contextFactory.CreateUnitOfWork(_configurationManager.GetDatabaseString());
         var usedNames = unitOfWork.MenuRepository.AllAsync(new MenuDataQuery()).Result;
         var permittedDishes = unitOfWork.DishRepository.AllAsync(new MenuDishDataQuery()).Result;

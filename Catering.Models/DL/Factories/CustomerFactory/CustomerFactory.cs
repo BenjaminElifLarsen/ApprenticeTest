@@ -23,12 +23,12 @@ public sealed class CustomerFactory : ICustomerFactory
             flag += CustomerFactoryErrors.CityIsInvalid;
         if (validationData.IdsInUse.Any(x => x.Id == command.UserId))
             flag += CustomerFactoryErrors.CustomerIdUse;
-        if (!flag)
+        if (!flag) // TODO: customerName... not really needed to validate as the publisher should have done the validation
         {
             return new BadRequestResult<Customer>(flag);
-        }
+        } 
         CustomerLocation location = new(command.Street, command.City);
-        Customer customer = new(command.UserId, location);
+        Customer customer = new(command.UserId, location, command.UserName);
         return new SuccessResult<Customer>(customer);
     }
 }

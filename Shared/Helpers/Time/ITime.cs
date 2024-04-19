@@ -7,4 +7,5 @@
 public interface ITime
 {
     public DateTime GetCurrentTimeUtc();
+    public int GetDifferentBetweenUtcAndLocalTime();
 }

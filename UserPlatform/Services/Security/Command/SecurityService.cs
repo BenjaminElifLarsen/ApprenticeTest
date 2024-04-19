@@ -23,6 +23,7 @@ internal sealed partial class SecurityService
         var refreshToken = CreateRefreshToken(user);
         var rt = _refreshTokenFactory.Build(user.Id, refreshToken);
         user.AddRefreshToken(rt.Id);
+        user.SetLastLogin(_time.GetCurrentTimeUtc());
         _unitOfWork.RefreshTokenRepository.Create(rt);
         _unitOfWork.UserRepository.Update(user);
         _unitOfWork.Commit();

@@ -16,11 +16,11 @@ using Shared.Service;
 using System.Text;
 using System.Text.Json;
 
-namespace CateringDataProcessingPlatform.AL.Handlers.Communication.CustomerCommunication;
+namespace CateringDataProcessingPlatform.AL.Handlers.CustomerCommunication;
 
 internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // TOOD: partial
 {
-    private readonly ConnectionFactory _connectionFactory; 
+    private readonly ConnectionFactory _connectionFactory;
     private IConnection _connection;
     private IModel _channel;
     private CustomerRabbitDataProcessing _processing;
@@ -41,7 +41,7 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
 
         DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_PLACEMENT, ReceivedForOrderPlacement);
         DeclareQueueWithConsumer(CommunicationQueueNames.CUSTOMER_CREATION, ReceivedForCustomerCreation);
-        DeclareQueueWithConsumer(CommunicationQueueNames.MENU_QUERY, ReceivedForMenuRPC);
+        DeclareQueueWithConsumer(CommunicationQueueNames.MENU_QUERY_USER, ReceivedForMenuRPC);
         DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_GET_FOR_USER, ReceivedForMenuUserRPC);
         DeclareQueueWithConsumer(CommunicationQueueNames.CUSTOMER_UPDATE, ReceivedForCustomerUpdate);
 
@@ -61,7 +61,7 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
         var message = e.ToMessage();
         try
         {
-            var request = message.ToCommand<OrderPlaceCommand>();//JsonSerializer.Deserialize<OrderPlaceCommand>(message);
+            var request = message.ToCommand<OrderPlaceCommand>();
             if (request is null)
             {
                 _logger.Error("{Identifier}: {Message} could not be parsed to {OrderPlaceCommandType}", _identifier, message, typeof(OrderPlaceCommand));
@@ -82,7 +82,7 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
         var message = e.ToMessage();
         try
         {
-            var request = message.ToCommand<UserCreationCommand>(); //JsonSerializer.Deserialize<UserCreationCommand>(message);
+            var request = message.ToCommand<UserCreationCommand>();
             if (request is null)
             {
                 _logger.Error("{Identifier}: {Message} could not be parsed to {UserCreationCommandType}", _identifier, message, typeof(UserCreationCommand));
@@ -128,7 +128,7 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
             var replyProps = _channel.CreateBasicProperties();
             replyProps.CorrelationId = requestProps.CorrelationId;
 
-            var request = message.ToCommand<MenuListCommand>();//JsonSerializer.Deserialize<MenuListCommand>(message);
+            var request = message.ToCommand<MenuListCommand>();
 
             if (request is null)
             {
@@ -157,7 +157,7 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
             var replyProps = _channel.CreateBasicProperties();
             replyProps.CorrelationId = requestProps.CorrelationId;
 
-            var request = message.ToCommand<GetOrdersCommand>();//JsonSerializer.Deserialize<GetOrdersCommand>(message);
+            var request = message.ToCommand<GetOrdersCommand>();
 
             if (request is null)
             {

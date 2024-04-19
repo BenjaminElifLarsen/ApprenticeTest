@@ -30,6 +30,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 var dbConnection = builder.Configuration.GetConnectionString("database");
+var time = new Time("Romance Standard Time");
 builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(dbConnection));
 var communicationData = builder.Configuration.GetSection("rabbit").Get<RabbitMqData>()!;
 var key = builder.Configuration.GetConnectionString("logKey")!;
@@ -38,6 +39,7 @@ RabbitCommunication communication = new(communicationData, logger);
 communication.Initialise();
 builder.Services.AddSingleton(logger);
 builder.Services.AddSingleton<ICommunication>(communication);
+builder.Services.AddSingleton<ITime>(time);
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -45,7 +47,6 @@ builder.Services.AddScoped<IRefreshTokenFactory, RefreshTokenFactory>();
 builder.Services.AddScoped<IUserFactory, UserFactory>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWorkEFCore>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<ITime, Time>();
 builder.Services.AddSwaggerGen(
     c =>
     {

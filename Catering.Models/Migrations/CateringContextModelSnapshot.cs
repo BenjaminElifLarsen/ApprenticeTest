@@ -29,6 +29,10 @@ namespace Catering.Shared.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.ComplexProperty<Dictionary<string, object>>("Location", "CateringDataProcessingPlatform.DL.Models.Customer.Location#CustomerLocation", b1 =>
                         {
                             b1.IsRequired();

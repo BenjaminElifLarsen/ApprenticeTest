@@ -1,0 +1,2 @@
+for rabbitmq, have an 'intergration' test project that knows of the different projects that use rabbitmq.
+Then have a docker rabbitmq container meant for tests. Would need to run a single test at the time for most control.

@@ -11,10 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Models\Order\Request\" />
-    <Folder Include="Models\Order\Response\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -39,6 +39,11 @@ public sealed class DishRepository : IDishRepository
         return !(await _repository.IsPredicateTrueAsync(x => x.Name == name));
     }
 
+    public void Update(Dish dish)
+    {
+        _repository.Update(dish);
+    }
+
     //public async Task<TMapping> GetSingleAsync<TMapping>(Func<Dish, bool> predicate, BaseQuery<Dish, TMapping> query) where TMapping : BaseReadModel
     //{
     //    return await _repository.FindByPredicateAsync()

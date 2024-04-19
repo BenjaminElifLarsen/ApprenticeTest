@@ -1,5 +1,4 @@
-﻿using Shared.Patterns.CQRS.Commands;
-using Shared.Patterns.CQRS.Queries;
+﻿using Shared.Patterns.CQRS.Queries;
 
 namespace Shared.Communication.Models.Menu;
 
