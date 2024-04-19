@@ -33,8 +33,9 @@ public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<
     }
 
     public async Task<TEntity> FindByPredicateAsync(Func<TEntity, bool> predicate)
-    { 
-        return (await _entities.ToArrayAsync()).FirstOrDefault(predicate)!;
+    {
+        //return (await _entities.ToArrayAsync()).FirstOrDefault(predicate)!;
+        return (await _entities.FirstOrDefaultAsync(x => predicate(x)))!;
     }
 
     public async Task<IEnumerable<TMapping>> FindManyByPredicateAsync<TMapping>(Func<TEntity, bool> predicate, BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
@@ -45,8 +46,8 @@ public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<
 
     public async Task<bool> IsPredicateTrueAsync(Func<TEntity, bool> predicate)
     {
-        return (await _entities.AnyAsync(x => predicate(x)));
         //return (await _entities.ToArrayAsync()).Any(x => predicate(x));
+        return (await _entities.AnyAsync(x => predicate(x)));
     }
 
     public void Update(TEntity entity)
