@@ -16,6 +16,8 @@ public abstract class BaseQuery<TEntity1, TEntity2, TMapping>
     //but maybe something like ApiRabbitDataProcessing.Process(GetFutureOrdersCommand command) could benefit from it? 
     //the base one can easily be used with IENumerable<TEntity>, unsure how to do something like with those below
     //not sure if the added complicity would be worth it. M. Fowler states CQRS that CQRS does add risky complexity.
+    //Given the where Func<TEntity,bool> predicates prevent filtering data over at the MSSQL, CQRS loses the ability to select the needed data already at database service.
+    //So it really acts more like a mapper in this project than wanted. Where does Where(Func<TEntity,bool>) not permit to ArrayAsync or anything like that.
     public abstract Expression<Func<TEntity1, TEntity2, TMapping>> Map();
 }
 

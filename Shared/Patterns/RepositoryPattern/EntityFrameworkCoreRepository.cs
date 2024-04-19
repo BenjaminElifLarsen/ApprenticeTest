@@ -39,12 +39,14 @@ public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<
 
     public async Task<IEnumerable<TMapping>> FindManyByPredicateAsync<TMapping>(Func<TEntity, bool> predicate, BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
     {
-        return (await _entities.ToArrayAsync()).Where(predicate).AsQueryable().Select(query.Map());
+        //return (await _entities.ToArrayAsync()).Where(predicate).AsQueryable().Select(query.Map());
+        return (await _entities.Where(x => predicate(x)).Select(query.Map()).ToArrayAsync());
     }
 
     public async Task<bool> IsPredicateTrueAsync(Func<TEntity, bool> predicate)
     {
-        return (await _entities.ToArrayAsync()).Any(x => predicate(x));
+        return (await _entities.AnyAsync(x => predicate(x)));
+        //return (await _entities.ToArrayAsync()).Any(x => predicate(x));
     }
 
     public void Update(TEntity entity)
