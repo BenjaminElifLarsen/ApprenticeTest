@@ -77,7 +77,7 @@ internal sealed partial class SeederService : BaseService, ISeederService
             _unitOfWork.DishRepository.Update(dish3);
             _unitOfWork.DishRepository.Update(dish4);
             _unitOfWork.Commit();
-        } // TODO: give the dishes the menu ids; 
+        } 
         _logger.Debug("{Identifier}: The following menues are present in the context: {Menues}", _identifier, menues.Select(x => x.Id));
     }
 

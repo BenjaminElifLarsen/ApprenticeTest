@@ -20,7 +20,7 @@ internal sealed partial class UserService
         var user = result.Data;
         _unitOfWork.UserRepository.Create(user);
         _unitOfWork.Commit();
-        var comResult = _communication.TransmitUser(user); // TODO: what to do if it fails. Sage handling? 
+        var comResult = _communication.TransmitUser(user); // TODO: what to do if it fails. Sage handling? Not sure if got the time to handle that. Mayhaps a single case? 
         var authResult = await _securityService.AuthenticateAsync(new UserLoginRequest() { UserName = request.CompanyName, Password = request.Password });
         return authResult;
     }

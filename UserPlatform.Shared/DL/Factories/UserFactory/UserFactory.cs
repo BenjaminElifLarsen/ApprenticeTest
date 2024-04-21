@@ -37,7 +37,7 @@ public class UserFactory : IUserFactory
         }
         if (string.IsNullOrWhiteSpace(request.CompanyName)) // could benefit from specification pattern, perhaps
             flag += UserFactoryErrors.CompanyNameNotSat;
-        if (validationData.Users.Any(x => string.Equals(x.CompanyName, request.CompanyName)))
+        if (validationData.Users.Any(x => string.Equals(x.CompanyName.ToLower(), request.CompanyName.ToLower())))
             flag += UserFactoryErrors.CompanyNameInUse;
         if (string.IsNullOrWhiteSpace(request.City) || string.IsNullOrWhiteSpace(request.Street))
             flag += UserFactoryErrors.LocationInvalid;
