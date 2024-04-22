@@ -1,4 +1,5 @@
 ﻿using Catering.API.Extensions;
+using Catering.API.Models.Menu.Request;
 using Catering.API.Services.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,5 +21,11 @@ public class MenuController : ControllerBase
     public async Task<IActionResult> GetMenues()
     {
         return this.FromResult(await _menuService.GetMenuesAysnc());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateMenu([FromBody] MenuCreateRequest request)
+    {
+        return this.FromResult(await _menuService.CreateMenuAsync(request));
     }
 }

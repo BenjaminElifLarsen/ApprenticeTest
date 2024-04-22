@@ -1,4 +1,5 @@
 ﻿using Catering.Shared.DL.Models;
+using Catering.Shared.DL.Models.Enums;
 using Shared.DDD;
 
 namespace CateringDataProcessingPlatform.DL.Models;

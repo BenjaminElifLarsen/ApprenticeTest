@@ -4,7 +4,7 @@ public sealed class GetOrdersFututureQueryResponse
 {
     public IEnumerable<GetOrdersFutureDetailsQueryResponse> Orders { get; set; }
 
-    private GetOrdersFututureQueryResponse()
+    public GetOrdersFututureQueryResponse()
     {
         
     }
@@ -25,7 +25,7 @@ public sealed class GetOrdersFutureDetailsQueryResponse
     public Guid CustomerId { get; set; }
     public string CustomerName { get; set; }
 
-    private GetOrdersFutureDetailsQueryResponse()
+    public GetOrdersFutureDetailsQueryResponse()
     {
 
     }

@@ -6,6 +6,8 @@ using Shared.Patterns.CQRS.Commands;
 using Shared.Communication.Models.Menu;
 using Catering.API.Models.Menu.Request;
 using RabbitMQ.Client.Events;
+using Shared.Communication.Models.Order;
+using Catering.API.Models.Order.Request;
 
 namespace Catering.API.Extensions;
 
@@ -34,6 +36,12 @@ public static class RabbitMqHelper
                 //Name = x.Name,
             }),
         };
+        return command;
+    }
+
+    public static SetOrderStatusCommand ToCommand(this SetOrderStatusRequest request)
+    {
+        SetOrderStatusCommand command = new(request.OrderId, (int)request.Status);
         return command;
     }
 

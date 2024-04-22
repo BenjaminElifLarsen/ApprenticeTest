@@ -38,4 +38,9 @@ public sealed class OrderRepository : IOrderRepository
     {
         return await _repository.FindByPredicateAsync(predicate);
     }
+
+    public void Update(Order order)
+    {
+        _repository.Update(order);
+    }
 }

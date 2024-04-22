@@ -12,6 +12,7 @@ using Shared.Communication.Models;
 using Shared.Communication.Models.Menu;
 using Shared.Communication.Models.Order;
 using Shared.Communication.Models.User;
+using Shared.Patterns.ResultPattern;
 using Shared.Service;
 using System.Text;
 using System.Text.Json;
@@ -133,13 +134,15 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
             if (request is null)
             {
                 _logger.Error("{Identifier}: {Message} could not be parsed to {MenuListCommandType}", _identifier, message, typeof(MenuListCommand));
+                SendReplyProcessingFailed(requestProps, replyProps);
                 _channel.BasicAck(e.DeliveryTag, false);
                 return;
             }
             var result = _processing.Process(request);
             Carrier carrier = new() { Data = JsonSerializer.Serialize(result), Error = 0, Result = CarrierResult.Success };
             var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(carrier));
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: responseBytes);
+            SendReply(requestProps, replyProps, responseBytes);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: responseBytes);
         }
         catch (Exception ex)
         {
@@ -162,13 +165,15 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
             if (request is null)
             {
                 _logger.Error("{Identifier}: {Message} could not be parsed to {GetOrdersCommandType}", _identifier, message, typeof(GetOrdersCommand));
+                SendReplyProcessingFailed(requestProps, replyProps);
                 _channel.BasicAck(e.DeliveryTag, false);
                 return;
             }
             var result = _processing.Process(request);
             Carrier carrier = new() { Data = JsonSerializer.Serialize(result), Error = 0, Result = CarrierResult.Success };
             var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(carrier));
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, responseBytes);
+            SendReply(requestProps, replyProps, responseBytes);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, responseBytes);
         }
         catch (Exception ex)
         {
@@ -176,6 +181,18 @@ internal sealed class CustomerRabbitCommunication : BaseService, IDisposable // 
         }
         _channel.BasicAck(e.DeliveryTag, false);
 
+    }
+
+    private void SendReply(IBasicProperties requestProps, IBasicProperties replyProps, ReadOnlyMemory<byte> body)
+    {
+        _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+    }
+
+    private void SendReplyProcessingFailed(IBasicProperties requestProps, IBasicProperties replyProps)
+    {
+        var result = new UnhandledResult(new(1));
+        var body = result.ToBody();
+        SendReply(requestProps, replyProps, body);
     }
 
     public void Dispose()

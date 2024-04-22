@@ -18,8 +18,8 @@ public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<
 
     public async Task<IEnumerable<TMapping>> AllAsync<TMapping>(BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
     {
-        //return (await _entities.ToArrayAsync()).AsQueryable().Select(query.Map());
-        return (await _entities.Select(query.Map()).ToArrayAsync());
+        return (await _entities.ToArrayAsync()).AsQueryable().Select(query.Map());
+        //return (await _entities.Select(query.Map()).ToArrayAsync());
     }
 
     public void Create(TEntity entity)
@@ -34,20 +34,20 @@ public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<
 
     public async Task<TEntity> FindByPredicateAsync(Func<TEntity, bool> predicate)
     {
-        //return (await _entities.ToArrayAsync()).FirstOrDefault(predicate)!;
-        return (await _entities.FirstOrDefaultAsync(x => predicate(x)))!;
+        return (await _entities.ToArrayAsync()).FirstOrDefault(predicate)!;
+        //return (await _entities.FirstOrDefaultAsync(x => predicate(x)))!;
     }
 
     public async Task<IEnumerable<TMapping>> FindManyByPredicateAsync<TMapping>(Func<TEntity, bool> predicate, BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
     {
-        //return (await _entities.ToArrayAsync()).Where(predicate).AsQueryable().Select(query.Map());
-        return (await _entities.Where(x => predicate(x)).Select(query.Map()).ToArrayAsync());
+        return (await _entities.ToArrayAsync()).Where(predicate).AsQueryable().Select(query.Map());
+        //return (await _entities.Where(x => predicate(x)).Select(query.Map()).ToArrayAsync());
     }
 
     public async Task<bool> IsPredicateTrueAsync(Func<TEntity, bool> predicate)
     {
-        //return (await _entities.ToArrayAsync()).Any(x => predicate(x));
-        return (await _entities.AnyAsync(x => predicate(x)));
+        return (await _entities.ToArrayAsync()).Any(x => predicate(x));
+        //return (await _entities.AnyAsync(x => predicate(x)));
     }
 
     public void Update(TEntity entity)

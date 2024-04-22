@@ -1,4 +1,5 @@
 ﻿using Catering.API.Extensions;
+using Catering.API.Models.Dish.Request;
 using Catering.API.Services.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,5 +21,11 @@ public class DishController : ControllerBase
     public async Task<IActionResult> GetDishes()
     {
         return this.FromResult(await _dishService.GetDishesAsync());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateDish([FromBody] DishCreateRequest request)
+    {
+        return this.FromResult(await _dishService.CreateDishAsync(request));
     }
 }

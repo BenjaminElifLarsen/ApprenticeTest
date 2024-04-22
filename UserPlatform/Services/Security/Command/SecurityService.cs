@@ -9,6 +9,8 @@ internal sealed partial class SecurityService
     public async Task<Result<UserAuthResponse>> AuthenticateAsync(UserLoginRequest request)
     {
         var user = await _unitOfWork.UserRepository.GetSingleAsync(request.UserName);
+        if ((user is null))
+            return new InvalidAuthentication<UserAuthResponse>();
         if(!_passwordHasher.VerifyPassword(user, request.Password))
         {
             return new InvalidAuthentication<UserAuthResponse>();

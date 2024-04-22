@@ -11,5 +11,7 @@ public sealed class CommunicationQueueNames
     public const string MENU_CREATION = "MenuCreation";
     public const string DISH_CREATION = "DishCreation";
     public const string DISH_QUERY = "DishQuery";
-    public const string ORDER_QUERY_FUTURE = "OrderFutureQuery"; 
+    public const string ORDER_QUERY_FUTURE = "OrderFutureQuery";
+    public const string ORDER_STATUS = "OrderStatus";
+    public const string ORDER_QUERY_OVERVIEW = "OrderOverviewQuery";
 }

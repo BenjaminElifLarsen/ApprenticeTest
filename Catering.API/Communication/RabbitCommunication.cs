@@ -2,6 +2,8 @@
 using Catering.API.Extensions;
 using Catering.API.Models.Dish.Request;
 using Catering.API.Models.Menu.Request;
+using Catering.API.Models.Order.Request;
+using Catering.API.Models.Order.Response;
 using Catering.API.Sys.Appsettings.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -29,11 +31,13 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
     private readonly ConcurrentDictionary<string, TaskCompletionSource<Result<DishListQueryResponse>>> _callbackDishList;
     private readonly ConcurrentDictionary<string, TaskCompletionSource<Result<GetOrdersFututureQueryResponse>>> _callbackOrdersFuture;
     private readonly ConcurrentDictionary<string, TaskCompletionSource<Result<MenuListFinerDetailsQueryResponse>>> _callbackMenuList;
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<Result<GetOrderOverviewQueryResponse>>> _callbackOrderOverview;
 
     private string _replayQueueNameCreationNoData;
     private string _replayQueueNameDishList;
     private string _replayQueueNameMenuList;
     private string _replayQueueNameOrderFuture;
+    private string _replayQueueNameOrderOverview;
 
     internal RabbitCommunication(RabbitMqData rabbitMqData, ILogger logger) : base(logger)
     {
@@ -44,10 +48,12 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
         _replayQueueNameDishList = null!;
         _replayQueueNameMenuList = null!;
         _replayQueueNameOrderFuture = null!;
+        _replayQueueNameOrderOverview = null!;
         _callbackForNoData = [];
         _callbackDishList = [];
         _callbackMenuList = [];
         _callbackOrdersFuture = [];
+        _callbackOrderOverview = [];
     }
 
     public void Initialise()
@@ -60,17 +66,21 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
         _replayQueueNameDishList = _channel.QueueDeclare().QueueName;
         _replayQueueNameMenuList = _channel.QueueDeclare().QueueName;
         _replayQueueNameOrderFuture = _channel.QueueDeclare().QueueName;
+        _replayQueueNameOrderOverview = _channel.QueueDeclare().QueueName;
 
         DeclareQueueWithProducer(CommunicationQueueNames.DISH_CREATION);
         DeclareQueueWithProducer(CommunicationQueueNames.MENU_CREATION);
         DeclareQueueWithProducer(CommunicationQueueNames.MENU_QUERY_EMPLOYEE);
         DeclareQueueWithProducer(CommunicationQueueNames.ORDER_QUERY_FUTURE);
         DeclareQueueWithProducer(CommunicationQueueNames.DISH_QUERY);
+        DeclareQueueWithProducer(CommunicationQueueNames.ORDER_STATUS);
+        DeclareQueueWithProducer(CommunicationQueueNames.ORDER_QUERY_OVERVIEW);
 
         SetNoDataResultConsumer(); 
         SetGetDishesConsumer();
         SetGetFutureOrdersConsumer();
         SetGetMenuesConsumer();
+        SetGetOverviewOrdersConsumer();
 
         _logger.Information("{Identifier}: Initialised", _identifier);
     }
@@ -130,7 +140,6 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
             }
             var data = carrier.Data!.ToModel<DishListQueryResponse>();
             tcs.TrySetResult(new SuccessResult<DishListQueryResponse>(data));
-
         };
         _channel.BasicConsume(consumer: consumer, queue: _replayQueueNameDishList, autoAck: true);
     }
@@ -151,9 +160,28 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
             }
             var data = carrier.Data!.ToModel<GetOrdersFututureQueryResponse>();
             tcs.TrySetResult(new SuccessResult<GetOrdersFututureQueryResponse>(data));
-
         };
         _channel.BasicConsume(consumer: consumer, queue: _replayQueueNameOrderFuture, autoAck: true);
+    }
+
+    private void SetGetOverviewOrdersConsumer()
+    {
+        var consumer = new EventingBasicConsumer(_channel);
+        consumer.Received += (model, ea) =>
+        {
+            if (!_callbackOrderOverview.TryRemove(ea.BasicProperties.CorrelationId, out var tcs))
+                return;
+            var message = ea.ToMessage();
+            var carrier = message.ToModel<Carrier>();
+            if(carrier.Result is not CarrierResult.Success)
+            {
+                tcs.SetResult(new BadRequestResult<GetOrderOverviewQueryResponse>(new(carrier.Error)));
+                return;
+            }
+            var data = carrier.Data!.ToModel<GetOrderOverviewQueryResponse>();
+            tcs.SetResult(new SuccessResult<GetOrderOverviewQueryResponse>(data));
+        };
+        _channel.BasicConsume(consumer: consumer, queue: _replayQueueNameOrderOverview, autoAck: true);
     }
 
     //private void SetCreateMenuDishConsumer()
@@ -163,8 +191,8 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
 
     private void DeclareQueueWithProducer(string name)
     {
-        _channel.QueueDeclare(queue: name, durable: true, exclusive: false, autoDelete: false);
-        _logger.Information("{Identifer}: Declared queue {QueueName}", _identifier);
+        var createQueueName = _channel.QueueDeclare(queue: name, durable: true, exclusive: false, autoDelete: false);
+        _logger.Information("{Identifer}: Declared queue {QueueName}", _identifier, createQueueName.QueueName);
     }
 
     public async Task<Result> TransmitCreateDishAsync(DishCreateRequest request)
@@ -175,7 +203,7 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
         {
             var result = await CallAsync(CommunicationQueueNames.DISH_CREATION, dcc);
             if (!result)
-                _logger.Warning("{Identifier}: Dish creation failed - {DishError}", _identifier, result);
+                _logger.Warning("{Identifier}: Dish creation failed - {DishCreationError}", _identifier, result);
             return result;
         }
         catch (Exception ex)
@@ -192,12 +220,29 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
         {
             var result = await CallAsync(CommunicationQueueNames.MENU_CREATION, mcc);
             if (!result)
-                _logger.Warning("{Identifier}: Menu creation failed - {MenuError}", _identifier, result);
+                _logger.Warning("{Identifier}: Menu creation failed - {MenuCreationError}", _identifier, result);
             return result;
         }
         catch (Exception ex)
         {
             _logger.Warning(ex, "{Identifier}: Failed at create Menu - {@MenuCreatingMessage}", _identifier, mcc);
+            return new UnhandledResult(new());
+        }
+    }
+
+    public async Task<Result> TransmitOrderStatusAsync(SetOrderStatusRequest request)
+    {
+        SetOrderStatusCommand sosc = request.ToCommand();
+        try
+        {
+            var result = await CallAsync(CommunicationQueueNames.ORDER_STATUS, sosc);
+            if (!result)
+                _logger.Warning("{Identifier}: Order status failed - {OrderStatusError}", _identifier, result);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "{Identifier}: Failed at setting order status - {@OrderStatusMessage}", _identifier, sosc);
             return new UnhandledResult(new());
         }
     }
@@ -277,17 +322,17 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
 
     public async Task<Result<DishListQueryResponse>> GetDishesAsync()
     {
-        DishListCommand dlm = new();
+        DishListCommand dlc = new();
         try
         {
-            var result = await CallAsync(dlm);
+            var result = await CallAsync(dlc);
             if (!result)
                 _logger.Warning("{Identifier}: Getting dish list failed - {DishListError}", _identifier, result);
             return result;
         }
         catch (Exception ex)
         {
-            _logger.Warning(ex, "{Identifier}: Failed at getting dishes - {@DishListMessage}", _identifier, dlm);
+            _logger.Warning(ex, "{Identifier}: Failed at getting dishes - {@DishListMessage}", _identifier, dlc);
             return new UnhandledResult<DishListQueryResponse>(new());
         }
     }
@@ -303,6 +348,38 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
         _callbackDishList.TryAdd(correlationId, tcs);
         _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.DISH_QUERY, basicProperties: props, body: body);
         return tcs.Task;
+    }
+
+    public async Task<Result<GetOrderOverviewQueryResponse>> GetOrdersOverviewAsync()
+    {
+        GetOrderOverviewQueryCommand gooqc = new();
+        try
+        {
+            var result = await CallAsync(gooqc);
+            if (!result)
+                _logger.Warning("{Identifier}: Getting order overview failed - {OrderOverviewError}", _identifier, result);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "{Identifier}: Failed at getting order overview - {@OrderOverviewMessage}", _identifier, gooqc);
+            return new UnhandledResult<GetOrderOverviewQueryResponse>(new());
+        }
+        throw new NotImplementedException();
+    }
+
+    private Task<Result<GetOrderOverviewQueryResponse>> CallAsync(GetOrderOverviewQueryCommand command)
+    {
+        IBasicProperties props = _channel.CreateBasicProperties();
+        var correlationId = Guid.NewGuid().ToString();
+        props.CorrelationId = correlationId;
+        props.ReplyTo = _replayQueueNameOrderOverview;
+        var body = command.ToBody();
+        var tcs = new TaskCompletionSource<Result<GetOrderOverviewQueryResponse>>();
+        _callbackOrderOverview.TryAdd(correlationId, tcs);
+        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.ORDER_QUERY_OVERVIEW, basicProperties: props, body: body);
+        return tcs.Task;
+
     }
 
     public void Dispose()

@@ -1,4 +1,5 @@
-﻿using Catering.Shared.IPL.UnitOfWork;
+﻿using Catering.Shared.DL.Models.Enums;
+using Catering.Shared.IPL.UnitOfWork;
 using CateringDataProcessingPlatform.AL.Handlers.ApiCommunication.CQRS.Queries;
 using CateringDataProcessingPlatform.DL.Models;
 using Shared.Communication.Models.Order;
@@ -13,7 +14,7 @@ internal sealed partial class ApiRabbitDataProcessing
         _logger.Debug("{Identifier}: Processing request {@OrderFuture}", _identifier, command);
         IUnitOfWork unitOfWork = _contextFactory.CreateUnitOfWork(_configurationManager.GetDatabaseString());
         var afterTime = _time.GetCurrentTimeUtc();
-        var futureOrders = unitOfWork.OrderRepository.AllByPredicate(new OrderDetailsQuery(), x => x.Time.Time > afterTime ).Result;
+        var futureOrders = unitOfWork.OrderRepository.AllByPredicate(new OrderDetailsQuery(), x => x.Time.Time > afterTime && x.Status is OrderState.Received or OrderState.Preparing).Result;
         List<GetOrdersFutureDetailsQueryResponse> details = [];
         List<Menu> alreadyFoundMenues = [];
         List<Customer> alreadyFoundCustomers = [];
@@ -28,5 +29,15 @@ internal sealed partial class ApiRabbitDataProcessing
         GetOrdersFututureQueryResponse gofqr = new(details);
         _logger.Debug("{Identifier}: Processed request {@OrderFuture}", _identifier, command);
         return new SuccessResult<GetOrdersFututureQueryResponse>(gofqr);
+    }
+
+    internal Result<GetOrderOverviewQueryResponse> Process(GetOrderOverviewQueryCommand command)
+    {
+        _logger.Debug("{Identifier}: Processing request {@OrderOverview}", _identifier, command);
+        IUnitOfWork unitOfWork = _contextFactory.CreateUnitOfWork(_configurationManager.GetDatabaseString());
+        var orders = unitOfWork.OrderRepository.AllAsync(new OrderStatusQuery()).Result;
+        GetOrderOverviewQueryResponse gooqr = new(orders);
+        _logger.Debug("{Identifier}: Processed request {@OrderOverview}", _identifier, command);
+        return new SuccessResult<GetOrderOverviewQueryResponse>(gooqr);
     }
 }

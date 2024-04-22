@@ -8,10 +8,12 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
 using Shared.Communication;
+using Shared.Communication.Models;
 using Shared.Communication.Models.Dish;
 using Shared.Communication.Models.Menu;
 using Shared.Communication.Models.Order;
 using Shared.Helpers.Time;
+using Shared.Patterns.ResultPattern;
 using Shared.Service;
 
 namespace CateringDataProcessingPlatform.AL.Handlers.ApiCommunication;
@@ -42,6 +44,8 @@ internal sealed class ApiRabbitCommunication : BaseService, IDisposable
         DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_QUERY_FUTURE, ReceivedForOrderFutureRPC);
         DeclareQueueWithConsumer(CommunicationQueueNames.DISH_QUERY, ReceivedForDishesRPC);
         DeclareQueueWithConsumer(CommunicationQueueNames.MENU_QUERY_EMPLOYEE, ReceivedForMenuesRPC);
+        DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_STATUS, ReceivedForOrderStatusRPC);
+        DeclareQueueWithConsumer(CommunicationQueueNames.ORDER_QUERY_OVERVIEW, ReceivedForOrderOverviewRPC);
 
         _logger.Information("{Identifier}: Initialised", _identifier);
     }
@@ -73,7 +77,8 @@ internal sealed class ApiRabbitCommunication : BaseService, IDisposable
             }
             var result = _processing.Process(command);
             var body = result.ToBody();
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+            SendReply(requestProps, replyProps, body);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
         }
         catch (Exception ex)
         {
@@ -101,7 +106,8 @@ internal sealed class ApiRabbitCommunication : BaseService, IDisposable
             }
             var result = _processing.Process(command);
             var body = result.ToBody();
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+            SendReply(requestProps, replyProps, body);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
         }
         catch (Exception ex)
         {
@@ -129,7 +135,8 @@ internal sealed class ApiRabbitCommunication : BaseService, IDisposable
             }
             var result = _processing.Process(command);
             var body = result.ToBody();
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+            SendReply(requestProps, replyProps, body);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
         }
         catch (Exception ex)
         {
@@ -157,7 +164,8 @@ internal sealed class ApiRabbitCommunication : BaseService, IDisposable
             }
             var result = _processing.Process(command);
             var body = result.ToBody();
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+            SendReply(requestProps, replyProps, body);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
         }
         catch (Exception ex)
         {
@@ -185,13 +193,86 @@ internal sealed class ApiRabbitCommunication : BaseService, IDisposable
             }
             var result = _processing.Process(command);
             var body = result.ToBody();
-            _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+            SendReply(requestProps, replyProps, body);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
         }
         catch (Exception ex)
         {
             _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
         }
         _channel.BasicAck(e.DeliveryTag, false);
+    }
+
+    private void ReceivedForOrderStatusRPC(object? sender, BasicDeliverEventArgs e)
+    {
+        var message = e.ToMessage();
+        try
+        {
+            var requestProps = e.BasicProperties;
+            var replyProps = _channel.CreateBasicProperties();
+            replyProps.CorrelationId = requestProps.CorrelationId;
+
+            var command = message.ToCommand<SetOrderStatusCommand>();
+
+            if(command is null)
+            {
+                _logger.Error("{Identifier}: {Message} could not be parsed to {SetOrderStatusCommandType}", _identifier, message, typeof(SetOrderStatusCommand)); // TODO: sent back the fault carrier for all RPCs 
+                SendReplyProcessingFailed(requestProps, replyProps);
+                _channel.BasicAck(e.DeliveryTag, false);
+                return;
+            }
+            var result = _processing.Process(command);
+            var body = result.ToBody();
+            SendReply(requestProps, replyProps, body);
+            //_channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
+        }
+        _channel.BasicAck(e.DeliveryTag, false);
+    }
+
+    private void ReceivedForOrderOverviewRPC(object? sender, BasicDeliverEventArgs e)
+    {
+        var message = e.ToMessage();
+        try
+        {
+            var requestProps = e.BasicProperties;
+            var replyProps = _channel.CreateBasicProperties();
+            replyProps.CorrelationId = requestProps.CorrelationId;
+
+            var command = message.ToCommand<GetOrderOverviewQueryCommand>();
+
+            if(command is null)
+            {
+                _logger.Error("{Identifier}: {Message} could not be pared to {GetOrderOverviewQueryCommandType}", _identifier, message, typeof(GetOrderOverviewQueryCommand));
+                SendReplyProcessingFailed(requestProps, replyProps);
+                _channel.BasicAck(e.DeliveryTag, false);
+                return;
+            }
+            var result = _processing.Process(command);
+            var body = result.ToBody();
+            SendReply(requestProps, replyProps, body);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
+        }
+        _channel.BasicAck(e.DeliveryTag, false);
+    }
+
+    private void SendReply(IBasicProperties requestProps, IBasicProperties replyProps, ReadOnlyMemory<byte> body)
+    {
+        _channel.BasicPublish(exchange: string.Empty, routingKey: requestProps.ReplyTo, basicProperties: replyProps, body: body);
+    }
+
+    private void SendReplyProcessingFailed(IBasicProperties requestProps, IBasicProperties replyProps)
+    {
+        var result = new UnhandledResult(new(1));
+        var body = result.ToBody();
+        SendReply(requestProps, replyProps, body);
     }
 
     public void Dispose()
