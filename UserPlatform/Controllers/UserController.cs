@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using UserPlatform.Extensions;
+using UserPlatform.Helpers;
 using UserPlatform.Models.Internal;
 using UserPlatform.Models.User.Requests;
 using UserPlatform.Services.Contracts;
@@ -13,22 +15,24 @@ namespace UserPlatform.Controllers
     [Authorize(Policy = AccessLevels.DEFAULT_USER)]
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : BaseApiController
     {
         private IUserService _userService;
-        private ILogger _logger;
 
-        public UserController(IUserService userService, ILogger logger)
+        public UserController(IUserService userService, ILogger logger) : base(logger)
         {
             _userService = userService;
-            _logger = logger;
         }
 
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] UserCreationRequest request)
         {
-            return this.FromResult(await _userService.CreateUserAsync(request));
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            var result = this.FromResult(await _userService.CreateUserAsync(request));
+            stopwatch.Stop();
+            _logger.Information("{Identifier}: Create user took {Time}", _identifier, stopwatch.Elapsed); // In reality, would only log endpoint calls if they took mover than a specified time
+            return result;
         }
 
         [AllowAnonymous]

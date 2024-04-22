@@ -19,5 +19,5 @@ public sealed record CustomerLocation : ValueObject
     {
         _street = street;
         _city = city;
-    } // TODO: have static method constructor
+    }
 }

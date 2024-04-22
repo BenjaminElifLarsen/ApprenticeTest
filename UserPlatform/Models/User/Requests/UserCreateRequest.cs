@@ -1,5 +1,5 @@
 ﻿namespace UserPlatform.Models.User.Requests;
 
-public sealed class UserCreateRequest
-{
-}
+//public sealed class UserCreateRequest
+//{
+//}

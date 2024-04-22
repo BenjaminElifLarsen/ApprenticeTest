@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserPlatform.Extensions;
+using UserPlatform.Helpers;
 using UserPlatform.Models.Order.Requests;
 using UserPlatform.Services.Contracts;
 using UserPlatform.Sys;
@@ -11,15 +12,13 @@ namespace UserPlatform.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Policy = AccessLevels.DEFAULT_USER)]
-    public class OrderController : ControllerBase
+    public class OrderController : BaseApiController
     {
-        private readonly ILogger _logger;
         private readonly IOrderService _orderService;
 
-        public OrderController(IOrderService orderService, ILogger logger)
+        public OrderController(IOrderService orderService, ILogger logger) : base(logger)
         {
             _orderService = orderService;
-            _logger = logger;
         }
 
         [HttpGet("Menues")]

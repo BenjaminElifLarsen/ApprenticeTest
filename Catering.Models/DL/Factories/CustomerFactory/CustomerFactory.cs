@@ -23,7 +23,7 @@ public sealed class CustomerFactory : ICustomerFactory
             flag += CustomerFactoryErrors.CityIsInvalid;
         if (validationData.IdsInUse.Any(x => x.Id == command.UserId))
             flag += CustomerFactoryErrors.CustomerIdUse;
-        if (!flag) // TODO: customerName... not really needed to validate as the publisher should have done the validation
+        if (!flag) // TODO: customerName... not really needed to validate as the publisher should have done the validation. Kind of goes with the entire validation
         {
             return new BadRequestResult<Customer>(flag);
         } 

@@ -95,7 +95,7 @@ public sealed class RabbitCommunication : BaseService, ICommunication, IDisposab
             var message = ea.ToMessage();
             var carrier = message.ToModel<Carrier>();
             if(carrier.Result is not CarrierResult.Success)
-            { // TODO: consider if it is best to have a version for each creation request
+            {
                 tcs.SetResult(new BadRequestResult(new(carrier.Error)));
                 return;
             }

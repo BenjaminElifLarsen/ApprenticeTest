@@ -2,7 +2,6 @@
 using Catering.API.Models.Order.Request;
 using Catering.API.Services.Contracts;
 using Catering.Shared.DL.Models.Enums;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catering.API.Controllers;

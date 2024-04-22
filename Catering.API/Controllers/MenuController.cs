@@ -1,7 +1,6 @@
 ﻿using Catering.API.Extensions;
 using Catering.API.Models.Menu.Request;
 using Catering.API.Services.Contracts;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catering.API.Controllers;

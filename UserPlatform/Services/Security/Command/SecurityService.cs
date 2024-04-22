@@ -50,14 +50,16 @@ internal sealed partial class SecurityService
         }
 
         var userId = tokenData.Subject;
-        if (userId is null) // TODO: something would be wrong with the token
-        {
+        if (userId is null)
+        { // Error in the token, could indicate that the key has been leaked.
+            _logger.Error("{Identifier}: Refresh token {RefreshToken} is missing userId", _identifier, request.Token);
             return new InvalidAuthentication<UserAuthResponse>();
         }
 
         var user = await _unitOfWork.UserRepository.GetSingleAsync(Guid.Parse(userId));
-        if (user is null) // TODO: something would be wrong with the token
-        {
+        if (user is null)
+        { // Error in the token, could indicate that the key has been leaked.
+            _logger.Error("{Identifier}: Refresh token {RefreshToken} user could not be found", _identifier, request.Token);
             return new InvalidAuthentication<UserAuthResponse>();
         }
 

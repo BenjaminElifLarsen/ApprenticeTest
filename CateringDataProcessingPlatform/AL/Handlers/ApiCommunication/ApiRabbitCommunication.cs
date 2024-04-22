@@ -216,7 +216,7 @@ internal sealed class ApiRabbitCommunication : BaseService, IDisposable
 
             if(command is null)
             {
-                _logger.Error("{Identifier}: {Message} could not be parsed to {SetOrderStatusCommandType}", _identifier, message, typeof(SetOrderStatusCommand)); // TODO: sent back the fault carrier for all RPCs 
+                _logger.Error("{Identifier}: {Message} could not be parsed to {SetOrderStatusCommandType}", _identifier, message, typeof(SetOrderStatusCommand));
                 SendReplyProcessingFailed(requestProps, replyProps);
                 _channel.BasicAck(e.DeliveryTag, false);
                 return;

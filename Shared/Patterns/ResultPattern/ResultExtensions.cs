@@ -4,7 +4,7 @@ public static class ResultExtensions
 {
     public static Result ToGeneric<T>(this Result<T> result)
     {
-        return result.ResultType switch
+        return result.ResultType switch // TODO: test
         {
             ResultType.Success => new SuccessNoDataResult(),
             ResultType.SuccessNoData => new SuccessNoDataResult(),

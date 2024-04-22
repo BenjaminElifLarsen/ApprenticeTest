@@ -42,13 +42,12 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
     }
 
     public void Initialise()
-    { // TODO: handle exceptions
+    {
 
         _connection = _connectionFactory.CreateConnection();
         _channel = _connection.CreateModel();
         _channel.BasicQos(0, 1, false);
-        //_channel.ConfirmSelect();
-        _replyQueueNameGetMenues = _channel.QueueDeclare().QueueName; // Need to be done like this, attempting to set it to the actual queue's name has failed badly. Took a check in the documentation and just how it nees to be done
+        _replyQueueNameGetMenues = _channel.QueueDeclare().QueueName; // Need to be done like this, attempting to set it to the actual queue's name has failed badly. Took a check in the documentation and it is just how it needs to be done
         _replyQueueNameGetOrdersForUser = _channel.QueueDeclare().QueueName;
 
         DeclareQueueWithProducer(CommunicationQueueNames.ORDER_PLACEMENT, out _);

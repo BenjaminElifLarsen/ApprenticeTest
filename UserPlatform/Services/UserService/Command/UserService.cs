@@ -16,7 +16,7 @@ internal sealed partial class UserService
         UserValidationData uvd = new(userData);
         var result = _userFactory.Build(request, uvd);
         if (!result)
-            throw new NotImplementedException();
+            return new BadRequestResult<UserAuthResponse>(new(result.Errors));
         var user = result.Data;
         _unitOfWork.UserRepository.Create(user);
         _unitOfWork.Commit();
