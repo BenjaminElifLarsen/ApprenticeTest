@@ -36,7 +36,7 @@ public class UserControllerIntregationTests
     }
 
     [Fact]
-    internal async Task Does_User_Create_Async_Call_User_Service() // Tests everything but the ICommunication implementation
+    internal async Task Does_User_Create_Async_Call_User_Service() // Tests everything but the ICommunication implementation and the repoes
     {
         // Arrange
         var expectedStatusCode = 200;
@@ -122,6 +122,6 @@ public class UserControllerIntregationTests
         Assert.Equal(expectedCompanyName, uarResult.UserName);
         Assert.Equal(2, logs.Length);
         Assert.Contains($"SecurityService: User logged in at", logs[0]);
-        Assert.Contains("UserController: Create user took", logs[1]);
+        Assert.Contains("UserController: Create user took", logs[1]); // TODO: assert the mocks
     }
 }

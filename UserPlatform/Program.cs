@@ -8,6 +8,7 @@ using System.Text;
 using UserPlatform.Communication;
 using UserPlatform.Communication.Contracts;
 using UserPlatform.Helpers;
+using UserPlatform.Middleware;
 using UserPlatform.Services.Contracts;
 using UserPlatform.Services.OrderService;
 using UserPlatform.Services.Security;
@@ -116,6 +117,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<LogMiddleware>();
 
 app.MapControllers();
 app.UseCors();
