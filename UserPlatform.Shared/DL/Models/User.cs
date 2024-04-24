@@ -40,9 +40,9 @@ public sealed class User : IAggregateRoot
         _password = password;
     }
 
-    public void AddRefreshToken(Guid id)
+    public bool AddRefreshToken(Guid id)
     {
-        _refreshTokens.Add(new ReferenceId(id));
+        return _refreshTokens.Add(new ReferenceId(id));
     }
 
     public bool UpdateStreet(string street)
