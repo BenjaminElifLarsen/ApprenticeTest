@@ -1,0 +1,449 @@
+\documentclass[svgnames]{report}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[danish]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage[T1]{fontenc}
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\usepackage[
+backend=biber,
+style=ieee,
+sorting=ynt
+]{biblatex}
+\addbibresource{bibliography.bib}
+
+\usepackage{pdfpages}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage{adjustbox}
+\lstloadlanguages{C,C++,csh,Java}
+
+\definecolor{red}{rgb}{0.6,0,0} 
+\definecolor{blue}{rgb}{0,0,0.6}
+\definecolor{green}{rgb}{0,0.8,0}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+\definecolor{type}{rgb}{0.6,0.8,0}
+\definecolor{method}{rgb}{0.75,0.75,0}
+
+\lstset{
+language=[Sharp]c,
+basicstyle=\footnotesize\ttfamily,
+numbers=left,
+numberstyle=\tiny,
+numbersep=5pt,
+tabsize=2,
+extendedchars=true,
+breaklines=true,
+frame=b,
+stringstyle=\color{cyan}\ttfamily,
+showspaces=false,
+showtabs=false,
+xleftmargin=17pt,
+framexleftmargin=17pt,
+framexrightmargin=5pt,
+framexbottommargin=4pt,
+commentstyle=\color{green},
+morecomment=[l]{//}, %use comment-line-style!
+morecomment=[s]{/*}{*/}, %for multiline comments
+showstringspaces=false,
+morekeywords={ abstract, event, new, struct,
+as, explicit, null, switch,
+base, extern, object, this,
+bool, false, operator, throw,
+break, finally, out, true,
+byte, fixed, override, try,
+case, float, params, typeof,
+catch, for, private, uint,
+char, foreach, protected, ulong,
+checked, goto, public, unchecked,
+class, if, readonly, unsafe,
+const, implicit, ref, ushort,
+continue, in, return, using,
+decimal, int, sbyte, virtual,
+default, interface, sealed, volatile,
+delegate, internal, short, void,
+do, is, sizeof, while,
+double, lock, stackalloc,
+else, long, static,
+enum, namespace, string, await,
+async, Task, Sleep, var, FromSeconds, 
+TimeSpan, Elapsed, Thread,
+@code, @using, @page, Inject},
+keywordstyle=\color{blue},
+identifierstyle=\color{red}
+}
+
+\newcommand{\csharp}{C$^\sharp$}
+
+\NewDocumentCommand{\codeKey}{v}{%
+\texttt{\textcolor{blue}{#1}}%
+}
+\NewDocumentCommand{\codeType}{v}{%
+\texttt{\textcolor{type}{#1}}%
+}
+\NewDocumentCommand{\codeMethod}{v}{%
+\texttt{\textcolor{method}{#1}}%
+}
+
+\title{Process Rapport \\ Cateringplatform}
+\author{Benjamin Elif Larsen}
+
+\begin{document}
+
+\pagenumbering{Roman}
+\onecolumn
+\maketitle
+\pagebreak
+
+\tableofcontents
+
+\listoffigures
+
+%\listoftables
+
+\pagebreak
+
+\pagenumbering{arabic}
+
+\chapter{Læsevejledning}
+Denne rapport er en af to rapporter der blev skrevet for svendeprøven, den anden rapport er produktrapporten. Rapporten vil gennemgå den valgte case, tidsplanen, teknologi og mønstre valg, diskussion af den endelige løsning og konkludere på projektet. Denne rapport kan læses uden behov for at havde læst produktrapporten. 
+
+\chapter{Introduktion}
+\label{intro}
+På hovedforløb 6 af Datateknikker med Speciale i Programmering skal der udvikles et svendeprøve projekt med de følgende krav:
+\begin{itemize}
+    \item Konfigurationsstyring
+    \item Sikkerhed
+    \item Test
+    \item Database
+    \item Server
+\end{itemize}
+På sammen tid skal end af de følgende også inddrages: 
+\begin{itemize}
+    \item Klient/Server
+    \item APP Udvikling
+    \item Desktop Program
+    \item Embedded
+\end{itemize}
+Det blev valgt at inddrage en klient, som den ekstra del. Grunden dette var fordi udvikleren havde kun en smule kendskab til frontend kodning og udvidet viden inde for dette område kunne være brugbart. \\
+Formålet er at fremvise den viden man har fået under uddannelsen. \\
+Projektet blev udført i form af en en-personsprojekt. \\
+
+\section{Case Beskrivelse}
+Ikke alle virksomheder har mulighed for at servere mad i deres kantiner fra deres egen køkken. Dermed er der økonomiske gevinster for en cateringvirksomhed ved at sælge færdiglavede retter til disse virksomheder. På sammen tid er det blevet mere udbredt blandt virksomheder at sælge deres produkter via internettet. Disse muligheder vil cateringvirksomheden FoodForAll A/S\footnote{FoodForAll A/S i dette projekt er en fiktiv virksomhed og har intet med potentielle virkelige virksomheder. } gerne benytte sig af for at øge deres omsætning og øge antallet af kunde via en hjemmeside der er let at bruge, da de på nuværende tidspunkt kun tillader bestillinger via deres telefon besat af en enkelt ansat.
+
+\section{Problemformulering}
+Hvordan kan et system for catering blive opbygget, der tillader brugere at oprette sig, bestille bestemte retter med tidspunkt og lokation, samt tillade virksomheden at oprette valgmuligheder og se bestillinger?
+
+\section{Projekt Afgrænsning}
+På grund af tidsbegrænsninger og at det er en prototype vil der være begrænsninger. Disse er: 
+
+\begin{itemize}
+    \item Intet betalingssystem.
+    \item Det grafiske brugerflade vil være simpel, funktion over design.
+    \item Sikkerheden vil minimal i forhold til et virkelig produkt.
+    \item Der ville være mere fokus på User frontend/REST-API delen end Catering frontend/REST-API-delen.
+\end{itemize}
+
+\chapter{Projekt Planlægning}
+\label{plan}
+\label{plan:time}
+Projektet blev planlæg den første svendeprøvedag og før der blev begyndt at arbejde på selve projektet. Det blev valgt at benytte en Gantt-diagram, da der var kendskab til dette fra H5. \\
+Hver tidsenhed i Gantt-diagrammet var en arbejdsdag og tiden blev fastlagt for de normalle arbejdsdage der var fra opstart til aflevering (det vil sige mandag til og med fredag), hvilket gav 19 arbejdsdage. Dog på grund af den sidste dag var afleveringsdagen blevdet vedtaget at alt arbejde skulle være færdig dagen før, hvilken gav i alt 18 arbejdsdage. De forskellige aktiviteter er samlinger af flere kravspecifikationer, f.eks. indeholder Factories alle kravspecifikationer som har kategorien 'Factory', men der er prøvet at oprette en aktivitet for hver Id samling, f.eks. alle Cat-Service-n ligger under Catering Dataprocess projekt. \\
+I forhold til placeringen af de forskellige aktiviteter, så er de fleste i starten af projektet med den begrundelse at udvikleren fortrækker at havde tralvt i starten og havde tid til at bedre håndtere nye opgaver, forsinkelser, forbedringer og lignende længere henne i arbejdsprocessen. \\
+Tidsplanen kan ses i billag \ref{ap:time} ... % more
+Givet dette projekt er en en-personprojekt betyder det at der ikke er nogen fordeling af arbejde.
+
+
+\chapter{Valgte Teknologier og Mønstre}
+Dette kapitel vil forklare de valgte mønstre og teknologier, der blev benyttes, er og hvorfor de blev valgt. Andre teknologier vil også bliver nævnt, samt givet en forklaring på hvorfor de ikke blev valgt. %Mere information kan findes over i produktrapporten
+Produktrapporten vil forklare hvordan de valgte teknologier blev implementeret.
+
+\section{Message Broker}
+\label{mes}
+Udvikleren valgte at ville benytte en message broker til at kommunikere mellem de forskellige catering-delen og user-delen. \\
+Grundene til at benytte en message broker er mange. F.eks. at kunne opskaler de dele af opsætningen der er under pres, f.eks. hvis der er stor pres på catering-delen, så kan endnu en catering-processe startes op og begynde at håndtere data. På sammen tid kan data sendes til forskellige programmer, der har behov for data'en for forskellige grunden, uden at nogle af programmerne har kendskab til hinanden, hvilket betyder lav kobling mellem de forskellige dele. Selvfølgelig gør det mere besværligt at følge data igennem et system, da man ikke kan se hvad der modtager data eller sender data til systemet. %moar
+\\
+Der blev kigget på to forskellige teknologier inde for dette, Kafka, se \ref{kafka}, og RabbitMq, se \ref{RabbitMq}. 
+Det blev valgt at gå med RabbitMq, da det mere ukendt for udvikleren, samt at RabbitMq virkede mere realistisk for en catering-virksomhed frem for Kafka. Udvikleren har lidt kendskab til Kafka fra et tidligere forløb og lidt kendskab til RabbitMq fra nuværende læreplads, %check if the last word is correct, 
+men kun benyttet begge lidt. \\
+Det er selvfølgelig ikke nødvendig at benytte en message broker til at kommunikere med andre dele. Hver del kunne havde deres egen REST-API, som kunne bruges til at kommunikere via. De kunne har været del af den samme kode-projekt og dermed kunne kalde nødvendige metoder direkte. Disse løsninger ville dog øge koblingen mellem de forskellige dele af projektet. 
+
+\subsection{Kafka}
+\label{kafka}
+Apache Kafk er en åben-kilde event streaming platform, hvilket betyder at den kan bruges til at skrive (publish) events og læse (subscribe) events. Alle events bliver gemt i en eller flere cluster af server og har dermed mulighed for at håndtere, hvis en server går ned, samt der er muligt at replikere data over flere servicer. \\
+En lager service bliver kaldt en Broker i Kafka, men Kafka kan også have zookeepers\footnote{Efter \cite{zookeeper}, så er dette snart ikke længre en ting}, workers og mere alt efter behovet. \\
+Kafka lager events under topics, noget hen af Queue i RabbitMq, events bliver aldirg slettet, når de bliver læst, de slettes først når de bliver for gamle, hvilket en kafka-bruger kan sættes. På sammen tid læses events altid i den rækkefølge de blev indsat i.  \\
+Kafka tillader også schema for de oprettede topics, hvilket betyder at Kafka kan validere at events der sendes til den passer ind \cite{kafka}, hvilket betyder at Kafka benytter Extract-Transform-Load.  
+
+\subsection{RabbitMq}
+\label{RabbitMq}
+RabbitMq er en åben-kilde messaging og streaming broker, som benytter queues til at sende data mellem producers (skriver) og consumers (læser) og så snart en consumer har anerkendt at de har modtaget en besked bliver beskeden slettet fra dens kø. RabbitMq benytter First-In-First-Out for beskederne i en kø \cite{rabbit}.\\
+RabbitMq kan anses for at være benytte Extract-Load-Transform, da den ikke har noget schema for data'en i en kø, da data lægges som bytes, dermed kan alt kan skrives og alt kan læses til/fra en kø, hvilket betyder at consumer'en skal tjekke om data'en opfylde krav, f.eks. om den kan mappes til et objekt eller ej.\\
+Med sin standard-opsætning benyttes der round-robin. Dette betyder at hvis der køre en consumer, så modtager den alt data der sendes på de queues den lytter til, hvis der er to consumers, så modtager de halvdelen osv. 
+Dette er fint, hvis alle consumer gør det samme, men hvis consumerne gør forskellige ting, så kan der opstå problemer. Det er dog muligt at sætte RabbitMq til at sende en event til at alle consumers \cite{rabbit}. \\
+RabbitMq tillader også, meget let, opsætningen af Remote Procedure Call (RPC), hvilket er at en producer kan modtaget et svar, for en sendt besked, fra den consumer som håndtere beskeden \cite{rabbitRpc}. %explain why to use it 
+
+
+\section{ORM}
+\label{orm}
+Den valgte ORM (Object-Relational Mapper) %explain
+for dette projekt er EntityFramework Core 8.x. Denne ORM er udviklet af Microsoft og er den primære ORM inde for \csharp. \\
+Formålet med en ORM er tillade letter benyttelse af forretnings-baseret modeller for en database ved at havde ORM'en som et mellemled, der står for at mappe mellem et objekt-model og en eller flere tabeller. \\%explain more
+EntityFramework Core har en del sikkerhed bygget ind i sig, automatisk sanitising af data, oversætning mellem model og tabel-række, ... %explain more
+På sammen tid kommer EntityFramework Core med Repository Pattern \ref{api:p:repo} og Unit Of Work \ref{api:p:uow}, men i dette projekt er der egen implementationer af disse. Grunden til dette er mere fin-kontrol over database-adgang end hvad Entityframework Cores egen udgaver tilbyder. \\
+EntityFramework Core tillader også opsætningen af hvordan data i en model burde mappes til tabel-data og omvendt\\
+Andre valgmuligheder kunne har været at udvikle sin egen ORM eller oprette og sende SQL-kommandoer via \csharp's SqlClient. Disse blev ikke valgt, da disse ville tage for lang tid at udvikle og ville ikke give en bedre løsning end i forhold til EntityFramework Core. 
+
+
+\section{Database}
+For at sikre sig at alt oprettet data blev gemt for senere behov, blev det valgt at inddrage en relationel database i form af en SQL database. En relationel database tillader at oprettelse, hentning, sletning og ændre af data på en overskuelig måde, samt at havde data-schema over de forskellige typer af data, der bliver gemt. En SQL database har en data-schema for hver 'tabel' i databasen, hvilket betyder at hver kolumne svare til en bestemt datatype og hver rækker er et bestemt objekt.\\
+På sammen tid tillade en SQL database formindskning af duplikereret data, da der kan oprettes relationer mellem de forskellige tabeller. SQL databaser tillader også at opsætte, begrænsede, regler for hvordan data'en skal se ud, f.eks. om nullable data er tilladt eller om bestemt data må være duplikeret i flere rækker.  \\
+Databasen valgt er en MSSQL, også kendt som Microsoft SQL, database. Grunden til dette valg, er fordi udvikleren har godt kendskab til den, både fra egen udvikling og fra lærepladser. På sammen tid benyttes EntityFramework Core til at håndtere kommunikationen med databasen og dermed vil der for kode-udvikling ikke være en større kode-forskel. \\
+Andre muligheder kunne f.eks. være MySQQL eller SQLite, SqLite er en let og gratisk database med få funktionerne i forhold til MSSQL og MySQL. MySQL er en gratisk database, MSSQL koster for ikke-udviklere. %explain a little more for MySQL
+\\
+En lille vigtig forskel, der er vigtigt, når der overvejes database, er hvor godt databasen understøtter de valgte datatyper for modellerne over i projektet har, f.eks. om en database undestøtter ikke-utc tidspunkter, om den understøtter float/single eller om den ikke gør. F.eks. understøtter visse udgaver af MSSQl ikke TimeOnly og DateOnly, da disse er nyere typer inde for \csharp. Detter er en anden grund til valget faldt på MSSQL, den er udviklet af Microsoft, som også udvikler \csharp, og dermed er der større chance for nyere udgaver af MSSQL vil understøtte nye datatyper i \csharp.  
+%Normalising?
+
+\section{Docker}
+Docker er teknologi der tillader at køre applikationer uden at de bliver påvirker af deres værts miljø.
+Docker virker ved at køre en applikation i en lukket enhed kaldt en container, som er bygget ud fra Docker Images. En Docker Image angiver normalt OS'en, som container skal benytter, og hvad end der ellers skal til får at køre applikationen.
+Dette burde betyder at containen på en computer vil køre på sammen måde som på en anden computer, da containerne køre på et lukket system, adskilt fra vært-computerens system.
+Det der køres inde i container vil normalt blive påvirket af systemet på værten på sammen måde som i virkligheden, dette ville f.eks. være igennem åbne porte, som applikationen i container lytter til. På sammen tid kan flere applikationer køre på den samme vært, selv hvis de f.eks. i virkeligheden benytter den samme port, hver container mapper den interner port til en anden port på værten og dermed slippes der for at ændre på applikationsopsætningen. 
+Det er også muligt at mappe en eller flere mapper i en applikation til mapper på selve værten og dermed kan data deles via disse mapper. På sammen tid betyder det også at hvis containeren bliver slette og genoprettet med kendskab til værtsmapperne, så vil intet data blive mistet.\\
+Andre muligheder at køre servicerne kunne være at køre dem direkte på systemet, hvilket Seq, RabbitMQ og MSSQL kunne gøre, men dette skabe problemer, da systemet kunne påvirke hvordan servicerne opføre sig, samt gøre det mere svært at replikere opsætningen hos andre udviklere. Ellers kunne det være muligt at havde en test-setup som alle udviklere forbundet til, men dette betyder at en udvikler kan påvirke en anden udvikler, hvilken kan skabe problemer.\\
+En anden grund til at benytte Docker er visse services, som Kafka, kræver flere enheder for at køre optimalt, noget man kan undgå via Docker, da hver Kafka-enhed har sin egen container. \\
+Det skal peges ud at Docker containers ikke burde blive påvirket af selve enhedens OS (Udover for Windows's Hyper-V for windows-platformer), men det blev fundet at Seq containeren, som ikke brugte standard brugeren, kørte anderledes på en pc frem for en anden. En grund kunne ikke findes, der forklarede dette. %maybe have this somewhere else? 
+
+\section{API Framework}
+Frameworket der benyttes til API'et i dette projekt er \csharp ASP.Net Core. %check if it named that
+Dette er et framework Microsoft har udviklet for dotnet-produktet, som REST-API'er og MPA'er. 
+Et REST-API (Representatinal State Transfer) er en applikation arkitektur der bruges meget inde for netudvikling. 
+Normalt benyttes der HTTP-metoderne (F.eks. GET, POST, PUT) og URL-stien til at kontakte bestemte endpoints i et REST-API. 
+REST-API sender/modtager kun de ressourcer, som klienter har behov for og beder om. \\ %more
+Modellerne der benyttes af REST-API'et er enten en request eller response model. Request modellerne er for data der bliver sendt ind, normalt via Body'en på http-requesten, hvorimod response modellerne bruges for det data der bliver sendt ud. Data der sendes ind kan, som nævnt, blive sendt via en body, men de kan også sendes ind via query-delen af URL'en. ASP.Net Core tillader let opsætningen om hvorvidt data skal komme fra body eller query, dog er der visse krav fra HTTP der giver mening at overholde, f.eks. at DELETE ikke kan indeholde en body og dermed skal ekstra data sendes via query.\\
+Request/Response kan bruges i modellernes navne til at give mere klarhed for deres formål.\\
+I ASP.Net Core opdelles Endpoints efter hvilken Controller de ligger i. \\ %explain more
+REST-API'et for User-delen står for at håndtere kommunikation med User-datakonteksten direkte, hvorimod data der skal til eller fra Catering-delen bliver sendt via en message broker \ref{mes}.
+
+\subsection{Swagger}
+Alle REST-API'er i dette projekt har indbygget Swagger. Swagger giver et detaljeret overblik over API'et og tillader fremvisning af dokumentation. I dette projekt er Swagger opsat til at fremvise alle endpoints, deres HTTPMethod, hvad for noget data de modtager, samt hvilken endpoints kræver at brugeren er logget ind og eller ej og en enkel punkt for at indsætte login token og dermed slipper brugeren for at manuel indsætte den ved hver request. 
+
+\section{Frontend Framework} %check that Blazor is a frameowrk
+Det valgte framework for frontend delen er Blazor, en framework udviklet af Microsoft, som benytter \csharp, HTML og CSS til udvikle frontend web klienter med. Blazor benytter Microsofts Razor syntaks for at indsætte data/funktioner ind i HTML og manipulation af Document Object Model. \\ 
+Blazor er et nyere frontend framework %explain more
+og har to udgaver, Blazor Web App og Blazor WebAssembly Standalone App. Forskellen mellem disse to er at Web App er en Multi Page Application (MPA), hvor hver siden hentes fra serveren, men opførelser (som ikke kræver mere data) udføres over hos brugeren, f.eks. filtering af hentet data kan udføres af \csharp kode uden behov for at kontakte serveren eller JavaScript. WebAssembly Standalone App er kørt 100 \% hos brugeren, dermed rent klientkode, og er en Single Page Application (SPA), dermed er der intet kontakt med en server, når der udføres f.eks. sideskifts. 
+Pga. WebAssembly Standalone App er ren klientkode betyder det at den ikke har mulighed for at snakke med en datakontekst direkte (Web App kan gøre det, da dette kommunikation foregår via dens server) og dermed er det nødvendigt at udvikle et API, som den kan kommunikere med, hvis frontend'en har behov for dynamisk data.
+\\
+En anden mulighed for frontend framework kunne være Angular 2+. Angular er udviklet af Google og benytter TypeScipt i forhold til Blazor's \csharp. \\
+Grundene til at Angular ikke blev valgt var primært for at prøve en ny teknologi i form af Blazor, da Angular er udviklerens primær frontend framework.  
+Angular har dog den fordel at være et ældre, dermed mere udviklet, sprog med mindre chance for bugs og exploits, samt mere/bedre dokumentation og vejledninger. 
+%could also mention MVC
+
+\section{Test}
+Tests, både manuelle og automatiske, er vigtig for udviklingen af et produktet, da de tjener det formål at fremvise at produktet overholde de krav der er givet til produktet. På sammen tid tillader de finde fejl før produktet bliver udgivet.  \\
+Der findes forskellige slags tests, som Unit Tests, Integration Test, End-To-End test og Acceptance Test. \\
+En Unit Test tester den mindste del af noget kode, f.eks. hvis en metoder modtager en streng om den håndtere en null-streng, om en metoder bruger over under n tidsenheder før den returnere. \\
+Integration Test tester flere moduller virker korrekt sammen, f.eks. om Endpoint A på en kontroller kalder service B, som så sender besked C til service D. \\
+End-To-End Test tester flere systemer på sammen tidspunkt, f.eks. om system A kan kommunikere med system B igennem message broker C. \\
+Acceptance Test bruges til at teste om større dele af et eller flere system overholder deres krav og kan indeholde ikke-automatiskeret tests, som f.eks. om en bruger kan forstå GUI'en. \\
+En vigtig ting med test er at få teste alle stier igennem et stykke eller flere stykker kode for at sikre sig at alt virker, se \ref{test:path} for et simple eksempel på hvorfor. Det givet eksempel fejlede, hvis den ikke kunne skabe en User, hvilket var overset før koden blev testet.\\
+\begin{lstlisting}[caption={Kode der kan give undtagelse}, 
+label={test:path}]
+    public async Task<Result<UserAuthResponse>> CreateUserAsync(UserCreationRequest request)
+    {
+        var userData = await _unitOfWork.UserRepository.AllAsync(new UserDataQuery());
+        UserValidationData uvd = new(userData);
+        var result = _userFactory.Build(request, uvd);
+        if (!result)
+            throw new NotImplementedException()
+        var user = result.Data;
+        _unitOfWork.UserRepository.Create(user);
+        _unitOfWork.Commit();
+        var comResult = _communication.TransmitUser(user);
+        var authResult = await _securityService.AuthenticateAsync(new UserLoginRequest() { UserName = request.CompanyName, Password = request.Password });
+        return authResult;
+    }
+\end{lstlisting}
+For dette projekt er der lagt primært fokus på Integration Test og Unit Test, da disse er lettest at fremvise og automatiseres. % explain why
+
+\subsection{Automatiskeret Test Frameworks}
+Inde for \csharp findes der 3 primære test frameworks, disse er MSTest, NUnit og XUnit. Der benyttes XUnit i dette projekt.
+Udvikleren har benytte alle 3 og fundet XUnit til at være en god mellem punkt i mellem de to andre. %explain the differences
+\\
+Dog har XUnit ikke det bedste dokumentation i forhold til f.eks. MSTest. 
+
+\section{Domain Driven Design}
+\label{api:ddd}
+Domain Driven Design (DDD) er en arkitektur, som har fokus på domænerne og dermed siger en del over opbygningen af projektet. Domain driven design f.eks. lægger en del, hvis ikke alt, forretningslogik ind i selve modellerne frem for f.eks. i en Business Logic Layer, hvilket betyder at logikken ikke vil blive spredt over projektet, samt at modellen styre alle ændringer på sig. F.eks. kan den tjekke om data kan blive tilført eller fjernet fra en samling i sig \cite{dddWhatIs}. \\
+Domain driven design benytter det der bliver kaldt en Aggregate Root, hvilket betyder at alle ændringer, oprettelser og fjernelsen af data foregår igennem et enkel punkt, selv andre objekter som tilføre roden kan kun blive påvirket igennem roden \cite{dddTactical}. \\
+Domain driven design har to vigtige begraber, bounded context og domain, domæne er et dækkende område inde for en forretning, hvorimod bounded context bruges til at opdele modeller \cite{dddBoundVsDomain}. I dette projekt er der to domæner, User og Catering, hvor modeller for f.eks. User og Customer har den samme primære-nøgle, men nogle af deres værider er forskellige, User har kendskab til dens Refresh Token og Customer har kendskab til ordre. \\
+Denne arkitektur er dog tungt og kan tage lang tid at implementere korrekt, da der er behov for domæne-eksperter for at kunne implementere de forskellige domæner korrekt. Samt at Domain driven design er meget komplekst, hvilket betyder at det nødvendigvis ikke er den bedste arkitektur for mindre løsninger, som f.eks. denne svendeprøve. \\ %cite
+%other options
+Domain driven design blev valgt, da udvikleren godt kan lide det og det passer godt sammen med andre mønster som Command Query Responsibility Segregation, se \ref{api:p:cqrs}.\\
+En ting med domain dreven design er at forskellige modeller kan kun have kendskab til andre rødder og dette burde helst være igennem en reference id frem for selve objektet \cite{dddTactical}. Dette har det formål at formindske en rod kan påvirke en anden rod, men dette betyder at der ikke findes direkte reference til andre objekter og dermed miste en SQL-database lidt af sit formål med at kunne holde styr med relationerne. Data i en rod kunne pege på en anden rod der ikke længere findes, dermed er det meget vigtigt at løsningen får slette og tilført data korrekt. På sammen tid kan domain driven design også øge mængden af duplikeret data, da objekterne under en rod skal være gyldige og dermed kan visse data være nødsaget til at blive duplikeret. I dette projekt kan det ses med Location-data som findes for både User og Customer (begge har City og Street) eller nok bedre med Menupart og Dish, hvor MenuPart har værdien Name duplikeret fra Dish, grunden er at undgå for meget kommunikation med databasen, men hvis en Dish ændre navn skal alle MenuParts der peget på den findes og opdateres. 
+Test der køres over mere eller hele løsningen, som Intergration Test, er dermed vigtigt for at tjekke om alt data sættes korrekt, da en Unit Test ikke vil fange det.
+
+\section{Logging}
+For dette projekt blev besluttet at logge data fra projektet og sende dem til en tredje-part system.
+Valget faldt på Seq. Seq benytter strukturet logs og kan hjælpe med at analyser og finde information fra indsendte logs. F.eks. kan alle Error logs for et bestemt tidspunkt fremhentes eller alle logs for et bestemt tidsperiode. Dette betyder at det er lettet at finde fejl i software, mens det køre på live- eller testmiljø, samt se hvad og hvor meget der forgå inde i forskellige systemer. Seq gemmer alle logs i form af JSON og dermed tillader Seq let at søge i data, selv i komplekse logs, da Seq kommer med dens eget query sprog \cite{seq}.\\
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{images/seq/seq1.png}
+    \caption{Seq dashboard}
+    \label{fig:seqDash}
+\end{figure}
+Grunden til at valget faldt på Seq var primært fordi udvikleren allerede havde en smule kendskab til Seq og hvordan man indsendte data til det fra lærepladsen, men ikke rigtigt noget dybt kendskab til hvordan man brugte Seq og fik mest ud af det. 
+En anden mulighed kunne har været Grafana, som også tillader logs og søgning/fremvisning af dem, men Grafana kan en masses og for en catering-virksomhed ville noget mindre, som Seq, nok give mere mening. 
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{images/seq/seq2.png}
+    \caption{Seq fejl log}
+    \label{fig:seqEx}
+\end{figure}
+
+%\section{Agile}
+%For dette pro
+
+\section{Mønstre}
+\label{api:p}
+Denne sektion vil forklare de valgte mønstre, hvorfor de blev valgt og plotentielle andre muligheder. 
+
+\subsection{Command Query Responsibility Segregation}
+\label{api:p:cqrs} %mention Mapster as a possible other choice
+Command Query Responsibility Segregation (CQRS) er et mønstre der opdeler en model i to dele, en skrivemodel og minimum en læsemodel. Retfærdiggørelsen for CQRS er at en kompleks læse/skrivemodel kan være problematisk at benytte \cite{cqrs}. CQRS øger kompleksiteten i projektet, da der skal udvikles flere modeller, men der er bedre opdeling af hvad modellerne gør, samt at der undgås at unødvendige data sendes igennem systemet. \\
+Command-delen af CQRS bruges til at udføre en ændring på en model og skal i princippet kun påvirke en enkel rod. Query-delen står for at sende forespørgelse til model(en/erne) med det formål at hente data fra dem, en query skulle aldrig ændre på data'en i den spurte model \cite{cqrs}. \\
+Efter \cite{cqrs} så kan CQRS være brugbart i Domain Driven Design, men det behøves ikke at være brugt på hele systemet. \\
+Gruden til at dette mønstre benyttes i dette projekt er for at formindske koblingen mellem læse- og skrivedelene af koden, hvor læsemodellerne er i princippet DTO'er, hvor mappingen sker meget tidligt. \\
+En anden valgmulighed for at mappe data kunne har været en auto-mapper som Mapster, men i forhold til det implementeret CQRS, så er Mapster mere besværligt at refaktor kode, da det ikke automatisk informere om casting-problemer. 
+
+\subsection{Repository Pattern}
+\label{api:p:repo}
+Repository Pattern er et mønstre, som bruges til at styre hvad slags kommunikation der kan foregå mellem datakonteksten og resten af systemet. F.eks. kan det sættes op til at kun kunne læse fra bestemte tabeller eller skrive til bestemte kolumner i en tabel. Mønstret tjener dermed formål at informere udvikleren med hvordan de kan interagere med datakonteksten. \\
+Den valgte ORM EntityFramework Core, \ref{orm}, har dette mønstre indbygget i sig og dermed er det ikke nødvendigt at implementerer mønstret selv. Det blev dog valgt at implementerer egen udgave for at lægge et lag mellem EntityFramework og resten af systemet for at formindske koblingen og dermed lette udviklingen af automatiske test. 
+På sammen tidspunkt tillader selv-implementeret repositories at have bedre styr over hvordan udviklerer opsætter kommunikationen med datakonteksten ved at ensforme kodeskrivningen. %rewrite 
+
+\subsection{Unit Of Work}
+\label{api:p:uow}
+Unit of Work er et mønstre med det formål at holde styr på alle ændringer til datakonteksten og overføre disse ændringer på en gang til datakonteksten \cite{uow}. \\
+EntityFramework Core har dette mønstre indbygget i sig, men det blev valgt at implementere egen udgave for at havde lidt mere styr over ting, samt tillader interface og dermed ikke-EntityFramework Core-konkrete-implementationer for f.eks. at kunne lette testning. 
+
+\subsection{Result Pattern}
+\label{api:p:result}
+Result Pattern er et meget lille og let mønstre, som tillader en metode at sende forskellige slags data tilbage uden at skulle benytte exception handling, klasser der har properties for alle muligheder eller keywords som \codeKey{ref} og \codeKey{out}. 
+Result Pattern kan på sammen tid opsættes til at passe projektets behov. F.eks. hvilken slags fejlbeskeder, hvis nogen, kan blive sat, hvilken slags Results kan benyttes (f.eks. NotFoundResult eller SuccessResult) og mere. \\
+Andre muligheder for fejlhåndtering kunne være de ting i starten af denne sektion. 
+
+%\subsection{Datafiltering}
+%mention that func<T,bool> is used, however, another choice is Specification Pattern, but is not used because filtering is quite simple right now, but if needed later, specification pattern is easy to implement. 
+
+
+\chapter{Realiseret Tidsplan}
+
+\chapter{Diskussion}
+\label{dis}
+
+\chapter{Konklusion}
+\label{con}
+
+\printbibliography[title={Referencer}]
+
+\appendix
+
+\chapter{Tidsplan}
+\label{ap:time}
+
+\chapter{Dagbog}
+\label{ap:daybook}
+
+\section{9/4/24}
+Startet på hovedforløb 6. \\
+Skrevet problemformulering og case. \\
+Oprettet projekt og indsat basisk struktur med nogle modeller. \\
+Net gik ned, typisk. \\
+Glemte at lave git init først. \\
+Net kom tilbage, lavet commit. \\
+Lavet tidsplan udkast. \\
+
+\section{10/4/24}
+Planen er at få skrevet krav- og testspecificationerne for Catering-delen af projektet. Catering-delen skal have lavet sine modeller færdige, sine factories og datacontext og adgang. \\
+Shared projektet skal have interfaces og implementationer for CQRS, Resultpattern og repository pattern. \\
+På sammen tid skal der laves docker images for MSSQL, RabbitMQ og Serilogger. \\
+Ellers skal der skrives på rapporterne. \\
+\\
+Fik lavet det der var planlagt.
+
+\section{11/4/24}
+Planen er at få lavet rabbit-delen for catering. \\
+Få skrevet mere rapport. \\
+Databasen for User-delen og dataadgang. Factories for dens modeller. \\
+\\
+Fik ikke skrevet rapport, da EntityFramework Core var problematisk. Den nye måde at gøre Value Object på viste sig at være lidt besværligt. Det tog noget tid at kunne lave migations og apply dem til en database via et konsol program, da jeg ikke havde kendskab til dette i forvejen. 
+
+\section{12/4/24}
+Målet i dag er at få færdiggjort krav- og testspecifiktionerne. \\
+Få begyndt på REST-API'et og user-data-processing-delen. \\
+\\
+Fik færdiggjort krav-og testspecificationerne, kan godt være der kommer noget mere på et tidspunkt.\\
+User-data-procescing-delen virker til at fungere som det skal. \\
+Fået begyndt på REST-API'et og tilført en ny kontekst-model for refresh-tokens. \\
+
+\section{15/4/24}
+Færdiggør user REST-API, forbedring til rabbitmq, få skrevet på rapporterne og lavet powershell script får datakontekst ændringer. 
+Primære arbejde kommer nok til at ligge at få JWT til at virker. \\
+\\
+REST-API anses for at være færdig for nu, ting vil nok komme som arbejdet på frontend-delen starter op. Powerschell script lavet. JWT tog mindre tid at indføre end regnet med. Den planlagte ændring til RabbitMq gik fint. Valgte at indsætte endnu en RPC, drillede lidt at få den til at virke, forkerte consumer modtog data'en. For rapporterne var det primært process-rapporten der blev skrevet på.
+
+\section{16/4/24}
+Startning på frontend delen. Opsætning af httpclient for kommunikation med User REST-API'et. Læsning af hvordan Blazor skal udføres. \\
+\\
+Sikkerhed på Blazor har vist sig at være en del problematisk, da fundet dokumentation for sikkerhed har været af ringe kvalitet. JWT kan dog blive hentet og gemt for senere brug. Skulle har gået med Angular, der er i det mindste dokumentation som ikke undlager en masse. Lige nu virker det til at serveren gemmer JWT'en dog, hvilket ikke er det bedste. \\
+Valgte at prøve Blazor WebAssembly Standalone App frem for Blazor web App for at se om det ville hjælpe. \\
+Har valgt at holde en pause med sikkerhed implementation på Blazor indtil alt andet i Blazor er færdiggjort. \\
+Blazor WEbAssembly Standalone App har vist sig at være bedre i forhold til lagering af JWT'en. Frontend-delen kan nu næsten kontakte alle endpoints i API'et (mangler logud). 
+
+\section{17/4/24}
+Planen er at skrive på rapporterne, da de var længere bagud end i forhold til kodningen. \\
+\\
+Fik skrevet en del produktrapport. Fik også fjernet det gamle Blazor web-server projekt og lavede nogle få ændringer til noget kode.
+
+\section{18/4/24}
+Vil forsøge at få implementeret korrekt sikkerhed på Blazor igen. \\
+\\
+Viste sig at implementere sikkerhed var let nok, når man ikke blandede Server-side og WebAssembly sammen. Fik indført at en bruger kan opdateres deres lokation. \\
+Begyndte at lave et REST-API for kunden FoodForAll A/S, således at de kan indsætte menuer og det. Vil opdater krav- og testspecifikationerne i morgen.\\
+Fiksede nogle problemer med nogle LaTex commands i Produktrapporten. \\
+Fik implementeret unhandled exception handling i CateringDataProcessing, samt lukning af konsol-programmet. Fiksede to fejl i contexthandler.ps1
+
+\section{19/4/24}
+Planen er at skrive krav- og testspecifikationerne for det nye REST-API. Når det er udført, så udvikle videre på API'et. \\
+\\
+En kort forstyrrelse af arbejderelateret ting.\\
+RabbitMq kommunikationsdelen er klar, det meste af REST-API'et skrevet. 
+
+\section{22/4/24}
+Få skrevet resten af REST-API'et og skrevet flere automatiske tests.\\
+\\
+Fik skrevet resten af API'et og nogle tests der fremviser forskellige ting. 
+
+\section{23/4/24}
+Planen er at skrive på rapporterne. \\
+\\
+Fik skrevet en del på processrapporten og i selve projektet indført en middleware for REST-API'erne, der logger endpoint kald.
+Fik lavet en system diagram.
+
+\section{24/4/24}
+Få skrevet på produktrapporten.\\
+Fik skrevet en del og lavet nogle diagrammer og tabeller. 
+
+
+\end{document}
