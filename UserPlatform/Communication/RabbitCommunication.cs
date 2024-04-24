@@ -115,7 +115,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
     public async Task<Result<IEnumerable<MenuListQueryResponse>>> ReceiveAllMenuesAsync(User user)
     {
         _logger.Information("{Identifier}: Querying for menues", _identifier);
-        MenuListCommand mlc = new() { Id =  Guid.NewGuid() };
+        MenuListCommand mlc = new();
         try
         {
             IEnumerable<MenuListQueryResponse> result = await CallAsync(mlc);
@@ -131,7 +131,7 @@ internal sealed class RabbitCommunication : BaseService, ICommunication, IDispos
     private Task<IEnumerable<MenuListQueryResponse>> CallAsync(MenuListCommand command, CancellationToken cancellationToken = default)
     {
         IBasicProperties props = _channel.CreateBasicProperties();
-        var correlationId = command.Id.ToString();
+        var correlationId = Guid.NewGuid().ToString();
         props.CorrelationId = correlationId;
         props.ReplyTo = _replyQueueNameGetMenues;
         var body = command.ToBody();

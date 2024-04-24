@@ -10,7 +10,6 @@ public sealed class User : IAggregateRoot
     private DateTime? _lastLogin;
     private UserContact _contact;
     private UserLocation _location;
-    private HashSet<ReferenceId> _orders;
     private HashSet<ReferenceId> _refreshTokens;
 
     public Guid Id { get => _id; private set => _id = value; }
@@ -19,7 +18,6 @@ public sealed class User : IAggregateRoot
     public DateTime? LastLogin { get => _lastLogin; private set => _lastLogin = value; }
     public UserContact Contact { get => _contact; private set => _contact = value; }
     public UserLocation Location { get => _location; private set => _location = value; }
-    public IEnumerable<ReferenceId> Orders { get => _orders; private set => _orders = value.ToHashSet(); }
     public IEnumerable<ReferenceId> RefreshTokens { get => _refreshTokens; private set => _refreshTokens = value.ToHashSet(); }
 
     private User()
@@ -34,18 +32,12 @@ public sealed class User : IAggregateRoot
         _contact = contact;        
         _password = null!;
         _location = location;
-        _orders = [];
         _refreshTokens = [];
     }
 
     public void SetPassword(string password)
     {
         _password = password;
-    }
-
-    public void AddOrder(Guid id)
-    {
-        _orders.Add(new ReferenceId(id));
     }
 
     public void AddRefreshToken(Guid id)

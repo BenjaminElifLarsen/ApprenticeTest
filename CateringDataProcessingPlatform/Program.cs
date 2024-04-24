@@ -24,7 +24,7 @@ logger.Information("{ProcessName} starting at {Time}", AppDomain.CurrentDomain.F
 
 var connectionString = manager.GetDatabaseString();
 ContextEFFactory cf = new();
-var contextFactory = cf.CreateDbContext([connectionString]);
+var contextFactory = cf.CreateDbContext(connectionString);
 IFactoryCollection factoryCollection = new FactoryCollection(time);
 IUnitOfWork unitOfWork = new UnitOfWorkEFCore(contextFactory);
 var rabbit = manager.GetRabbit();
