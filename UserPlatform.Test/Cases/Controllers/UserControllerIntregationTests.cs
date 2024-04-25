@@ -36,7 +36,7 @@ public class UserControllerIntregationTests
     }
 
     [Fact]
-    internal async Task Does_User_Create_Async_Call_User_Service() // Tests everything but the ICommunication implementation and the repoes
+    internal async Task Does_User_Create_Async_Call_Expected_Services() // Tests everything but the ICommunication implementation and the repoes
     {
         // Arrange
         var expectedStatusCode = 200;
@@ -54,10 +54,10 @@ public class UserControllerIntregationTests
         communicationServiceMock.Setup(cs => cs.TransmitUser(It.IsAny<User>()))
             .Returns(new SuccessNoDataResult());
         
-        var refreshTokenRepo = new Mock<IRefreshTokenRepository>();
-        refreshTokenRepo.Setup(rfr => rfr.GetTokenAsync(It.IsAny<Guid>()))
+        var refreshTokenRepoMock = new Mock<IRefreshTokenRepository>();
+        refreshTokenRepoMock.Setup(rfr => rfr.GetTokenAsync(It.IsAny<Guid>()))
             .Returns(Task.FromResult<RefreshToken>(null!));
-        refreshTokenRepo.Setup(rfr => rfr.Create(It.IsAny<RefreshToken>()));
+        refreshTokenRepoMock.Setup(rfr => rfr.Create(It.IsAny<RefreshToken>()));
 
         var userRepoMock = new Mock<IUserRepository>();
         userRepoMock.Setup(ur => ur.GetSingleAsync(It.IsAny<Guid>()))
@@ -70,16 +70,16 @@ public class UserControllerIntregationTests
 
         var unitOfWorkMock = new Mock<IUnitOfWork>();
         unitOfWorkMock.Setup(uow => uow.RefreshTokenRepository)
-            .Returns(refreshTokenRepo.Object);
+            .Returns(refreshTokenRepoMock.Object);
         unitOfWorkMock.Setup(uwo => uwo.UserRepository).
             Returns(userRepoMock.Object);
         unitOfWorkMock.Setup(uow => uow.UserRepository.GetSingleAsync(It.IsAny<string>()))
             .Returns(Task.FromResult(dummyUser));
         
         var passwordHasherMock = new Mock<IPasswordHasher>();
-        passwordHasherMock.Setup(phm => phm.Hash(It.IsAny<User>(), It.IsAny<string>()))
+        passwordHasherMock.Setup(ph => ph.Hash(It.IsAny<User>(), It.IsAny<string>()))
             .Returns("HashedPassword");
-        passwordHasherMock.Setup(phm => phm.VerifyPassword(It.IsAny<User>(), It.IsAny<string>()))
+        passwordHasherMock.Setup(ph => ph.VerifyPassword(It.IsAny<User>(), It.IsAny<string>()))
             .Returns(true);
         
         JwtSettings dummyOptions = new()
@@ -111,7 +111,7 @@ public class UserControllerIntregationTests
         var sut = new UserController(userService, _logger);
 
         // Act
-        var actualResult = await sut.CreateUser(request);
+        var actualResult = await sut.CreateUserAsync(request);
         var actualStatusCode = ActionHelper.GetStatusCode(actualResult);
         var logs = LogHelper.GetLogs(_output);
         var uarResult = ActionHelper.GetData<UserAuthResponse>(actualResult);
@@ -121,7 +121,18 @@ public class UserControllerIntregationTests
         Assert.NotNull(uarResult);
         Assert.Equal(expectedCompanyName, uarResult.UserName);
         Assert.Equal(2, logs.Length);
-        Assert.Contains($"SecurityService: User logged in at", logs[0]);
-        Assert.Contains("UserController: Create user took", logs[1]); // TODO: assert the mocks
+        Assert.Contains("SecurityService: User logged in at", logs[0]);
+        Assert.Contains("UserController: Create user took", logs[1]);
+        communicationServiceMock.Verify(cs => cs.TransmitUser(It.IsAny<User>()), Times.Once());
+        refreshTokenRepoMock.Verify(rtr => rtr.GetTokenAsync(It.IsAny<Guid>()), Times.Once());
+        refreshTokenRepoMock.Verify(rtr => rtr.Create(It.IsAny<RefreshToken>()), Times.Once());
+        userRepoMock.Verify(ur => ur.Update(dummyUser), Times.Once());
+        userRepoMock.Verify(ur => ur.Create(It.IsAny<User>()), Times.Once());
+        userRepoMock.Verify(ur => ur.AllAsync(It.IsAny<UserDataQuery>()), Times.Once());
+        unitOfWorkMock.Verify(uow => uow.RefreshTokenRepository, Times.Exactly(2));
+        unitOfWorkMock.Verify(uow => uow.UserRepository, Times.Exactly(4));
+        unitOfWorkMock.Verify(uow => uow.UserRepository.GetSingleAsync(It.IsAny<string>()), Times.Once());
+        passwordHasherMock.Verify(ph => ph.Hash(It.IsAny<User>(), It.IsAny<string>()), Times.Once());
+        passwordHasherMock.Verify(ph => ph.VerifyPassword(It.IsAny<User>(), It.IsAny<string>()), Times.Once());
     }
 }

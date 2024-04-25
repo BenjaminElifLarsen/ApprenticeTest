@@ -38,7 +38,7 @@ public class UserControllerUnitTests
         var sut = new UserController(userServiceMock.Object, _logger);
 
         // Act
-        var actualResult = await sut.CreateUser(request);
+        var actualResult = await sut.CreateUserAsync(request);
         var actualStatusCode = ActionHelper.GetStatusCode(actualResult);
         var logs = LogHelper.GetLogs(_output);
 

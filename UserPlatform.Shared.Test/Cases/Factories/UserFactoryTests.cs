@@ -23,7 +23,7 @@ public class UserFactoryTests
     }
 
     [Fact]
-    internal void Does_Valid_User_Creation_Go_Through()
+    internal void Does_Valid_Build_Success_Result_And_User()
     {
         // Arrange
         string dummyCity = "city";
