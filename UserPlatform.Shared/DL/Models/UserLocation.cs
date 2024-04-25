@@ -10,7 +10,7 @@ public sealed record UserLocation : ValueObject
     public string City { get => _city; private set => _city = value; }
     public string Street { get => _street; private set => _street = value; }
 
-    public UserLocation()
+    private UserLocation()
     {
         
     }
