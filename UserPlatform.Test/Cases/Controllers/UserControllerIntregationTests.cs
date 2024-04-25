@@ -36,7 +36,7 @@ public class UserControllerIntregationTests
     }
 
     [Fact]
-    internal async Task Does_User_Create_Async_Call_Expected_Services() // Tests everything but the ICommunication implementation and the repoes
+    internal async Task Does_Create_User_Call_Expected_Services() // Tests everything but the ICommunication implementation and the repoes
     {
         // Arrange
         var expectedStatusCode = 200;
@@ -111,7 +111,7 @@ public class UserControllerIntregationTests
         var sut = new UserController(userService, _logger);
 
         // Act
-        var actualResult = await sut.CreateUserAsync(request);
+        var actualResult = await sut.CreateUser(request);
         var actualStatusCode = ActionHelper.GetStatusCode(actualResult);
         var logs = LogHelper.GetLogs(_output);
         var uarResult = ActionHelper.GetData<UserAuthResponse>(actualResult);

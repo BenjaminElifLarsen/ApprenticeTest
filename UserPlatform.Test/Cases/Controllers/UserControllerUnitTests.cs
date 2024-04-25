@@ -23,7 +23,7 @@ public class UserControllerUnitTests
     }
 
     [Fact]
-    internal async Task Does_User_Create_Async_Call_User_Service()
+    internal async Task Does_Create_User_Return_200_With_Auth_Data()
     {
         // Arrange
         var expectedStatusCode = 200;
@@ -38,7 +38,7 @@ public class UserControllerUnitTests
         var sut = new UserController(userServiceMock.Object, _logger);
 
         // Act
-        var actualResult = await sut.CreateUserAsync(request);
+        var actualResult = await sut.CreateUser(request);
         var actualStatusCode = ActionHelper.GetStatusCode(actualResult);
         var logs = LogHelper.GetLogs(_output);
 

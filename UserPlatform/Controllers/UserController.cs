@@ -26,7 +26,7 @@ namespace UserPlatform.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> CreateUserAsync([FromBody] UserCreationRequest request)
+        public async Task<IActionResult> CreateUser([FromBody] UserCreationRequest request)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             var result = this.FromResult(await _userService.CreateUserAsync(request));

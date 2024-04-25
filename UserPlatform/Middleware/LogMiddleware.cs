@@ -30,13 +30,12 @@ public class LogMiddleware
             var method = context.Request.Method;
             var protocol = context.Request.IsHttps ? "HTTPS" : "HTTP";
             if (path.Length == 2)
-                logger.Information("{HttpProtocol}/{Controller}/:{Method} called at {Time}", protocol, path[1] + "Controller", method, time.GetCurrentTimeUtc());
+                logger.Information("{HttpProtocol}/{Controller}:{Method} called at {Time}", protocol, path[1] + "Controller", method, time.GetCurrentTimeUtc());
             else if (path.Length == 3) 
                 logger.Information("{HttpProtocol}/{Controller}/{Action}:{Method} called at {Time}", protocol, path[1] + "Controller", path[2], method, time.GetCurrentTimeUtc());
             else
                 logger.Information("{HttpProtocol}/{URL}:{Method} called at {Time}", protocol, path[0] + "Controller", method, time.GetCurrentTimeUtc());
         }
-
         await _next(context);
     }
 }
