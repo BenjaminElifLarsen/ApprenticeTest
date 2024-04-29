@@ -2,7 +2,7 @@
 using Catering.Shared.DL.Models.Enums;
 using Shared.DDD;
 
-namespace CateringDataProcessingPlatform.DL.Models;
+namespace Catering.Shared.DL.Models;
 
 public sealed class Menu : IAggregateRoot
 {

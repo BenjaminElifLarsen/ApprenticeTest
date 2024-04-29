@@ -1,7 +1,7 @@
 ﻿using Catering.Shared.IPL.Context;
 using Catering.Shared.IPL.Repositories;
 using Catering.Shared.IPL.Repositories.Interfaces;
-using CateringDataProcessingPlatform.DL.Models;
+using Catering.Shared.DL.Models;
 using Shared.Patterns.RepositoryPattern;
 
 namespace Catering.Shared.IPL.UnitOfWork;

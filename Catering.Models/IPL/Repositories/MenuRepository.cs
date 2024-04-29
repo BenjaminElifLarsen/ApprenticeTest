@@ -1,5 +1,5 @@
 ﻿using Catering.Shared.IPL.Repositories.Interfaces;
-using CateringDataProcessingPlatform.DL.Models;
+using Catering.Shared.DL.Models;
 using Shared.Patterns.CQRS.Queries;
 using Shared.Patterns.RepositoryPattern;
 

@@ -1,4 +1,4 @@
-﻿using CateringDataProcessingPlatform.DL.Models;
+﻿using Catering.Shared.DL.Models;
 using Shared.Communication.Models.Order;
 using Shared.Patterns.ResultPattern;
 

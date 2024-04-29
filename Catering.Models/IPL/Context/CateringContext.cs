@@ -1,4 +1,4 @@
-﻿using CateringDataProcessingPlatform.DL.Models;
+﻿using Catering.Shared.DL.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catering.Shared.IPL.Context;

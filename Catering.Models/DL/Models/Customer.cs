@@ -1,7 +1,7 @@
 ﻿using Catering.Models.DL.Models;
 using Shared.DDD;
 
-namespace CateringDataProcessingPlatform.DL.Models;
+namespace Catering.Shared.DL.Models;
 
 public class Customer : IAggregateRoot
 {

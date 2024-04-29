@@ -23,7 +23,7 @@ namespace Catering.Shared.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CateringDataProcessingPlatform.DL.Models.Customer", b =>
+            modelBuilder.Entity("Catering.Shared.DL.Models.Customer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,7 +33,7 @@ namespace Catering.Shared.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.ComplexProperty<Dictionary<string, object>>("Location", "CateringDataProcessingPlatform.DL.Models.Customer.Location#CustomerLocation", b1 =>
+                    b.ComplexProperty<Dictionary<string, object>>("Location", "Catering.Shared.DL.Models.Customer.Location#CustomerLocation", b1 =>
                         {
                             b1.IsRequired();
 
@@ -51,7 +51,7 @@ namespace Catering.Shared.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("CateringDataProcessingPlatform.DL.Models.Dish", b =>
+            modelBuilder.Entity("Catering.Shared.DL.Models.Dish", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -66,7 +66,7 @@ namespace Catering.Shared.Migrations
                     b.ToTable("Dishes");
                 });
 
-            modelBuilder.Entity("CateringDataProcessingPlatform.DL.Models.Menu", b =>
+            modelBuilder.Entity("Catering.Shared.DL.Models.Menu", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +85,7 @@ namespace Catering.Shared.Migrations
                     b.ToTable("Menus");
                 });
 
-            modelBuilder.Entity("CateringDataProcessingPlatform.DL.Models.Order", b =>
+            modelBuilder.Entity("Catering.Shared.DL.Models.Order", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -94,7 +94,7 @@ namespace Catering.Shared.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.ComplexProperty<Dictionary<string, object>>("Customer", "CateringDataProcessingPlatform.DL.Models.Order.Customer#ReferenceId", b1 =>
+                    b.ComplexProperty<Dictionary<string, object>>("Customer", "Catering.Shared.DL.Models.Order.Customer#ReferenceId", b1 =>
                         {
                             b1.IsRequired();
 
@@ -102,7 +102,7 @@ namespace Catering.Shared.Migrations
                                 .HasColumnType("uniqueidentifier");
                         });
 
-                    b.ComplexProperty<Dictionary<string, object>>("Menu", "CateringDataProcessingPlatform.DL.Models.Order.Menu#ReferenceId", b1 =>
+                    b.ComplexProperty<Dictionary<string, object>>("Menu", "Catering.Shared.DL.Models.Order.Menu#ReferenceId", b1 =>
                         {
                             b1.IsRequired();
 
@@ -110,7 +110,7 @@ namespace Catering.Shared.Migrations
                                 .HasColumnType("uniqueidentifier");
                         });
 
-                    b.ComplexProperty<Dictionary<string, object>>("Time", "CateringDataProcessingPlatform.DL.Models.Order.Time#OrderTime", b1 =>
+                    b.ComplexProperty<Dictionary<string, object>>("Time", "Catering.Shared.DL.Models.Order.Time#OrderTime", b1 =>
                         {
                             b1.IsRequired();
 
@@ -123,7 +123,7 @@ namespace Catering.Shared.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("CateringDataProcessingPlatform.DL.Models.Customer", b =>
+            modelBuilder.Entity("Catering.Shared.DL.Models.Customer", b =>
                 {
                     b.OwnsMany("Shared.DDD.ReferenceId", "Orders", b1 =>
                         {
@@ -145,7 +145,7 @@ namespace Catering.Shared.Migrations
                     b.Navigation("Orders");
                 });
 
-            modelBuilder.Entity("CateringDataProcessingPlatform.DL.Models.Dish", b =>
+            modelBuilder.Entity("Catering.Shared.DL.Models.Dish", b =>
                 {
                     b.OwnsMany("Shared.DDD.ReferenceId", "Menues", b1 =>
                         {
@@ -167,7 +167,7 @@ namespace Catering.Shared.Migrations
                     b.Navigation("Menues");
                 });
 
-            modelBuilder.Entity("CateringDataProcessingPlatform.DL.Models.Menu", b =>
+            modelBuilder.Entity("Catering.Shared.DL.Models.Menu", b =>
                 {
                     b.OwnsMany("Catering.Shared.DL.Models.MenuOrder", "Orders", b1 =>
                         {
@@ -213,7 +213,7 @@ namespace Catering.Shared.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsMany("CateringDataProcessingPlatform.DL.Models.MenuPart", "Parts", b1 =>
+                    b.OwnsMany("Catering.Shared.DL.Models.MenuPart", "Parts", b1 =>
                         {
                             b1.Property<Guid>("MenuId")
                                 .HasColumnType("uniqueidentifier");

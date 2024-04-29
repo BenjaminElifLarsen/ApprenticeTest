@@ -1,6 +1,6 @@
 ﻿using Shared.DDD;
 
-namespace CateringDataProcessingPlatform.DL.Models;
+namespace Catering.Shared.DL.Models;
 
 public sealed record OrderTime : ValueObject
 {

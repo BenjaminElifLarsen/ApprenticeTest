@@ -1,4 +1,4 @@
-﻿using CateringDataProcessingPlatform.DL.Models;
+﻿using Catering.Shared.DL.Models;
 using Shared.Patterns.CQRS.Queries;
 
 namespace Catering.Shared.IPL.Repositories.Interfaces;

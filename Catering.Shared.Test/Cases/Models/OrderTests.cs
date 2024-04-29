@@ -1,4 +1,4 @@
-﻿using CateringDataProcessingPlatform.DL.Models;
+﻿using Catering.Shared.DL.Models;
 using Shared.Helpers.Time;
 
 namespace Catering.Shared.Test.Cases.Models;
@@ -60,8 +60,6 @@ public class OrderTests
         // Assert
         Assert.Equal(expectedResult, actualResult);
     }
-
-    //internal void Does_Order_Handle_Set_Status_To_
 
     public static IEnumerable<object[]> PreparingModels()
     {
