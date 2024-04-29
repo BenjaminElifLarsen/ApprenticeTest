@@ -23,17 +23,17 @@ public class UserControllerUnitTests
     }
 
     [Fact]
-    internal async Task Does_Create_User_Return_200_With_Auth_Data()
+    internal async Task Does_Valid_Create_User_Return_200_With_Auth_Data()
     {
         // Arrange
         var expectedStatusCode = 200;
 
         var userServiceMock = new Mock<IUserService>();
-        var dummyUsername = "username";
-        var dummyToken = "token";
-        var dummyRefreshToken = "refreshToken";
+        string expectedCompanyName = "name";
+        var expectedToken = "token";
+        var expectedRefreshToken = "refreshToken";
         userServiceMock.Setup(us => us.CreateUserAsync(It.IsAny<UserCreationRequest>()))
-            .Returns((UserCreationRequest ucr) => Task.FromResult<Result<UserAuthResponse>>(new SuccessResult<UserAuthResponse>(new UserAuthResponse(dummyUsername, dummyToken, dummyRefreshToken))));
+            .Returns((UserCreationRequest ucr) => Task.FromResult<Result<UserAuthResponse>>(new SuccessResult<UserAuthResponse>(new UserAuthResponse(expectedCompanyName, expectedToken, expectedRefreshToken))));
         var request = new UserCreationRequest();
         var sut = new UserController(userServiceMock.Object, _logger);
 
@@ -41,11 +41,16 @@ public class UserControllerUnitTests
         var actualResult = await sut.CreateUser(request);
         var actualStatusCode = ActionHelper.GetStatusCode(actualResult);
         var logs = LogHelper.GetLogs(_output);
+        var uarResult = ActionHelper.GetData<UserAuthResponse>(actualResult);
 
         // Assert
         Assert.Equal(expectedStatusCode, actualStatusCode);
         Assert.Single(logs);
         Assert.Contains("UserController: Create user took ", logs[0]);
         userServiceMock.Verify(usm => usm.CreateUserAsync(request), Times.Once());
+        Assert.NotNull(uarResult);
+        Assert.Equal(expectedCompanyName, uarResult.UserName);
+        Assert.Equal(expectedToken, uarResult.Token);
+        Assert.Equal(expectedRefreshToken, uarResult.RefreshToken);
     }
 }
