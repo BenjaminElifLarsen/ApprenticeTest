@@ -52,20 +52,24 @@ public sealed class UserDataService : IUserDataService
         return userData;
     }
 
-    public async Task<UserData> CreateUserRequestAsync(UserRequest request)
+    public async Task<ResponseCarrier<UserData>> CreateUserRequestAsync(UserRequest request)
     {
         var response = await _userService.CreateUserAsync(request);
         if (response is null)
         {
             return null!;
         }
-        string token = response.Token;
-        string refreshToken = response.RefreshToken;
-        _authenticationStorage.Token = token;
-        _authenticationStorage.RefreshToken = refreshToken;
-        var claimsPrincipal = CreateClaimsPrincipalFromToken(token);
-        var userData = UserData.FromClaimsPrincipal(claimsPrincipal);
-        return userData;
+        if(response.Data is not null)
+        {
+            string token = response.Data.Token;
+            string refreshToken = response.Data.RefreshToken;
+            _authenticationStorage.Token = token;
+            _authenticationStorage.RefreshToken = refreshToken;
+            var claimsPrincipal = CreateClaimsPrincipalFromToken(token);
+            var userData = UserData.FromClaimsPrincipal(claimsPrincipal);
+            return new ResponseCarrier<UserData>(userData);
+        }
+        return new ResponseCarrier<UserData>(response.Error);
     }
 
     private ClaimsPrincipal CreateClaimsPrincipalFromToken(string token)

@@ -1,4 +1,5 @@
 ﻿using Shared.Service;
+using UserFrontend.Frontend.Models;
 using UserFrontend.Frontend.Models.User.Requests;
 using UserFrontend.Frontend.Models.User.Responses;
 using UserFrontend.Frontend.Services.Contracts;
@@ -16,7 +17,7 @@ public class UserService : IUserService
         _authenticationStorage = authenticationStorage;
     }
 
-    public async Task<LoginResponse> CreateUserAsync(UserRequest body)
+    public async Task<ResponseCarrier<LoginResponse>> CreateUserAsync(UserRequest body)
     {
         HttpResponseMessage responseMessage = null!;
         using HttpRequestMessage requestMessage = new(HttpMethod.Post, "api/User");
@@ -32,7 +33,13 @@ public class UserService : IUserService
 
         if (responseMessage.IsSuccessStatusCode)
         {
-            return responseMessage.ToModel<LoginResponse>();
+            var data = responseMessage.ToModel<LoginResponse>();
+            return new ResponseCarrier<LoginResponse>(data);
+        }
+        if (responseMessage.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            var error = responseMessage.ToModel<ErrorResponse>();
+            return new ResponseCarrier<LoginResponse>(error);
         }
         return null!;
     }

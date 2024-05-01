@@ -38,7 +38,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Catering.API", "Catering.AP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Catering.DataProcessingPlatform", "Catering.DataProcessingPlatform\Catering.DataProcessingPlatform.csproj", "{B8460544-8757-465A-B8E5-B834E34691FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catering.DataProcessingPlatform.Test", "Catering.DataProcessingPlatform.Test\Catering.DataProcessingPlatform.Test.csproj", "{C4929252-7792-47F9-90BA-A385DFD2802E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Catering.DataProcessingPlatform.Test", "Catering.DataProcessingPlatform.Test\Catering.DataProcessingPlatform.Test.csproj", "{C4929252-7792-47F9-90BA-A385DFD2802E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

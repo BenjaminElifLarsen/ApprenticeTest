@@ -23,7 +23,7 @@ public class UserAuthenticationStateProvider : AuthenticationStateProvider, IDis
         var principal = new ClaimsPrincipal();
         var userData = _userDataService.GetUserData();
         if(userData is not null)
-        { // TODO: use the refresh token
+        { // TODO: use the refresh token. Not sure how to automate this really, at least not compared to Angular
             //var authenticatedUserData = await _userDataService.sen
         }
         return new(principal);
@@ -41,16 +41,19 @@ public class UserAuthenticationStateProvider : AuthenticationStateProvider, IDis
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
     }
 
-    public async Task CreateAsync(UserRequest request)
+    public async Task<ResponseCarrier> CreateAsync(UserRequest request)
     {
         var principal = new ClaimsPrincipal();
         var userData = await _userDataService.CreateUserRequestAsync(request);
-        if (userData is not null)
+        if (userData is not null && userData.Data is not null)
         {
-            principal = userData.ToClaimsPrincipal();
+            principal = userData.Data.ToClaimsPrincipal();
         }
-        CurrentUser = userData!;
+        CurrentUser = userData is null ? null! : userData.Data!;
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
+        if (userData is null)
+            return null!;
+        return new ResponseCarrier(userData.Error);
     }
 
     public async Task LogOffAsync()

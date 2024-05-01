@@ -1,0 +1,71 @@
+﻿@using UserFrontend.Frontend.Models
+<div>
+    <h4>Error</h4>
+    @foreach (var err in GetErrors())
+    {
+        <p>@err</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ErrorResponse Errors { get; set; }
+
+    IEnumerable<string> GetErrors()
+    {
+        var eb = Errors.Errors;
+        List<string> errors = [];
+        if ((eb & (long)BinaryErrors.RequestIsNull) != 0)
+            errors.Add("Request is null");
+        if ((eb & (long)BinaryErrors.CompanyNameInUse) != 0)
+            errors.Add("Company name could not be used");
+        if ((eb & (long)BinaryErrors.NoContactInformationSat) != 0)
+            errors.Add("No contact information was sat");
+        if ((eb & (long)BinaryErrors.MissingLocation) != 0)
+            errors.Add("Location is missing");
+        if ((eb & (long)BinaryErrors.MissingPassword) != 0)
+            errors.Add("Password is missing");
+        if ((eb & (long)BinaryErrors.InvalidPassword) != 0)
+            errors.Add("Invalid password");
+        if ((eb & (long)BinaryErrors.NotSamePassword) != 0)
+            errors.Add("The passwords are not the same");
+        if ((eb & (long)BinaryErrors.CompanyNameNotSat) != 0)
+            errors.Add("Forgot to set the company name");
+        if ((eb & (long)BinaryErrors.LocationInvalid) != 0)
+            errors.Add("Location is invalid");
+        if ((eb & (long)BinaryErrors.PasswordToShort) != 0)
+            errors.Add("Password is to short");
+        if ((eb & (long)BinaryErrors.PasswordToLong) != 0)
+            errors.Add("Password is to long");
+        if ((eb & (long)BinaryErrors.PasswordMissingDigit) != 0)
+            errors.Add("Password is missing digit");
+        if ((eb & (long)BinaryErrors.PasswordMissingSpecial) != 0)
+            errors.Add("Password is missing special symbols");
+        if ((eb & (long)BinaryErrors.PasswordMissingSmall) != 0)
+            errors.Add("Password is missing small letters");
+        if ((eb & (long)BinaryErrors.PasswordMissingCapital) != 0)
+            errors.Add("Password is missing capital letters");
+        return errors;
+    }
+
+
+    enum BinaryErrors
+    {
+        RequestIsNull = 0b1,
+        CompanyNameInUse = 0b10,
+        NoContactInformationSat = 0b100,
+        MissingLocation = 0b1000,
+        MissingPassword = 0b1_0000,
+        InvalidPassword = 0b10_0000,
+        NotSamePassword = 0b100_0000,
+        CompanyNameNotSat = 0b1000_0000,
+        LocationInvalid = 0b1_0000_0000,
+        PasswordToShort = 0b10_0000_0000,
+        PasswordToLong = 0b100_0000_0000,
+        PasswordMissingDigit = 0b1000_0000_0000,
+        PasswordMissingSpecial = 0b1_0000_0000_0000,
+        PasswordMissingSmall = 0b10_0000_0000_0000,
+        PasswordMissingCapital = 0b100_0000_0000_0000,
+    }
+}

@@ -1,9 +1,16 @@
 ﻿@page "/user/create"
+@using UserFrontend.Frontend.Models
 @using UserFrontend.Frontend.Models.User.Requests
+@using UserFrontend.Frontend.Pages.User.Create.CreaterErrors
 @inject NavigationManager NavigationManager
 @attribute [AllowAnonymous]
 
 <h3>CreateUser</h3>
+
+@if(rc is not null && rc.Error is not null)
+{
+    <UserCreateError Errors="rc.Error" />
+}
 
 <EditForm Model="@request" OnSubmit=@CreateAsync>
     <div>
@@ -42,10 +49,13 @@
     private UserAuthenticationStateProvider UserAuthenticationStateProvider { get; set; }
 
     UserRequest request = new();
-
+    ResponseCarrier rc = null!;
     private async Task CreateAsync()
     {
-        await UserAuthenticationStateProvider.CreateAsync(request);
-        NavigationManager.NavigateTo("");
+        rc = await UserAuthenticationStateProvider.CreateAsync(request);
+        if(rc is not null && rc.Error.Errors == 0)
+        {
+            NavigationManager.NavigateTo("");
+        }
     }
 }

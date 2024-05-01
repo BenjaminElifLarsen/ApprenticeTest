@@ -37,32 +37,37 @@ public class UserFactory : IUserFactory
         }
         if (string.IsNullOrWhiteSpace(request.CompanyName)) // could benefit from specification pattern, perhaps
             flag += UserFactoryErrors.CompanyNameNotSat;
-        if (validationData.Users.Any(x => string.Equals(x.CompanyName.ToLower(), request.CompanyName.ToLower())))
+        if (request.CompanyName is not null && validationData.Users.Any(x => string.Equals(x.CompanyName.ToLower(), request.CompanyName.ToLower())))
             flag += UserFactoryErrors.CompanyNameInUse;
         if (string.IsNullOrWhiteSpace(request.City) || string.IsNullOrWhiteSpace(request.Street))
             flag += UserFactoryErrors.LocationInvalid;
-        if (!_passwordCapitalLetter.IsMatch(request.Password))
-            flag += UserFactoryErrors.PasswordMissingCapital;
-        if (!_passwordSmallLetter.IsMatch(request.Password))
-            flag += UserFactoryErrors.PasswordMissingSmall;
-        if (!_passwordDigit.IsMatch(request.Password))
-            flag += UserFactoryErrors.PasswordMissingDigit;
-        if (!_passwordSpecial.IsMatch(request.Password))
-            flag += UserFactoryErrors.PasswordMissingSpecial;
-        if (request.Password.Length < _passwordMinLength)
-            flag += UserFactoryErrors.PasswordToShort;
-        if (request.Password.Length > _passwordMaxLength)
-            flag += UserFactoryErrors.PasswordToLong;
-        if (!string.Equals(request.Password, request.Password))
+        if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            if (!_passwordCapitalLetter.IsMatch(request.Password))
+                flag += UserFactoryErrors.PasswordMissingCapital;
+            if (!_passwordSmallLetter.IsMatch(request.Password))
+                flag += UserFactoryErrors.PasswordMissingSmall;
+            if (!_passwordDigit.IsMatch(request.Password))
+                flag += UserFactoryErrors.PasswordMissingDigit;
+            if (!_passwordSpecial.IsMatch(request.Password))
+                flag += UserFactoryErrors.PasswordMissingSpecial;
+            if (request.Password.Length < _passwordMinLength)
+                flag += UserFactoryErrors.PasswordToShort;
+            if (request.Password.Length > _passwordMaxLength)
+                flag += UserFactoryErrors.PasswordToLong;
+        }
+        else
+            flag += UserFactoryErrors.MissingPassword;
+        if (!string.Equals(request.Password, request.PasswordReentered))
             flag += UserFactoryErrors.NotSamePassword;
-        if (string.IsNullOrWhiteSpace(request.Phone) || string.IsNullOrWhiteSpace(request.Email))
+        if (string.IsNullOrWhiteSpace(request.Phone) && string.IsNullOrWhiteSpace(request.Email))
             flag += UserFactoryErrors.NoContactInformationSat;
         if (!flag)
             return new BadRequestResult<User>(flag);
-        UserLocation location = new(request.City, request.Street);
+        UserLocation location = new(request.City!, request.Street!);
         UserContact contact = new(request.Email, request.Phone);
-        User user = new(request.CompanyName, contact, location);
-        var hashedPassword = _passwordHasher.Hash(user, request.Password);
+        User user = new(request.CompanyName!, contact, location);
+        var hashedPassword = _passwordHasher.Hash(user, request.Password!);
         user.SetPassword(hashedPassword);
         return new SuccessResult<User>(user);
     }

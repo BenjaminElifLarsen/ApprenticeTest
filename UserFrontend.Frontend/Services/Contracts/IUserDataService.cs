@@ -6,7 +6,7 @@ namespace UserFrontend.Frontend.Services.Contracts;
 public interface IUserDataService
 {
     public Task<UserData> SendAuthenticateRequestAsync(LoginRequest request);
-    public Task<UserData> CreateUserRequestAsync(UserRequest request);
+    public Task<ResponseCarrier<UserData>> CreateUserRequestAsync(UserRequest request);
     public UserData? GetUserData();
     public Task LogoffAsync();
     public Task RefreshTokenAsync();
