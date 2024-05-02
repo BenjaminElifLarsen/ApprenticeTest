@@ -8,6 +8,7 @@
 % Replace `letterpaper' with `a4paper' for UK/EU standard size
 \usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 \usepackage[T1]{fontenc}
+
 % Useful packages
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -22,9 +23,9 @@ sorting=ynt
 
 \usepackage{pdfpages}
 
+\usepackage{adjustbox}
 \usepackage{listings}
 \usepackage{color}
-\usepackage{adjustbox}
 \lstloadlanguages{C,C++,csh,Java}
 
 \definecolor{red}{rgb}{0.6,0,0} 
@@ -74,311 +75,1102 @@ delegate, internal, short, void,
 do, is, sizeof, while,
 double, lock, stackalloc,
 else, long, static,
-enum, namespace, string,
-async, Task},
+enum, namespace, string, await,
+async, Task, Sleep, var, FromSeconds, 
+TimeSpan, Elapsed, Thread,
+@code, @using, @page, Inject},
 keywordstyle=\color{blue},
 identifierstyle=\color{red}
 }
 
-\newcommand{\csharp}{C$^\sharp$}
+\newcommand{\csharp}{C$^\sharp$ }%
 
 \NewDocumentCommand{\codeKey}{v}{%
-\texttt{\textcolor{blue}{#1}}%
+\text{\textcolor{blue}{#1}}%
 }
 \NewDocumentCommand{\codeType}{v}{%
-\texttt{\textcolor{type}{#1}}%
+\text{\textcolor{type}{#1}}%
 }
 \NewDocumentCommand{\codeMethod}{v}{%
-\texttt{\textcolor{method}{#1}}%
+\text{\textcolor{method}{#1}}%
 }
 
-\title{Process Rapport \\ Cateringplatform}
+\title{Produktrapport \\ Cateringplatform}
 \author{Benjamin Elif Larsen}
 
 \begin{document}
+%\maketitle
 
 \pagenumbering{Roman}
 \onecolumn
 \maketitle
 \pagebreak
 
+\includepdf[scale=0.8]{titleblade.pdf}
+
 \tableofcontents
 
 \listoffigures
 
-%\listoftables
+\listoftables
 
 \pagebreak
 
 \pagenumbering{arabic}
 
 \chapter{Læsevejledning}
+Denne rapport af en af to rapport for svendeprøven. Rapporten vil gennemgå arkitekturen, kravspecifikationerne og test sager, udvalgte teknologier og mønstre og hvordan de bruges, opsætningen af produktet, samt brugervejledning for produktet. 
+Kapitlerne kan læses uden behov for at havde læst processrapporten først, men denne rapport vil til tider henvise læseren til bestemte dele af processrapporten. De valgte teknologier og mønstre bliver forklaret mere i dybden i processrapporten i forhold til hvad de er og redegjort for hvorfor de blev valgt.
+I forhold til kapitlerne, så kan de læses uden ordre, men visse områder vil give mere mening, hvis denne rapport læses fra starten.
 
-\chapter{Introduktion}
-\label{intro}
-På hovedforløb 6 af Datateknikker med Speciale i Programmering skal der udvikles et svendeprøve projekt med de følgende krav:
+\chapter{Produkt Arkitektur}
+Løsningen består af to hoved-dele, User og Catering, se figur \ref{fig:sys}. Hver del har deres egen database og REST-API, skrevet i \csharp 12 dotnet 8.0. Forskellen mellem dem er, at User har en frontend skrevet i Blazor WebAssembly Standalone App og Catering har en CateringDataProcessing konsol program, også skrevet i \csharp 12. \\
+Begge databaser er SQL-databaser\footnote{Structured Query Language.}, mere præcis MSSQL, og begge sider benytter en ORM\footnote{Object Relational Mapping.} til at kommunikere med databaserne. Den valgte ORM er EntityFramework Core 8.x. \\
+For at kommunikere imellem de to sider benyttes en message broker, RabbitMQ, og visse dele af begge sider sender logs til Seq via Serilog.
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=1\columnwidth]{images/System.drawio.png}
+    \caption{System oversigt}
+    \label{fig:sys}
+\end{figure}\\
+Som det kan blive observeret i figur \ref{fig:sys}, så foregår kommunikationen mellem databaserne og resten af systemet i forskellige steder, alt efter hvilken del der kigges på. %refactor
+Grunden til dette, er fordi Catering-delen oprindeligt ikke havde en REST-API. 
+%Hvis der havde været mere tid for udvikling ville RabbitMQ delen af User REST-API været rykket ud i sit eget projekt. %move over to the diskussion or conslusion
+
+\section{Filstruktur} %update this entire section
+I produktet, er projekterne opdelt efter tre område, Shared, User og Catering. 
+%Shared-delen indeholder projekterne Shared og Shared.Test og som navnet antyder, så bliver de benyttet af de andre dele. Shared.Test er test projektet for Shared. Catering-delen indeholder projekterne Catering.Models (Catering.Shared i solution explorer), Catering.Shared.Test, Catering.DataProcessingPlatform og Catering.DataProcessingPlatform.Test. Begge projekter med der ender på .Test er test-projekter for projekterne med navnet før. User-delen indeholder UsetPlatform, UserPlatform.Shared, UserPlatform.Test og UserFrontend.Frontend. \\
+Hvis der kigges på projekt-løsningen i Solution-Explorer (Visual Studio 2022), så burde der være en mappe for hver del, hvor projekterne kan findes under. \\
+Næsten alle projekter har deres eget test-projekt. \\
+Begge Shared projekter i User og Catering har den følgende mappestruktur:
 \begin{itemize}
-    \item Konfigurationsstyring
-    \item Sikkerhed
-    \item Test
-    \item Database
-    \item Server
+    \item Communication
+    \item DL - Domain Layer
+    \begin{itemize}
+    \item Factories
+    \item Models
+    \end{itemize}
+    \item IPL - Infrastructure Persistance Layer
+    \begin{itemize}
+    \item Context
+    \item Repositories
+    \item UnitOfWork
+    \end{itemize}
+    \item Migrations
 \end{itemize}
-På sammen tid skal end af de følgende også inddrages: 
+REST-API'erne er begge opsat med den følgende mappestruktur:
 \begin{itemize}
-    \item Klient/Server
-    \item APP Udvikling
-    \item Desktop Program
-    \item Embedded
+    \item Communication
+    \item Controllers
+    \item Middleware
+    \item Models - Request og response modeller
+    \item Services
+    \item Sys - Modeller for data i appsettings.json
 \end{itemize}
-Det blev valgt at inddrage en klient, som den ekstra del. Grunden dette var fordi udvikleren havde kun en smule kendskab til frontend kodning og viden inde for dette område kunne være brugbart. \\
-Formållet er at fremvise den viden man har fået under uddannelsen. \\
-Projektet blev udført i form af en en-personsprojekt. \\
+De andre projekter har helt forskellige mappestrukturere og bliver derfor ikke fremvist her. \\
+Sektionerne under her vil give en kort forklaring på hvad hvert projekt, med undtagen for test-projekterne, er for.
 
-\section{Case Beskrivelse}
-Ikke alle virksomheder har mulighed for at servere mad i deres kantiner fra deres egen køkken. Dermed er der økonomiske gevinster for en cateringvirksomhed ved at sælge færdiglavede retter til disse virksomheder. På sammen tid er det blevet mere udbredt blandt virksomheder at sælge deres produkter via internettet. Disse muligheder vil cateringvirksomheden FoodForAll A/S\footnote{FoodForAll A/S i dette projekt er en fiktiv virksomhed og har intet med potentielle virkelige virksomheder. } gerne benytte sig af for at øge deres omsætning og øge antallet af kunde via en hjemmeside der er let at bruge, da de på nuværende tidspunkt kun tillader bestillinger via deres telefon besat af en enkelt ansat.
+\subsection{Catering}
+Cateringdelen består af Catering.Shared, Catering.DataProcessingPlatform og Catering.API. Både Shared og Catering.DataProcessingPlatform har deres egen test-projekter.
 
-\section{Problemformulering}
-Hvordan kan et system for catering blive opbygget, der tillader brugere at oprette sig, bestille bestemte retter med tidspunkt og lokation, samt tillade virksomheden at oprette valgmuligheder og se bestillinger?
+\subsubsection{Catering.Shared}
+Indeholder domæne modellerne, deres faktories, datakonteksten, Unit of Work, samt de repositories, der skal bruges for datakontekst-kommunikation.
 
-\section{Projekt Afgrænsning}
-På grund af tidsbegrænsninger og at det er en prototype vil der være begrænsninger. Disse er: 
+\subsubsection{Catering.API}
+Indeholder REST-API'et for Catering. Har servicere for at håndtere endpoint kald, hvor servicerne kan kalde et singleton RabbitMQ kommunikations-modul, som indeholder producers og consumers. 
 
-\begin{itemize}
-    \item Intet betalingssystem.
-    \item Det grafiske brugerflade vil være simpel, funktion over design.
-    \item Sikkerheden vil minimal i forhold til et virkelig produkt.
-\end{itemize}
+\subsubsection{Catering.DataProcessingPlatform}
+Indeholder kode, der kommunikere med RabbitMQ via consumers og databasen via datakonteksten. \\
+Dette projekt håndtere også uhåndteret fejl i sig selv og lukning på en anden måde end resten af projekterne, da den vil logge disse ting. %not sure best place to explain
 
-\chapter{Projekt Planlægning}
-\label{plan}
-\label{plan:time}
-Projektet blev planlæg den første svendeprøvedag og før der blev begyndt at arbejde på selve projektet. Det blev valgt at benytte en Gantt-diagram, da der var kendskab til dette fra H5. \\
-Hver tidsenhed i Gantt-diagrammet var en arbejdsdag og tiden blev fastlagt for de normalle arbejdsdage der var fra opstart til aflevering (det vil sige mandag til og med fredag), hvilket gav 19 arbejdsdage. Dog på grund af den sidste dag var afleveringsdagen blevdet vedtaget at alt arbejde skulle være færdig dagen før, hvilken gav i alt 18 arbejdsdage. De forskellige aktiviteter er samlinger af flere kravspecifikationer, f.eks. indeholder Factories alle kravspecifikationer som har kategorien 'Factory', men der er prøvet at oprette en aktivitet for hver Id samling, f.eks. alle Cat-Service-n ligger under Catering Dataprocess projekt. \\
-I forhold til placeringen af de forskellige aktiviteter, så er de fleste i starten af projektet med den begrundelse at udvikleren fortrækker at havde tralvt i starten og havde tid til at bedre håndtere nye opgaver, forsinkelser, forbedringer og lignende længere henne i arbejdsprocessen. \\
-Tidsplanen kan ses i billag \ref{ap:time} ... % more
-Givet dette projekt er en en-personprojekt betyder det at der ikke er nogen fordeling af arbejde. 
+\subsection{User}
+User delen består af UserPlatform, UserPlatform.Shared og UserFrontend.Frontend. Både UserPlatform og UserPlatform.Shared har test-projekter.
 
-\chapter{Valgte Teknologier og Mønstre}
-Dette kapitel vil forklare de valgte mønste og teknologier, der benyttes, er og hvorfor de blev valgt. Andre teknologier vil også bliver nævnt, samt givet en forklaring på hvorfor de ikke blev valgt. %Mere information kan findes over i produktrapporten
+\subsubsection{UserPlatform.Shared}
+Indeholder det samme slags kode som Catering.Shared, da den tjener det samme formål. 
 
-\section{Message Broker}
-\label{mes}
-Udvikleren valgte at ville benytte en message broker til at kommunikere mellem de forskellige catering-delen og user-delen. \\
-Grundene til at benytte en message broker er mange. F.eks. at kunne opskaler de dele af opsætningen der er under pres, f.eks. hvis der er stor pres på catering-delen, så kan endnu en catering-processe startes op og begynde at håndtere data. På sammen tid kan data sendes til forskellige programmer, der har behov for data'en for forskellige grunden, uden at nogle af programmerne har kendskab til hinanden, hvilket betyder lav coupling mellem de forskellige dele. Selvfølgelig gør det mere besværligt at følge data igennem et system, da man ikke kan se hvad der modtager data eller sender data til systemet. %moar
-\\
-Der blev kigget på to forskellige teknologier inde for dette, Kafka, se \ref{kafka}, og RabbitMq, se \ref{RabbitMq}. 
-Det blev valgt at gå med RabbitMq, da det mere ukendt for udvikleren, samt at RabbitMq virkede mere realistisk for en catering-virksomhed frem for Kafka. Udvikleren har lidt kendskab til Kafka fra et tidligere forløb og lidt kendskab til RabbitMq fra lærepladsen, %check if the last word is correct, 
-men kun benyttet begge lidt. 
+\subsubsection{UserPlatform}
+Indeholder REST-API'et for User. Udover at indeholde de samme ting som Catering.API, så har den også de nødvendige implementationer for at kunne kommunikere med datakonteksten.
 
-\subsection{Kafka}
-\label{kafka}
-Apache Kafk er en åben-kilde event streaming platform, hvilket betyder at den kan bruges til at skrive (publish) events og læse (subscribe) events. Alle events bliver gemt i en eller flere cluster af server og har dermed mulighed for at håndtere, hvis en server går ned, samt der er muligt at replikere data over flere servicer. \\
-En lager service bliver kaldt en Broker i Kafka, men Kafka kan også ahve zookeepers, workers og mere alt efter behovet. \\
-Kafka lager events under topics, noget hen af Queue i RabbitMq, events bliver aldirg slettet, når de bliver læst, de slettes først når de bliver for gamle, hvilket en kafka-bruger kan sættes. På sammen tid læses events altid i den rækkefølge de blev indsat i.  \\
-Kafka tillader også schema for de oprettede topics, hvilket betyder at Kafka kan validere at events der sendes til den passer ind \cite{kafka}, hvilket betyder at Kafka benytter Extract-Transform-Load.  
+\subsubsection{UserFrontend.Frontend}
+Projektet der indeholder frontend-delen for User. Rent single-page application. Indeholder en HttpClient, som bruges, via servicer, til at kontakte UserPlatform.
 
-\subsection{RabbitMq}
-\label{RabbitMq}
-RabbitMq er en åben-kilde messaging og streaming broker, som benytter queues til at sende data mellem producers (skriver) og consumers (læser) og så snart en consumer har anerkendt at de har modtaget en besked bliver beskeden slettet fra dens kø. RabbitMq benytter First-In-First-Out for beskederne i en kø \cite{rabbit}.\\
-RabbitMq kan anses for at være benytte Extract-Load-Transform, da den ikke har noget schema for data'en i en kø, da data lægges som bytes, derkemd alt kan skrives og alt kan læses til/fra en kø, hvilket betyder at consumer'en skal tjekke om data'en opfylde krav, f.eks. om den kan mappes til et objekt eller ej.
-... \\
-Med sin standard-opsætning benyttes der round-robin. Dette betyder at hvis der køre en consumer, så modtager den alt data der sendes på de queues den lytter til, hvis der er to consumers, så modtager de halvdelen osv. 
-Dette er fint, hvis alle consumer gør det samme, men hvis consumerne gør forskellige ting, så kan der opstå problemer. Det er dog muligt at sætte RabbitMq til at sende en event til at alle consumers \cite{rabbit}. \\
-RabbitMq tillader også, meget let, opsætningen af Remote Procedure Call (RPC), hvilket er at en producer kan modtaget et svar for en besked fra den consumer som håndtere beskeden \cite{rabbitRpc}. %explain why to use it 
+\subsection{Shared}
+Indeholde projektet Shared og dens test-projekt. 
+Shared indeholder det kode som bruges af User- og Catering-delen. Det vil sige mønstre, kommunikationsmodeller, domain driven design klasser og kontrakter og logger. %more
 
+\section{Kommunikation mellem Programmer} %update 
+Kommunikationen mellem Catering-delen og User-delen forgik via message broker'en RabbitMQ. \\ %explain more
+Dette betyder at der er intet kendskab mellem User og Catering, de ved kun hvordan de kan sende og modtage data, ikke hvem der sender eller modtager data, se figur \ref{fig:sys} for kommunikationen mellem delene.
 
-\section{ORM}
-Den valgte ORM (Object... ) %explain
-for dette projekt er EntityFramework Core 8.x. Denne ORM er udviklet af Microsoft og er den primære ORM inde for \csharp. \\
-Andre muligheder kunne være at udvikle sin egen ORM eller oprette og sende SQL-kommandoer via \csharp's SqlClient. \\
-EntityFramework Core har en del sikkerhed bygget ind i sig, automatisk sanitising af data, oversætning mellem model og tabel-række, ... %explain more
-På sammen tid kommer EntityFramework Core med Repository Pattern \ref{api:p:repo} og Unit Of Work \ref{api:p:uow}, men i dette projekt er der egen implementationer af disse. Grunden til dette er mere fin-kontrol over database-adgang end hvad Entityframework Cores egen udgaver tilbyder. 
+\chapter{Kravspecifikationer og Test Sager}
+\label{plan:reqtest}
+For svendeprøven blev der udviklet kravspecifikationer og test sager, se \ref{plan:reqtest:req} og \ref{plan:reqtest:test}. \\
+For at kunne fremvise både kravspecifikationerne og test sagerne i rapporten, var det nødvendigt at ikke visse alle kolonnerne. De fulde kravspecifikationer og test sager kan blive fundet under projektroden/Data i filerne KravSpecifikationer.xlsx og TestSager.xlsx
 
-\section{Database}
-For at sikre sig at alt oprettet data blev gemt for senere behov, blev det valgt at inddrage en relationel database i form af en SQL database. En relationel database tillader at oprettelse, hentning, sletning og ændre af data på en overskuelig måde, samt at havde data-schema over de forskellige typer af data, der bliver gemt. En SQL database har en data-schema for hver 'tabel' i databasen, hvilket betyder at hver kolumne svare til en bestemt datatype og hver rækker er et bestemt objekt.\\
-På sammen tid tillade en SQL database formindskning af duplikereret data, da der kan oprettes relationer mellem de forskellige tabeller. SQL databaser tillader også at opsætte, begrænsede, regler for hvordan data'en skal se ud, f.eks. om nullable data er tilladt eller om bestemt data må være duplikeret i flere rækker.  \\
-Databasen valgt er en MSSQL, også kendt som Microsoft SQL, database. Grunden til dette valg, er fordi udvikleren har godt kendskab til den, både fra egen udvikling og fra lærepladser. På sammen tid benyttes EntityFramework Core til at håndtere kommunikationen med databasen og dermed vil der for kode-udvikling ikke være en større kode-forskel. \\
-Andre muligheder kunne f.eks. være MySQQL eller SQLite, SqLite er en let og gratisk database med få funktionerne i forhold til MSSQL og MySQL. MySQL er en gratisk database, MSSQL koster for ikke-udviklere. %explain a little more for MySQL
-\\
-En lille vigtig forskel, der er vigtigt, når der overvejes database, er hvor godt databasen understøtter de valgte datatyper for modellerne over i projektet, f.eks. om en database undestøtter ikke-utc tidspunkter, om den understøtter float/single eller om den ikke gør. F.eks. understøtter visse udgaver af MSSQl ikke TimeOnly og DateOnly, da disse er nyer typer inde for \csharp. Detter er en anden grund til valget faldt på MSSQL, den er udviklet af Microsoft som også udvikler \csharp og dermed er der større chance for nyere udgaver af MSSQL vil understøtte nye datatyper i \csharp.  
+\section{Kravspecifkationer}
+\label{plan:reqtest:req}
+Kravspecifikationerne kan blive fundet i tabellerne \ref{plan:reqtest:req:items1} og \ref{plan:reqtest:req:items2}.
+Hver krav har et id og tilhøre en kategori. Requirement forklarer hvad kravet skal opfylde for at være udført og Priority angiver hvor vigtig kravet er, laver tal er vigtigere. Krav, som har prioriteten 99, blev ikke udført som en del af produktet, men i et virkelig produkt ville diise har været implementeret. 
 
-\section{Docker}
-Docker er ... \\
-Docker tillader at køre programmer i form af containers ud fra images. Dette burde betyder at containen på en computer vil køre på sammen måde som på en anden computer. Containerne køre på et lukket system, adskilt fra vært-computerens system. \\
-... \\
-... \\
-... \\ %explain more
-Andre muligheder at køre servicerne direkte på systemet, hvilket SEQ, RabbitMQ og MSSQL kunne gøre, men dette skabe problemer, da systemet kunne påvirke hvordan servicerne opføre sig, samt gøre det mere svært at replikere opsætningen hos flere udviklere. 
-En anden grund til at benytte Docker er visse services som Kafka kræver flere enheder for at køre optimalt, noget man kan undgå via Docker, da hver kafka-enhed har sin egen container. 
+\section{Test Sager}
+\label{plan:reqtest:test}
+Test sagerne blev udviklet ud fra nogle af kravspecifikationerne, se \ref{plan:reqtest:req}, og de udviklede test sager kan ses i tabel \ref{plan:reqtest:test:cases}. Grunden til at der ikke er en test sag for hver eneste kravspecifikation var pga. tidsbegrænsninger. 
 
-Det skal peges ud at docker containers ikke burde blive påvirket af selve enhedens OS (Udover for Windows's Hyper-V for windows-platformer), men det blev fundet at SEQ container, som ikke brugte den defaulte bruger, kørte anderledes på en pc frem for en anden. En grund kunne ikke findes, der forklarede dette. 
+\chapter{Teknologier og Mønstre}
+\label{po}
 
-\section{API Framework}
-Frameworket der benyttes til API'et i dette projekt er \csharp ASP.Net Core. %check if it named that
-Dette er et framework Microsoft har udviklet for for net-produktet, som REST-API'er og MPA'er. 
-Et REST-API (%what it stands for
-sender/modtager kun data, som klienten kan benytte. \\ %more
-...\\
-Modellerne der benyttes af REST-API'et er enten en request eller response model. Request modellerne er for data der bliver sendt ind, normalt via Body'en på http-requesten, hvorimod response modellerne bruges for det data der bliver sendt ud og Request/Response bruges i modellernes navne til at give mere klarhed for deres formål.\\
-...\\
-REST-API'et for User-delen står for at håndtere kommunikation med User-datakonteksten direkte, hvorimod data der skal til eller fra Catering-delen bliver sendt via en message broker \ref{mes}.
+\section{Backend}
+Denne sektion vil forklare implementeringerne af de teknologier der blev benyttet i backend-delen.
 
-\section{Frontend Framework} %check that Blazor is a frameowrk
-Det valgte framework for frontend delen er Blazor, en framework udviklet af Microsoft... 
-Blazor er et nyere frontend framework %explain more
-\\
-En anden mulighed for frontend framework kunne være Angular 2+. Angular er udviklet af Google og benytter TypeScipt i forhold til Blazor's \csharp. \\
-Grundene til at Angular ikke blev valgt var primært for at prøve en ny teknologi i form af Blazor, da Angular er udviklerens primær frontend framework.  
-%could also mention MVC
+\subsection{Datakonteskst}
+Datakonteksterne benytter MSSQL-databaser, som bliver styret af Catering.DataProcessingPlatform og UserPlatform. Begge af dem benytter Code First tilgangen, hvor modellerne, deres relationer og regler er opsat først i kode og derefter, via EntityFramework Core, oprettes/ændres databaserne, således at databaserne har de rigtige tabeller og regler. Dermed behøves en udvikler ikke at have database adgang eller at kunne SQL, hvilket formindsker muligheden for problemer. På sammen tidspunkt gør det let at oprette nye databaser, som f.eks. test-databaser, med den samme struktur som produktionsdatabaserne. \\
+Produktet har to databaser, liggende på den samme database-server, en for User-delen og en for Catering-delen. \\
 
-\section{Test Frameworks}
-Inde for \csharp findes der 3 primære test frameworks, disse er MSTest, NUnit og XUnit. Der benyttes XUnit i dette projekt.
-Udvikleren har benytte alle 3 og fundet XUnit til at være en god mellem punkt i mellem de to andre. %explain the differences
-\\
-Dog har XUnit ikke det bedste dokumentation i forhold til f.eks. MSTest. 
+\subsubsection{Seeding}
+Catering-datakonteksten seeder sin database med noget test data, hvis databasen er tom og hvis Configuration Manager'en er sat til andet end Release. 
 
-\section{Domain Driven Design}
+\subsection{ORM}
+EntityFramework Core 8 er den nyeste udgave af Microsofts ORM. 
+EntityFramework Core benytter sig af reflektion til at automatisk lave de nødvendige mapping fra objekt-model til relationel tabeller og kan selv finde ukendte objekter den skal mappe over. Den kommer med både Unit Of Work og Repository Pattern indbygget. Hvis det er nødvendigt at overskrive dele af mapperen er dette muligt via Fluent API i datakontekst filen. \\
+I dette projekt har det været nødvendig at overskrive dele af den automastiske mapping. Gruden til dette er fordi Value Object fra Domain Driven Design benyttes og et Value Object skulle aldrig have en id, da den styres og er kun kendt af det objekt der ejer den.
+I tidligere udgaver af EntityFramework Core var det ikke muligt at skabe rigtige Value Objects i datakonteksten, da alle objekter skal have en nølge i datakonteksten. Dette er, til dels, løst i version 8 via en ny konfigurationsmulighed ComplexProperty som tillader ikke-samlinger af Value Object til ikke at have en nøgle. For samlinger af Value Objects er det nødvendigt at benytte den gamle måde, hvilket skaber nøgler i datakonteksten. Se \ref{efc8:vo} for opsætningen via den nye måde og den gamle måde via Fluent API i datakontekst filen.  
+
+\begin{lstlisting}[caption={Value Object Opsætning}, 
+label=efc8:vo]
+modelBuilder.Entity<Customer>(e =>
+{
+    e.ComplexProperty(e => e.Location);
+    e.OwnsMany(e => e.Orders);
+});
+\end{lstlisting}
+
+\subsubsection{Migrations}
+Migrations i EntityFramework Core er den måde den holder styr på hvilken ændringer, der skal gøres på en database. Der er to typer af filer, selve migration filerne og en ModelSnapshot. En migration fil indeholde de ændringer, der skal udføres i forhold til migrationen før, både for at lave ændringerne og for at fjerne ændringerne. ModelSnapshot filen har den nuværende opsætning af databasen, f.eks. nøgler, fremmede-nøgler, tabeller og mere og benyttes til at finde ændringerne der skal udføres, når en ny migration laves. \\
+For at simplificere oprettelsen og overførelsen af migrations, blev et Powershell script udviklet, som ligger i løsningsroden med navnet contexthandler.ps1. Grunden er fordi der er to kontekster, User og Catering, samt at begge har deres datakontekst i et andet projekt end hvor logikken for at oprette en instans af datakonteksten og udførelsen af database opdatering ligger. \\
+
+\subsection{ASP.Net Core}
+I \csharp benyttes ASP.Net Core som framework for at skrive REST-API'er og visse former for multi-page application frontends, dem som kontakter serveren. Frameworket er udviklet af Microsoft og kommer med en basisk, men brugbart, opsætning som standard og kan derefter opstilles som der er behov for. %this might be more of a process report thing
+Det er muligt at indsætte middlewares, både for request og response, ind i dens pipeline. CORS kan let sættes op, sikkerhed kan opstilles efter produktet behov og meget mere. ASP.Net Core håndtere også automatisk mapping af HTTP body og query til parameterne på en endpoint. \\
+CORS er sat op for User REST-API'et for at tillade frontend-delen at kunne kommunikere med API'et, samt sikkerhed sat op med JWT. 
+Begge API'er har også en middleware, der logger hvad for nogle endpoints der bliver kaldt.\\
+ASP.Net Core kommer med Swagger, hvilket tillader letter at udføre manuelle test af endpoints. 
+
+\subsubsection{Swagger}
+Alle REST-API'er i dette projekt benytter Swagger. Swagger giver et detaljeret overblik over API'et og tillader fremvisning af dokumentation. I dette produkt, er Swagger opsat til at fremvise alle endpoints, deres HTTPMethod og hvad for noget data de modtager. User REST-API'et fremviser hvilken endpoints kræver at brugeren er logget ind og eller ej og en enkel punkt for at indsætte login token og dermed slipper brugeren for at manuel indsætte den ved hver request. 
+
+\subsection{Domain Driven Design}
 \label{api:ddd}
-Domain Driven Design (DDD) er en arkitektur, som har fokus på domænerne og dermed siger en del over opbygningen af projektet. Domain driven design f.eks. lægger en del, hvis ikke alt, forretningslogik ind i selve modellerne frem for nødvendigvis have en Business Logic Layer, hvilket betyder at logikken ikke vil blive spredt over projektet, samt at modellen styre alle ændringer på sig. F.eks. kan den tjekke om data kan blive tilført eller fjernet fra en samling i sig. \\
-Domain driven design benytter der der bliver kaldt en Aggregate Root, hvilket betyder at alle ændringer, oprettelser og fjernelsen af data foregår igennem et enkel punkt, selv andre objekter som tilføre roden kan kun blive påvirket igennem roden. \\
-Denne arkitektur er dog tungt og kan tage lang tid at implementere korrekt, da der er behov for domæne-eksperter for at kunne implementere de forskellige domæner korrekt. Samt at Domain driven design er meget komplekst, hvilket betyder at det nødvendigvis ikke er den bedste arkitektur for mindre løsninger, som f.eks. denne svendeprøve. \\ %cite
-%other options
-Domain driven design blev valgt, da udvikleren godt kan lide det og det passer godt sammen med andre mønster som Command Query Responsibility Segregation, se \ref{api:p:cqrs}.\\
-En ting med domain dreven design er at forskellige modeller kan kun have kendskab til andre rødder og dette burde helst være igennem en reference id frem for selve objektet. Dette har det formål at formindske en rod kan påvirke en anden rod, men dette betyder at der ikke findes direkte reference til andre objekter og dermed miste en SQL-database lidt af sit formål med at kunne holde styr med relationerne. Data i en rod kunne pege på en anden rod der ikke længere findes, dermed er det meget vigtigt at løsningen får slette og tilført data korrekt. På sammen tid kan domain driven design også øge mængden af duplikeret data, da objekterne under en rod skal være gyldige og dermed kan visse data være nødsaget til at blive duplikeret. I dette projekt kan det ses med Location-data som findes for både User og Customer (begge har City og Street) eller nok bedre med Menupart og Dish, hvor MenuPart har værdien Name duplikeret fra Dish, grunden er at undgå for meget kommunikation med databasen, men hvis en Dish ændre navn skal alle MenuParts der peget på den findes og opdateres. 
-Test der køres over mere eller hele løsningen, som Intergration Test, er dermed vigtigt for at tjekke om alt data sættes korrekt, da en Unit Test ikke vil fange det.
+For en kort gennemgang hvad Domain Driven Design er, henvises der til sektionen Domain Driven Design i Processrapporten. \\
+For at styre hvad for nogle objekter der er aggregate rødder blev en kontrakt, kaldt IAggregateRoot, oprettet, som aggregatrod modellerne så implementere. IAggregateRoot indeholder kun en enkel get property (GUID) for at hente id'et.\\
+Når det kommer til 'renligheden' af modellerne i domain driven design og f.eks. validering af data, kan der opstå nogle problem. F.eks. i dette projekt kan kun en enkel User have et bestemt CompanyName, men problemet ligger i hvordan dette skal valideres. I sit reneste form, skal alt validere foregå i modellen og dermed skal en User have kendskab til alle brugte CompanyName og dette skal den enten gives eller kunne hente selv. 
+Hvis den gives data'en kan den ikke validere om data'en er korrekt og hvis den skal hente listen, skal den have kendskab til datakonteksten, som intet har med modellen at gøre og modellen burde aldrig være koblet samme med kode som den ikke ejer. 
+Løsningen i dette produkt var at have en factory for hver aggregatrod, som står for validering af data og oprettelse af nødvendige objekter. De forskellige factories modtager både skabelse request'en og valideringsdata'en. \\
+I princippet skulle objekterne også valideres, når de hentes fra datakonteksten, men det blev valgt ikke at gøre dette for at lette udvikleren, men det skulles nok gøres i et virkelig produkt i det tilfælde nogen ændre på data'en i databasen. \\
+For at give 'reference' til andre objekter ude for aggregaten, så bruges der en record objekt 
+{\lstinline[basicstyle=\ttfamily\color{black}]|ReferenceId|} til at standardisere, hvordan det blev udført. \\
 
-\section{Datalogning}
+\subsubsection{Value Objekt}
+Value objekter er implementeret på måden fremvis i UserLocation i \ref{ddd:vo}. Som det kan ses, så kan værdierne i UserLocation ikke overskrives, det er nødvendigt at overskrive hele objektet. ValueObject er en record, hvilket betyder at dens sammeligningskode er overskrevet til at sammelige på objekternes værdier.
+\begin{lstlisting}[caption={Value objekt overskrivning}, label={ddd:vo}]    
+public sealed class User : IAggregateRoot
+{
+    ...
+    public bool UpdateCity(string city)
+    {
+        ...
+        _location = new UserLocation(city, _location.Street);
+        ...
+    }
+    ...
+}
+public sealed record UserLocation : ValueObject
+{
+    ...
+    public string Street { get => ...; private set => ...; }
+    public string City { get => ...; private set => ...; }
+    ...
+    internal UserLocation(string city, string street)
+    {
+        _city = city;
+        _street = street;
+    }
+}
+\end{lstlisting}
 
-\section{Versionsstyre}
-Denne sektion vil forklare den valgte versionsstyring, hvordan det blev brugt, samt hvordan en 'rigtig' produkt ville være opsat.\\
-Dette projekt benytter Git som versionsstyring. %epxlain what it is, other options
-
-
-\subsection{Forbedre Versionstyre}
-Et forbedre versionsstyre via Git ville havde tre vigtige branches, Developer, Testing og Production. Developer ville være den branch alle udviklings-branches ville blive oprettet ud fra og merged ind i. Production er det der køre ude i produktionsmiljøet. Testing ville være ledet mellem Developer og Production, hver gang Developer blev opdateret skulle den skubbes over til Testning, som ville køre en auto-udgivelse af koden til testmiljøet, hvor testmiljøet ville rapporter på der er kørefejl (startede programmet op, crasher det og sådan), og tester kunne teste om brugerfladen og det virker. Når den havde kørt i noget tid kunne Developer manuelt merges ind i Production og udgives. \\
-%have a diagram displaying the developer, production and testing, together with hotfixes and task branches. 
-
-%mention things like SCRUM, Kanban and such?
-
-\subsection{Agile}
-For dette pro
-
-\section{Mønstre}
-\label{api:p}
 
 \subsection{Command Query Responsibility Segregation}
 \label{api:p:cqrs}
 
-\subsection{Repository Pattern}
-\label{api:p:repo}
+\subsubsection{Command}
+\label{api:p:cqrs:command}
+Command-delen blev implementeret med et interface 
+{\lstinline[basicstyle=\ttfamily\color{black}]|ICommand|},
+som er en tom kontrakt. Den benyttes af de commands, der sendes via RabbitMQ for at påvirke consumer'en. Det er ikke strengt nødvendigt, men indført i det tilfælde, at der på et tidspunkt skulle sendes noget bestemt data med alle commands.
+%explain how it is used as a constrain at places
 
-\subsection{Unit Of Work}
-\label{api:p:uow}
-Unit of Work er et mønstre med det formål at holde styr på alle ændringer til datakonteksten og overføre disse ændringer på en gang til datakonteksten \cite{uow}. \\
-EntityFramework Core har dette mønstre indbygget i sig, men det blev valgt at implementere egen udgave for at havde lidt mere styr over ting, samt tillader interface og dermed ikke-EntityFramework Core-konkrete-implementationer. 
+\subsubsection{Query}
+\label{api:p:cqrs:query}
+Query-delen blev implementeret med to klasser, 
+{\lstinline[basicstyle=\ttfamily\color{black}]|BaseReadModel|}
+og 
+{\lstinline[basicstyle=\ttfamily\color{black}]|BaseQuery<TEntity,TMapping>|}.
+{\lstinline[basicstyle=\ttfamily\color{black}]|BaseReadModel|} er en tom abstrakt klasse, som bruges af  
+{\lstinline[basicstyle=\ttfamily\color{black}]|BaseQuery<TEntity,TMapping>|} som begrænsning.
+{\lstinline[basicstyle=\ttfamily\color{black}]|BaseQuery<TEntity,TMapping>|} er en abstract klasse, der indeholder en abstract metode der kan bruges i 
+{\lstinline[basicstyle=\ttfamily\color{black}]|System.Linq.Queryable.Select|}, se \ref{api:p:cqrs:q:c} for et simple implementation. 
+
+\begin{lstlisting}[caption={Konkret implementation af BaseReadModel og BaseQuery}, label={api:p:cqrs:q:c}]
+public sealed class CustomerData(Guid id) : BaseReadModel
+{
+    public Guid Id { get; private set; } = id;
+}
+
+public sealed class CustomerDataQuery : BaseQuery<Customer, CustomerData>
+{
+    public override Expression<Func<Customer, CustomerData>> Map()
+    {
+        return e => new(e.Id);
+    }
+}
+
+public class EntityFrameworkCoreRepository<TEntity, TContext> ...
+    public async Task<IEnumerable<TMapping>> AllAsync<TMapping>(BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel
+    {
+        return (await _entities.ToArrayAsync()).AsQueryable().Select(query.Map());
+    }
+    ...
+}
+\end{lstlisting}
+Som det kan observeres i \ref{api:p:cqrs:q:c} linje 16, så bliver objekterne først mappet efter de er blevet hentet. Det er dog muligt at 'mappe' dem direkte over i SQL-databasen, da EntityFramework Core 8.x kan oversætte Expression<Func<TEntity,TMapping> til SQL-query, som henter de nødvendige kolonner.  
+Grunden til dette ikke blev gjort er nævnt i \ref{api:p:repo}, men det er et problem med hvordan predicates er implementeret. Selv om der er metoder, der ikke tager predicates ind, blev det valgt at mappe disse over i softwaren frem for SQL-serveren for at holde koden ensformet. 
 
 \subsection{Result Pattern}
 \label{api:p:result}
+Result Pattern blev implementeret med seks type, disse er:
+\begin{itemize}
+    \item Success
+    \item SuccessNoData
+    \item BadRequest
+    \item NotFound
+    \item Unhandled
+    \item InvalidAuthetication
+\end{itemize}
+Der er dog ingen grænse på hvilken typer, der kan være implementeret. \\
+Forskellen mellem Success og SuccessNoData er, at lettere kunne omdanne en 
+{\lstinline[basicstyle=\ttfamily\color{black}]|Result|} 
+til HTTPStatus 204. \\
+For at bære fejl, så blev en binære fejl klasse,
+{\lstinline[basicstyle=\ttfamily\color{black}]|BinaryFlag|},
+implementeret, som kun kan modtage 
+{\lstinline[basicstyle=\ttfamily\color{black}]|Enum|} 
+for at sætte sit flag. Grunden for dette valg, er fordi det er let at opsætte binære flag i 
+{\lstinline[basicstyle=\ttfamily\color{black}]|Enum|}.
+Der er dog en konstruktør, der modtager en \codeKey{long}, da det er nødvendigt at kunne sætte evt. fejlbeskeder, når fejl er sendt igennem RabbitMQ, da 
+{\lstinline[basicstyle=\ttfamily\color{black}]|BinaryFlag|},
+ikke bliver sendt.
+Klasssen har også to implicit operator overloads, en for boolean og en for long.
+Den overrider 
+{\lstinline[basicstyle=\ttfamily\color{black}]|ToString()|},
+så den kan give sit flag som en binær streng tilbage. \\
+En talværdi blev valgt frem for strenge, da, hvis kalderen skal håndtere fejl, dette design gør det letter at håndtere fejl. Hvis værdien sendes til frontend, så kan der implementeres en konverter, der omdanner hver bit til en streng. \\
+For at omdanne et 
+{\lstinline[basicstyle=\ttfamily\color{black}]|Result|}
+til en 
+{\lstinline[basicstyle=\ttfamily\color{black}]|IAction|}
+blev den følgende extension metode implementeret. 
+\begin{lstlisting}[caption={Result extension metode}, label={result:ext}]
+public static class ResultResponseMapping
+{
+    public static ActionResult FromResult<T>(this ControllerBase controller, Result<T> result)
+    {
+        return result.ResultType switch
+        {
+            ResultType.Success => controller.Ok(result.Data),
+            ResultType.SuccessNoData => controller.NoContent(),
+            ResultType.BadRequest => controller.BadRequest((long)result.Errors),
+            ResultType.InvalidAuthetication => controller.Unauthorized(),
+            ResultType.NotFound => controller.NoContent(),
+            ResultType.Unhandled => controller.Problem(statusCode: 500, detail: result.Errors.ToString()),
+            _ => throw new Exception("Internal server problem"),
+        };
+    }
+}
+\end{lstlisting}
 
-\subsection{Datafiltering}
-%mention that func<T,bool> is used, however, another choice is Specification Pattern, but is not used because filtering is quite simple right now, but if needed later, specification pattern is easy to implement. 
+\subsection{Repository Pattern}
+\label{api:p:repo}
+Repository Pattern benyttes til at overføre data mellem datakonkesterne og softwaren. Datakonteksterne i dette produkt er SQL-databaser. 
+Den valgte ORM, EntityFramework Core, kommer med dens egen rappository pattern, men det blev valgt at lægge et lag over det, for at fjerne koblingen mellem EntityFramework Core og de klasser, der benytter repositories.\\
+Lag-opsætningen er det følgende: 
+\begin{itemize}
+    \item IBaseRepository<TEntity> - Fuld generisk 
+    \item EntityFrameworkCoreRepository<TEntity, TContext> - EntityFramework Core, men generisk på model og EF datakontekst
+    \item I\{Model\}Repository - Ikke generisk, for bestemt model
+    \item \{Model\}Repository - Ikke generisk, for bestemt model, implementeret for at benytter IBaseRepository<TEntity>
+\end{itemize}
+Repository Pattern blev opsat sådan at de konkrete implementationer, af de forskellige kontrakter, ikke selv kontakter datakonteksten. I stedet for modtager de en konkrakt implementation af interfacen IBaseRepository<TEntity>, som står for hentningen af data, hvor de konkrete repositories vil benytte metoder på denne til at kontakte datakonteksten. 
+Så i stedet for at have f.eks. en CustomerRepository og en TestCustomerRepository, så er der kun CustomerRepository, som så modtager et objekt som f.eks. peger på test-data eller en database-kontekst, se \ref{api:p.repo:c} for hvordan det er opsat for EntityFramework Core. 
+Dette øger selvfølgelig kompleksiteten af koden og vedligeholdelsen, men fordelene anses for at være det værd.
+
+\begin{lstlisting}[caption={Repository Pattern}, label={api:p.repo:c}]
+public sealed class CustomerRepository : ICustomerRepository
+{
+    private readonly IBaseRepository<Customer> _repository;
+
+    public CustomerRepository(IBaseRepository<Customer> repository)
+    {
+        _repository = repository;        
+    }
+
+    public async Task<IEnumerable<TMapping>> AllAsync<TMapping>(BaseQuery<Customer, TMapping> query) where TMapping : BaseReadModel
+    {
+        return await _repository.AllAsync(query);
+    }
+    ...
+}
+
+public interface IBaseRepository<TEntity> where TEntity : class, IAggregateRoot
+{
+    public void Create(TEntity entity);
+    ...
+    public Task<TEntity> FindByPredicateAsync(Func<TEntity, bool> predicate);
+    public Task<IEnumerable<TMapping>> AllAsync<TMapping>(BaseQuery<TEntity, TMapping> query) where TMapping : BaseReadModel;
+    ...
+}
+
+public class EntityFrameworkCoreRepository<TEntity, TContext> : IBaseRepository<TEntity> where TEntity : class, IAggregateRoot where TContext : DbContext
+{
+    private readonly TContext _context; 
+    private readonly DbSet<TEntity> _entities;
+
+    public EntityFrameworkCoreRepository(TContext context)
+    {  
+        _context = context;
+        _entities = _context.Set<TEntity>();
+    }
+    ...
+}
+
+public class UnitOfWorkEFCore : IUnitOfWork
+{
+    ...
+    public UnitOfWorkEFCore(CateringContext context)
+    {
+        ...
+        _customerRepository = new CustomerRepository(new EntityFrameworkCoreRepository<Customer, CateringContext>(context));
+    }
+    ...
+}
+\end{lstlisting}
+Visse ikke-generiske repository metoder har argumenter som GUID og andre har Func<TEntity,bool>, se \ref{repo:arg}. Grunden til dette valg, var for at fremvise forskellige niveauer af kontrol udviklerne kunne gives. Metoderne med predicate giver mere kontrol til udviklerne, men kan skabe problemer, da en udvikler kan skrive 
+{\lstinline[basicstyle=\ttfamily\color{black}]|x => true|}.
+Metoderne med ikke predicate-parameter er letter at bruge, det er lettere at lave det samme kald flere steder og har mindre chance for fejl, men kan kræve at mange metoder bliver oprettet. 
+
+\begin{lstlisting}[caption={Forskellige argumenenter}, label={repo:arg}]
+    public async Task<Order> GetSingleAsync(Func<Order, bool> predicate)
+    {
+        return await _repository.FindByPredicateAsync(predicate);
+    }
+    
+    public async Task<RefreshToken> GetTokenAsync(string token)
+    {
+        return await _repository.FindByPredicateAsync(x => string.Equals(x.Token, token));
+    }
+
+    public async Task<RefreshToken> GetTokenAsync(Guid userId)
+    {
+        return await _repository.FindByPredicateAsync(x => x.User.Id == userId && x.Revoked == false);
+    }
+\end{lstlisting}
+Et problem med at benytter Func<TEntity,bool> predicate er EntityFramework Core 8.x ikke kan oversætte dem til SQL-queries, da predicate kan f.eks. indeholde metoder-kald. Dette betyder, at det er nødvendigt at hente alt data'en først og derefter filter på det, se \ref{repo:pre} for hvordan det håndteres i koden.
+
+\begin{lstlisting}[caption={Predicate håndtering}, label={repo:pre}]
+    public async Task<TEntity> FindByPredicateAsync(Func<TEntity, bool> predicate)
+    {
+        return (await _entities.ToArrayAsync()).FirstOrDefault(predicate)!;
+    }
+\end{lstlisting}
+
+\subsection{Unit Of Work}
+Meningen med Unit Of Work er, at udføre alle database ændringer på engang. 
+Som i \ref{api:p:repo}, så kommer EntityFramework Core med dens egen Unit Of Work, men det blev valgt at indsætte egen Unit Of Work lag mellem EntityFramework Core og resten af softwaren. \\
+Der er et Unit Of Work for både User-delen og Catering-delen. De indeholder properties for alle repositories i deres del. Det er muligt at finjustere hvad en udvikler har adgang til via Unit Of Work ved at kun indsætte visse repositories eller have forskellige repository kontrakter, som IDishReadRepository og IDishWriteRepository. For dette produkt er der så få modeller, at det ikke gav mening at indføre mere finkontrol. 
+
+\subsection{Kommunikation}
+For at kommunikere mellem de forskellige dele af løsningen, User og Catering, blev RabbitMQ valgt som message broker. RabbitMQ virker ved at sende data fra en producer, via en queue, til en consumer som håndtere data'en. 
+På sammen tid er det også muligt at sætte op Remote Procedure Call (RPC), hvor consumer'en sender et svar tilbage til producer'en. \\
+En producer er vist i \ref{com:pro} og dens consumer er vist i \ref{com:con}.
+%display producer
+\begin{lstlisting}[caption={Producer}, label={com:pro}]
+public Result TransmitUser(User user)
+{
+    _logger.Information("{Identifier}: Transmitting user", _identifier);
+    UserCreationCommand command = user.ToCommand();
+    var body = command.ToBody();
+    try
+    {
+        _channel.BasicPublish(exchange: string.Empty, routingKey: CommunicationQueueNames.CUSTOMER_CREATION, basicProperties: null!, body: body);
+        return new SuccessNoDataResult();
+    }
+    ...
+}
+\end{lstlisting}
+%display consumer
+\begin{lstlisting}[caption={Consumer}, label={com:con}]
+    private void ReceivedForCustomerCreation(object? sender, BasicDeliverEventArgs e)
+    {
+        var message = e.ToMessage();
+        try
+        {
+            var request = message.ToCommand<UserCreationCommand>();
+            if (request is null)
+            {
+                ...
+                _channel.BasicAck(e.DeliveryTag, false);
+                return;
+            }
+            ...
+        }
+        ...
+        _channel.BasicAck(e.DeliveryTag, false);
+    }
+\end{lstlisting}
+For at hjælpe med at modtage svar fra RPC'er, blev en lille klasse \codeKey{Carrier} oprettet. Som for Result Pattern, \ref{api:p:result}, så bære denne model en 
+{\lstinline[basicstyle=\ttfamily\color{black}]|Enum|}
+om kaldet lykkedes eller ej, en \codeKey{long} for fejlbeskeder, og en nullable streng, som kan indeholde en JSON streng, hvis data skulle sendes tilbage. 
+%explain Carrier, RPC and such
+
+
+\section{Klient}
+Klient-app'en er skrevet i Blazor WebAssembly Standalone App, hvilket betyder, at hele klienten køre over i brugerens browser via WebAssembly\footnote{WebAssembly er en teknologi, hvor binære instruktioner køres på en stack-based virtuel maksine i brosweren.}. Dette betyder at klient-app'en er en single page application (SPA), dermed spare serveren ressourcer, dog skal brugeren benytte flere ressourcer for at køre klienten.
+At køre koden hos brugeren medbringer et sikkerhedrisiko, da brugeren har adgang til alt koden, hvilken betyder at kald til datakontekster, som en sql-database, ikke kan foretages via klienten og dermed skal der være en dedikeret API, som klienten kan kontakte for at modtage nødvendig data.
+
+\subsection{Blazor}
+Blazor kommer i to udgaver, Blazor WebAssembly Standalone App og Blazor Web App. Begge benytter sig af Microsofts Razor syntaks, men forskellen er, at Blazor WebAssembly Standalone App er en ren SPA, hvor alt koden køres i browseren, hvorimod Web App kontakter serveren, når den skifter siden, og er dermed en multi page application. \\
+Blazor benytter komponenter, som indeholder både HTML og kode, til brugerfladen.  
+Et eksemple på en Blazor komponent er givet i \ref{blazor:com}. En komponent består normalt af tre dele, den første del er \codeKey{@page} og \codeKey{@using}, den næste del er alt HTML koden og den sidste del er alt inde i \codeKey{@code}. 
+Razor syntaksen kan genkendes på kode, der starter med \codeKey{@} i den første og anden del, da dette symbol lader kompileren vide, at det ikke er HTML-kode. \\
+I eksemplet kan der ses, på line 14, at den fremviste komponent kalder en anden komponent og overføre data til den via 
+{\lstinline[basicstyle=\ttfamily\color{black}]|Order="order"|}. Dette kaldes Parent-Child struktur, hvor komponentet, der kalder andre kompontenter, er Parent og kaldte kompnenter er Children. \\
+En forskel mellem disse to komponenter er, at OrderDetails-komponentet ikke har en \codeKey{@page} og dermed ikke kan findes via url'en\footnote{En kaldt komponent kan dog havde en @page.}. \codeKey{@page} bruges til at definere stien til komponenten i url'en. 
+
+\begin{lstlisting}[caption={Blazor Komponent}, label={blazor:com}]
+@page "/order/placed"
+@using UserFrontend.Frontend.Models.Order.Responses
+@using UserFrontend.Frontend.Pages.Order.Orders.Details
+@using UserFrontend.Frontend.Services.Contracts
+<h3>Orders Placed</h3>
+
+@if(orderCollection is not null)
+{
+    <div class="container">
+        <div class="row">
+            @foreach (var order in orderCollection.Orders)
+            {
+                <div class="col-3">
+                    <OrderDetails Order="order"></OrderDetails>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private OrderCollectionResponse orderCollection;
+
+    [Inject]
+    public IOrderService OrderService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var result = await OrderService.GetOrders();
+        if (result)
+            orderCollection = result.Data;
+        else
+            orderCollection = null!;
+    }
+}
+\end{lstlisting}
+
+\section{Kobling}
+For at sikre, at de forskellige moduler havde så løs-som-muligt kobling, blev Dependency Injection benyttet via konstruktører. På sammen tid blev interfaces brugt som kontrakter, som så blev implementeret af konkrete klasse. Dette tilladte letter udskiftninger af konkrete klasser, uden at skulle skifte parametrene i de klasser, der benyttede de erstattede moduler, hvilket letgjorde testning af modulerne. \\
+Siden produktet bestod af tre dele, User, Catering og Shared, så blev der opsat nogle mentale-regler for hvordan disse kunne refererer til hinanden. User og Catering kunne aldrig refererer til hinanden, men begge kunne refererer til Shared og Shared havde ingen referencer til User og Catering. 
+%User og Catering ville i virkligheden være i deres egen løsningen og dermed ikke kunne have kendskab til hinanden. Shared eksister kun for at undgå kode-duplikering og for at lette udviklingen. I et virklig projekt ville Shared eksister som en NuGet-package, som kunne benyttes af User og Catering. %conclusion or discussion
+
+\section{Datalogning}
+Seq blev opsat til at benytte dens standard indstillinger i forhold hvor lang tid logs bliver gemt og ligende. Der blev oprettet seks api-nøgler. Hver projekt, der skulle logge, fik to nøgler, en for når de skulle køre i testmiljøet og en for når de skulle køre i livemiljøet. \\
+Det blev valgt at logge kald til alle endpoints i begge REST-API'er via middleware. 
+Alle RabbitMQ producers og consumer loggede fejl-beskeder. Alle producers loggede, når de blev kaldt. For consumers over i Catering.DataProcessing, så blev der oprettede debug logs, når en command begyndte at blive behandlet og når den var færdig med at blive behandlet. \\
+For at skrive til Seq blev Serilog benyttet, da Serilog er den logger Seq fremviste i deres \csharp dokumentation. Nogle eksempler på forskellige logs kan ses i \ref{seri:different}. 
+Serilogs \codeKey{ILogger} kommer med forskellige niveauer af logs, her fremvises Debug, Error og Fatel, men der findes også Warning og Information.  
+{\lstinline[basicstyle=\ttfamily\color{black}]|{ParameterName}|} betyder at seriloggeren vil indsætte den næste argument på dette punkt og kalde \codeMethod{ToString()} på det. Hvis en argument mangler vil det dukke op i Seq som \{ParameterName\}.
+Hvis det sat op som {\lstinline[basicstyle=\ttfamily\color{black}]|{@ParameterName}|} vil arguementet blive serialiseret frem for at kalde \codeMethod{ToString()} på det.
+Parameternavnet inde i {\lstinline[basicstyle=\ttfamily\color{black}]|{ParameterName}|} vil bruges som parameternavn over i Seq.
+Hvis en exception er givet, så vil Seriloggeren sende exception-data med over og dermed gøres det letter at debugge bagefter. Serilog ser helst at en exception gives som det første argument. 
+\begin{lstlisting}[caption={Serilog}, label={seri:different}]
+        _logger.Debug("{Identifier}: Processed request {@OrderFuture}", _identifier, command);
+        
+        _logger.Debug("{Identifier}: Processed request {OrderFuture}", _identifier, command);
+        
+        _logger.Error(ex, "{Identifier}: Error processing {Message}", _identifier, message);
+        
+        logger.Fatal(ex, "Unhandled exception encounted");
+\end{lstlisting}
+For dette produkt blev der altid skrevet til både Seq og konsollen på sammen tidspunkt. I virkeligheden ville det være bedst ikke at skrive til Seq, hvis en debugger er sat til. I de tilfælder, hvor der sendes mange logs på kort tid, kunne det har været en god ide ikke at skrive til konsollen, da den er langsommere end at sende til Seq.
+
+\section{Test}
+Næsten hvert eneste ikke-test projekt fik et test-projekt. Catering.API fik ikke en, da dette projekt blev oprettet sent i udviklingen, og UserFrontend.Frontend fik heller ikke en. %reason please
+Test-projekterne er alle XUnit projekter og tilsamme fremvise de nogle få tests. I virkeligheden ville alle stier igennem kode, både for unit tests og integration test, få automatiske test med både gyldig og ugyldig værdier. \\
+Navngivningen for tests i dette produkt er metodenavnet, scenarioet og forventet opførelse i form af spørgsmål.
+Nogle eksempler fra produktet er disse to test metoder: \\
+{\lstinline[basicstyle=\ttfamily\color{black}]|Does_Valid_Create_User_Return_200_With_Auth_Data()|} \\ 
+{\lstinline[basicstyle=\ttfamily\color{black}]|Does_Valid_Build_Success_Result_And_User()|} \\
+Begge navne forklare hvad der bliver kaldt og hvad der forventes som resultat. \\
+Alle test er opbygget efter mønstret Arrange, Act, Assert (AAA). Det vil sige først opsættes de nødvendige objekter for testen, derefter kaldes det kode der testet og til sidst tjekkes der om testen gav det korrekte resultat eller ej. 
+Der er nogle få gange, hvor dette mønstre ikke helt kan overholdes, f.eks. når der testes for exception throws, da XUnit forventer kaldet, der skaber exception'en i dens  
+{\lstinline[basicstyle=\ttfamily\color{black}]|Assert.Throws<TException>(...)|}. 
+Nogle andre steder, hvor AAA ikke bliver helt overholdt, er i Theory test metoder\footnote{Theory udføre den samme test flere gange med forskellige data i forhold til Fact som kun køre testen engang.}, hvor data'en der normalt går i Arrange allerede er sat op fra metodens parameter. \\
+En vigtig ting at teste, som ikke bliver fremvist i produktet, er test af rigtige datakontekst-forbindelser, hvor test-projekterne ville havde test-databaser, der kunne bruges til at teste om den valgte ORM og repositories virkede som de skulle. \\
+To ord der dukker op tit, hvis der kigges på testene, er 'dummy' og 'Mock'. 
+Variabler der starter med ordet 'dummy', er variabler, der kun findes fordi de er nødvendige, men de bruges ikke i Assert delen og tit heller ikke af det kode under test \cite{doubles}. 
+Variablerne der slutter med ordet 'Mock', er test-udgaver af objekter, som er blevet opsat til at forvente visse kald og håndter kald på en bestemt måde \cite{doubles}. De tjekkes normalt i Assert for at se om de blev kaldt som forventet. 
+For dette produkt blev Moq valgt som mock-framework. Grunden til dette, er fordi udvikleren ved, fra erfaring hvor besværligt og tidskrævende det er, at skrive egen mock og Moq letter dette arbejde en del. 
+Et andet ord der dukker tit op, er 'sut', hvilket står for 'System Under Test'. 
+
+\section{Database}
+\label{db}
+Databasernem der blev benytter for dette produkt, er SQL-databaser i form af MSSQL 2022. MSSQL er udviklet af Microsoft.\\
+Begge databaser bliver oprettet og styret af EntityFramework Core. 
+
+\subsection{Relationer}
+\label{db:er}
+Relationerne mellem de forskellige objekter kan ses i figur \ref{fig:db:catering} og figur \ref{fig:db:user}. Der skal gøres opmærksom på at alle relationer er kun mellem objekter, der tilhøre bestemte aggregater, se processrapporten omkring Domain Driven Design. De tabeller der hedder \{AggregaterodNavn\}\_\{AndetNavn\} er sat op i koden til at være reference nøgle objekter og er samlinger, det vil sige 
+{\lstinline[basicstyle=\ttfamily\color{black}]|HashSet<ReferenceId>|} i et objekt model. EntityFramework Core 8.x kan ikke oprette disse, uden at skulle give dem deres egen tabel og dermed får de et id i databasen, selv om de er Value Object og dermed ikke burde have en. 
+De kolonner der hedder \{Navn\}\_\{AndetNavn\} er også Value Objects, men siden der kun er en enkel af dem i objekt modellen, kan EntityFramework Core oprette dem korrekt, i forhold til at være Value Object, i databasen. 
+Som det kan ses i figur \ref{fig:db:user}, så er modellen UserLocation, som i koden er sin egen model og kendt af User, blevet oprettet som kolonner i User tabellen i form af Location\_City og Location\_Street. 
+Dermed er ikke alle objekt modeller mappet over til deres egene tabeller. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{images/database/catering.png}
+    \caption{Catering ER Diagram}
+    \label{fig:db:catering}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\columnwidth]{images/database/user2.png}
+    \caption{User ER Diagram}
+    \label{fig:db:user}
+\end{figure}
+
+%\subsection{Seeding}
+%I projekter Catering.DataProcessingPlatform/AL/Services/SeederService.cs eksisteres kode der seeder til Menu tabellen og Dish tabellen, hvis de er tomme. Får dette kan gøres skal 
+
+
+\section{Konfigurationsstyring}
+De branches og git-flow, der blev brugt for dette produkt, kan ses i figur \ref{fig:git:current}. Dette ville være for simple for et rigtig produkt\footnote{Commits direkte på Developer eller Master kan øger changes for merge konflikter.}. Den næste sektion vil fremvise et bedre flow. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\columnwidth]{images/git/gitcurrent.drawio.png}
+    \caption{Nuværende versionsstyring}
+    \label{fig:git:current}
+\end{figure}
+
+\subsection{Forbedre Konfigurationsstyring}
+Et forbedre konfigurationsstyring, via Git, ville havde tre vigtige branches, Developer, Testing og Production. Developer ville være den branch alle udviklings-branches ville blive oprettet ud fra og merge ind i. Production er det kode, der køre ude i produktionsmiljøet. Testing ville være ledet mellem Developer og Production, hver gang Developer blev opdateret, skulle den skubbes over til Testning, som ville køre en auto-udgivelse af koden til testmiljøet, hvor testmiljøet ville rapporter om der var kørefejl (startede programmet op, crashede det og sådan), og tester kunne teste om brugerfladen og det virker. Når den havde kørt i noget tid, kunne Developer manuelt merges ind i Production og udgives. Denne opsætning kan ses i figur \ref{fig:git:should}, der skal dog peges ud at figuren fremviser at merge Testing ind i Production, grunden til dette er fremvise er, at koden ville teste først i Testing og ikke overføres til Testing og Production på en gang.\\
+De følgende præfiks ville bruges til branchnavne: 
+\begin{itemize}
+    \item Feature - En ønsket funktion
+    \item Hotfix - En fejlfiks der skal ud hurtigt.
+    \item Bugfix - En fejl der skal fikses. 
+\end{itemize}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\columnwidth]{images/git/gitshould.drawio.png}
+    \caption{Versionsstyring for et rigtig produkt}
+    \label{fig:git:should}
+\end{figure}
+På samme tid skulle alle merges udføres, via pull-request med Peer-Review, hvor en eller flere andre udviklere går det kode, der skal merges ind, igennem og give feedback som nødvendigt. 
+%have a diagram displaying the developer, production and testing, together with hotfixes and task branches. 
+
+\section{Klassediagram}
+Klassediagramet for entity modeller, i bounded context User og Catering, kan ses i figur \ref{fig:class}. Der bliver ikke fremvist private eller internal properties, da for det meste ikke er behov for dem for udviklerne, som ikke arbejder på modellerne. Alle properties har kun public getters, hvorimod deres setters altid er private. \\
+Grunden til at ikke alle klasser blev medbragt, var fordi de fleste klasser kun har det formål at sende data rundt i systemet. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{images/class diagram.drawio.png}
+    \caption{Klasse Diagram}
+    \label{fig:class}
+\end{figure}
 
 \chapter{Sikkerhed}
-Denne sektion vil gennemgå sikkerheden og hvilken tænker der er blevet gjort. 
+Denne sektion vil gennemgå sikkerheden og hvilken tænker der blev gjort. 
+
+\section{Catering.DataProcessing}
+%remember that the dotnet ef string currently gets its string from the class it call
+%update at some point to give the string as console argument 
+Dette konsol program har det sikkerhedsproblem, at dens datakontekst-forbindelse-strengen er liggende i selve koden, samt i appsettings.json filen. Grunden til dette, var problemer med at koden, der kaldes af dotnet EF, til få den til at modtage forbindelse-strengen fra kommandoprompten.
 
 \section{REST-API}
-REST-API'et benytter HTTPS, da dette giver end-to-end kryptering mellem serveren og klient. \\
-API'et er også sat op til at benytte JWT til at give adgang til alle endpoints, som ikke er Login. \\%forklar hvad JWT er
-JWT (JSON Web Token) er en åben standard (RFC 7519) som er en enhed for at sende information mellem forskellige enheder på en sikker måde, da det er digitalt underskrevet med enten en hemmelig nøgle (symmetrisk nøgle) eller en offentlig/privat nøgle (asymmetrisk nøgle) \cite{jwt}. \\ %consider explained more
-En JWT består af tre dele, Header, Payload og signatur. Header'en angiver hvad for en type token det er og hvad underskrevning-algoritmen er. Payload inderholder påstande, f.eks. hvornår token udløber (exp), hvem det er omkring (sub) og mere. Signaturen indeholder den indkodet header, indkodet payload og en hemmelighed, som bliver underskrevet af den valgte algoritme \cite{jwt}. Dermed kan en JWT ikke blive ændret af en trejde-part uden de har nølgen.
-I dette projekt er der benyttet en symmetriske nøgle og HMAC SHA256 som underskrivning-algoritme. HMAC SHA256 er en almindelige algoritme for JWT. \\% consider more 
-JWT bliver sat i header'en som Authorization: Bearer <token> og skal bruges på alle endpoints med undtagen af for login og brugeroprettelse. \\
-Når en bruger logger ind eller bliver opretter får de to JWT tilbage, en normal login JWT og en refresh JWT. Forskellen er at refresh JWT'en ikke indeholder det nødvendige information for at kunne logge ind, men kan bruges til at oprette en ny login JWT uden behov for at logge ind igen. Refresh JWT bliver gemt server-side og kan blive ophævet, hvis det er nødvendigt. Refresh JWT'en har en længere levetid end login JWT'en har, i dette projekt 30 minutter i forhold til 15 minutter. Den korte leveltid for login JWT'en sikre sig at en kompromitteret login JWT kun kan bruges for kort tid. %consider more
+REST-API'erne benytter HTTPS, da dette giver end-to-end kryptering mellem serveren og klient. \\
+API'et for User er sat op til at benytte JWT (JSON Web Token) til at give adgang til alle endpoints, som ikke er Login eller User oprettelse. \\%forklar hvad JWT er
+JWT er en åben standard (RFC 7519) og er en enhed for at sende information mellem forskellige enheder på en sikker måde, da det er digitalt underskrevet med enten en hemmelig nøgle (symmetrisk nøgle) eller en offentlig/privat nøgle (asymmetrisk nøgle) \cite{jwt}. \\ %consider explained more
+En JWT består af tre dele, Header, Payload og signatur. Header'en angiver hvad for en type token det er og hvad underskrevning-algoritmen er. Payload inderholder påstande, f.eks. hvornår token udløber (exp), hvem det er omkring (sub) og mere. Signaturen indeholder den indkodet header, indkodet payload og en hemmelighed, som bliver underskrevet af den valgte algoritme \cite{jwt}. Dermed kan en JWT ikke blive ændret af en trejde-part uden at de har nølgen.
+I dette produkt, er der benyttet en symmetriske nøgle og med HMAC SHA256 som underskrivning-algoritme. HMAC SHA256 er en almindelig algoritme for JWT. \\% consider more 
+JWT bliver sat i header'en som Authorization: Bearer <token> og skal bruges på alle endpoints med undtagen for login og brugeroprettelse. \\
+Når en bruger logger ind eller bliver opretter, får de to JWT tilbage, en normal login JWT og en refresh JWT. Forskellen er, at refresh JWT'en ikke indeholder det nødvendige information for at kunne logge ind, men kan bruges til at oprette en ny login JWT uden behov for at logge ind igen. 
+Refresh JWT bliver gemt server-side og kan blive ophævet, hvis det er nødvendigt. Refresh JWT'en har en længere levetid end login JWT'en har, i dette projekt 30 minutter i forhold til 15 minutter. Den korte levetid for login JWT'en sikre sig, at en kompromitteret login JWT kun kan bruges for kort tid. Koden er også sat op til at når en ny refresh JWT oprettes, for brugeren, at den tidligere bliver tilbagekaldt, så hvis en bad-actor får fat i refresh JWT og bruger den til at logge ind vil, så vil den rigtige bruger, hvis brugeren er aktiv, finde ud af det inde for 15 minutter, da de er nødsaget til at logge ind igen. 
+Det har dog det problem, at hvis en bruger logger ind på to enheder, at den første enhed vil miste sin refresh JWT.\\ %consider more
+REST-API'et over i Catering-delen har intet sikkerhed sat op på sig. I et mere udviklet produkt, ville den havde en lignende JWT som User-delen, men JWT'en ville også indeholde en liste over brugerroller, da ikke alle bruger burde have adgang til alle endpoints. F.eks. køkkenpersonale ville havde adgang til at se fremtidige ordre, men ikke menu- eller ret-oprettelse.  
 
-\subsection{MSSQL}
-I projektet er der kun en smule sikkerhed på på den valgte sql-databasen. Det eneste sikkerhed er at man skal bruge sysadmin-kontoen for at logger ind, men denne konto kan alt. Dette vil være en sikkerhedsrisiko i virkeligheden. \\
-Den mest optimale sikkerhed ville være at hver projekt, f.eks. Catering-data-processen, User-API'et osv., har deres egen konto med så mange begrænsninger som muligt. F.eks. kunne det være at ingen at dem kunne oprette, slette og ændre på deres kontext-tabel og en udvikler skulle udføre dette. En anden ting være at sikre sig en bruger kun har læse-adgang, hvis den bruger ikke skulle skrive på nogle tidspunkter. F.eks. hvis Catering-delen havde en API til at se retter med for bestilling, så behøves dens bruger ikke at skrive rettigheder, da dette sker igennem RabbitMq. \\
+\subsubsection{Corss-Origin Resource Sharing}
+Cross-Origin Resource Sharing (CORS) kan benyttes til at styre hvilken apps og brower kan kommunikere med en server og med hvilken HttpMetoder og headers der er tilladte. 
+CORS er sat i User REST-API'et til at tillader alle forbindelser med alle metoder og alle headers. Dette var for at simplificer testning og udviklingen af løsningen. I et færdig produkt ville CORS sættes op til at være mere streng i forhold til headers. HttpMetoder og origins kan der dog ikke gøres så meget ved, siden User REST-API'et peger ud til det offentlige.  
+
+\subsubsection{Kodeord Håndtering}
+Brugerens kodeord bliver hashed og salted, før det gemmen i datakonteksten. Frem for at implementerer egen udgave, så benyttes Microsofts \codeKey{PasswordHasher<TUser>}. Denne hasher og salter kodeordet med PBKDF2 HMAC-SHA512, har 128-bit salt
+og udføre 100.000 iterationer \cite{password}. 
+
+\subsubsection{Login Forsinkelse}
+I koden for login-delen, er der sat en ventetid på minimum 500 ms. Grunden til dette er, at forsinke forsøg fra en bad-actor på at bruteforce sig ind, samt at finde ud hvilken brugernavne der er i brug, via at time hvor lang tid loginforsøg tager. 
+Som koden er sat op vil den returner hurtigere, hvis \codeKey{Thread.Sleep} ikke var der, hvis den ikke kan finde en bruger og dermed er det muligt, via svartiden, at kunne gætte om brugernavnet er i brug eller ej. Den indsatte tid, der skal gå, sikre sig at dette ikke er muligt, se \ref{sec:delay}. Sådan en kort tid burde ikke blive irriterende for en normal bruger. 
+
+
+\begin{lstlisting}[caption={Forsinkelse}, 
+label={sec:delay}]
+public async Task<Result<UserAuthResponse>> UserLoginAsync(UserLoginRequest request)
+{
+    TimeSpan sleepLength = TimeSpan.FromSeconds(0.5);
+    Stopwatch sw = new();
+    sw.Start();
+    var result = await _securityService.AuthenticateAsync(request);
+    sw.Stop();
+    var timePassed = sw.Elapsed; 
+    var missingTime = sleepLength - timePassed;
+    if(missingTime.TotalMilliseconds > 0)
+        Thread.Sleep(missingTime);
+    return result;
+}
+\end{lstlisting}
+
+\subsubsection{Bruger Information}
+Når User REST-API'et skal benytte brugerens id, bliver id'et hentet fra den JWT der er sat i Authorization header. 
+Grunden til dette valg er, at undgå at en bad-actor kan angive en anden bruger end sin egen, hvis id'et blev sat i response body'en eller i query'en. På sammen tid er id'et også krypteret. 
+
+\section{Blazor}
+I forhold til lagering af data, som JWT, blev der benytter en singleton instans af en klasse, der gemte både login-token og refresh-token. I Blazor WebAssembly Standalone App er dette valg sikker nok, da en singleton instans kun eksistere for en bestemt tab i en broswer og dermed ikke delt med andre \cite{singleton}. \\
+Applikationen benytter både route-level og component-level autorisation for at styre hvad en bruger kan se. \ref{sec:route} fremviser route-level og \ref{sec:component} fremviser component-level. 
+I \_Imports.razor er der indsat \codeKey{@attribute [Authorize]}, hvilket betyder at alle komponenter, som ikke har \codeKey{@attribute [AllowAnonymous]}, kræver at brugeren er logget ind. Som det kan ses i \ref{sec:component}, så bliver forskelligt HTML fremvist alt efter om brugeren er logged ind eller ej.
+\begin{lstlisting}[caption={Route-level autorisation}, 
+label={sec:route}]
+    <CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <div>Access Denied</div>
+                </NotAuthorized>
+                <Authorizing>
+                    <div>Authorizing...</div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        ...
+    </Router>
+</CascadingAuthenticationState>
+\end{lstlisting}
+\begin{lstlisting}[caption={Component-level autorisation}, 
+label={sec:component}]
+    <PageTitle>Home</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div>
+            <UserDetails User=UserAuthenticationStateProvider.CurrentUser />
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div>
+            <p>Please login or create a user.</p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+\end{lstlisting}
+Pga. Blazor WebAssembly Standalone App køre rent på klienten, så kan den ikke have adgang til databaser og Seq, da en bruger kunne få fat i de nødvendige forbindelse-informationer. På sammen tid skal data fra en klient altid anses for at kunne være usikker og dermed valideres. \\
+På sammen tid tjekker frontend-delen ikke om login JWT'en er underskrevet med den rigtige nøgle, hvilket betyder at det er muligt for en bad-actor at forfalske en JWT og benytte den til snyde frontend'en til at tror personen er logget ind. REST-API'et ville selvfølgelig fange dette. 
+
+
+\section{MSSQL}
+I produktet er der kun en smule sikkerhed på på den valgte SQL-server. Det eneste sikkerhed er, at det er nødvendigt at bruge sysadmin-kontoen for at logger ind, men denne konto kan alt. Dette vil være en sikkerhedsrisiko i virkeligheden. \\
+Den mest optimale sikkerhed ville være at hvert projekt, f.eks. Catering-data-processen, User-API'et osv., har deres egen konto med så mange begrænsninger som muligt. F.eks. kunne det være at ingen at dem kunne oprette, slette og ændre på deres datakontext-tabeller og en udvikler skulle udføre dette eller at deres forbindelse-streng blev udskiftet med en der kunne disse ting, når det var nødvendigt. 
+En anden ting kunne være at sikre sig, at en bruger kun har læse-adgang, hvis den bruger ikke skulle skrive på nogle tidspunkter. F.eks. hvis Catering-delen havde en API til at se retter med bestillinger og tidspunkt, så behøves dens bruger ikke at have skrive-rettigheder, da dette kunne ske igennem RabbitMQ. \\
 På sammen tid ville det selvfølgelig være en god ide at skifte kodeordene til tider, f.eks. kunne appsetting-filen, med login-informationerne, sættes op til at blive læst i run-time af programmet, så filen kunne opdateres uden et genstart. \\
-Når det kommer til det data, der sendes til en SQL-database, er det normalt en god idé at saitise data'en, f.eks. indsætte en ekstra ' i stringe, hvis en bliver fundet og tjekke for "--", da i MSSQL "--" er en kommentar. %explain better
-Dette projekt benytter EntityFrameworkCore og dermed bliver dette håndteret automatisk.
+Når det kommer til det data, der sendes til en SQL-database, er det normalt en god idé at sanitise data'en, f.eks. indsætte en ekstra ' i strenge, hvis en bliver fundet og tjekke for "--", da i MSSQL "--" er en kommentar. %explain better
+Dette projekt benytter dog EntityFrameworkCore og dermed bliver dette håndteret automatisk.
 
-\subsection{SEQ}
-Sikkerheden for SEQ kan sættes op sådan at man skal benytte en bruger for at komme ind. I projektet ligger der to powershell scripts, en med bruger sat og en uden. Grunden til dette er fordi SEQ med bruger ikke virkede korrekt på en computer og virkede korrekt på en anden. \\
-I forhold til programmer skrive til SEQ, via Serilog, så benyttes der en API-nøgle, ...
+\subsection{Seq}
+Sikkerheden for Seq kan sættes op sådan, at man skal benytte en bruger for at komme ind. I projektet ligger der to powershell scripts, en med bruger sat og en uden. Grunden til dette, er fordi Seq med bruger ikke virkede korrekt på en computer og virkede korrekt på en anden. \\
+I forhold til programmer som skriver til Seq, via Serilog, så benyttes der API-nøgler. Hvis en API-nøgle bliver komprimeret kan den udskiftes. 
 
-\subsection{RabbitMq}
-RabbitMq tillader opsætningen af bruger og det er disse bruger der bruges til at forbinde med RabbitMq. Standardbrugeren for alle RabbitMq har brugernavnet 'guest' og adgangskoden 'guest'. I dette projekt benyttes standardbrugeren pga. det et test projekt og ikke et rigtig produkt. RabbitMq klient'en i \csharp kan få angivet brugernavn og adgangskode, som dermed kan ligge i app-settings filen.  
+\subsection{RabbitMQ}
+RabbitMQ tillader opsætningen af bruger og det er disse bruger, der bruges til at forbinde med RabbitMQ. Standardbrugeren for alle RabbitMQ har brugernavnet 'guest' og adgangskoden 'guest'. I dette produkt benyttes standardbrugeren pga. det er et test produkt og ikke et rigtig produkt. RabbitMQ klienten, i \csharp, kan få angivet brugernavn og adgangskode, som dermed kan ligge i appsettings filerne.  
 
 \subsection{Appsetting}
-API-nøgler, kodeord, url'er, og mere vigtig information ligger i appsettings.json filerne i de forskellige programmer. Dette er nødvendigvis ikke det mest sikre måde at gemme sådan data, da appsettings.json, som standard, ikke har noget indkodning og dermed kan læses at alle. Dermed er det en god idé at appsetting.json filerne, der er en del af git, kun kan bruges til enten lokalle enheder eller test-miljøer. Appsetting filerne for produktion-miljøet burde ligge på et sikre placering og aldrig overskrevet, når projekterne bliver udgivet, og disse placeringer er godt beskyttet. \\
-Andre muligheder for sikkerhed af appsettings kunne være at placere dem i en keyvault som Azure's KeyVault og sætter sikkerhed op, som f.eks. kun enheder med bestemte certifikater kan få adgang. %explain more and better
+API-nøgler, kodeord, url'er, og mere vigtig information ligger i appsettings.json filerne i de forskellige projekter. Dette er nødvendigvis ikke det mest sikre måde at gemme sådan data, da appsettings.json, som standard, ikke har noget indkodning og dermed kan læses at alle. Dermed er det en god idé at appsetting.json filerne, der er en del af Git, kun kan bruges til enten lokalle enheder eller test-miljøer. Appsetting filerne, for produktion-miljøet, burde ligge på en sikre placering og aldrig overskrevet, når projekterne bliver udgivet, og disse placeringer er godt beskyttet. \\
+Andre muligheder for sikkerhed, af appsettings, kunne være at placere dem i en keyvault som Azures KeyVault og sætter sikkerhed op, som f.eks. kun enheder med bestemte certifikater kan få adgang. %explain more and better
+
+\section{General Data Protection Regulation}
+Der blev ikke gjort noget for at sikre sig, at produktet overholdt General Data Protection Regulation, men for et virkelig produkt ville dette være gjort. 
 
 \chapter{Brugervejledning}
+Dette kapitel vil gennemgå brugervejledningen for begge REST-API'er og frontend'en, samt nødvendig opsætning for at kunne køre alle projekterne. 
+
+\section{Forbindelse}
+De følgende porte er i brug:
+\begin{itemize}
+    \item 5342 - Seq
+    \item 81 - Seq
+    \item 1434 - MSSQL
+    \item 15673 - RabbitMQ
+    \item 5673 - RabbitMQ
+    \item 7298 - User REST-API
+    \item 7142 - Catering REST-API
+\end{itemize}
+Hvis MSSQL porten skal udskiftes, skal dette ændres i dens Docker fil, se \ref{setup:docker} for fil-lokationerne, samt skal forbindelse strengene i UserPlatform/appsettings.json, Catering.DataProcessingPlatform/appsettings.json og Catering.DataProcessingPlatform/IPL/ContextEFFactory ændres. \\
+For Seq skal både dens Docker fil og UserPlatform/appsettings.json og \\Catering.DataProcessingPlatform/appsettings.json opdateres. For de to appsettings.json filer er det kun nødvendigt, hvis 5342 ændres. Port 81 er dens GUI.\\
+For RabbitMQ skal både dens Docker fil, UserPlatform/appsettings.json og \\Catering.DataProcessingPlatform/appsettings.json opdateres. For de to appsettings.json filer er det kun nødvendigt, hvis 5673 ændres. Port 15673 er dens GUI.\\
+Hvis User REST-APIs port ændres, skal den også ændres over i Userfrontend.Frontend i program.cs.
+
+\subsection{Docker og MSSQL}
+Forbindelse-strengene for MSSQL benytter host.docker.internal til at få den rigtige ip-adresse de skal bruge. Hvis der ikke kan oprette forbindelse, og det ikke er et port-problem, kan det være nødvendig at ændre host.docker.internal til 127.0.0.1. 
+
+\section{Visual Studio}
+Hvis Visual Studio benyttes, skal Visual Studio 17.8 eller højre benyttes, da dotnet 8 kræver dette. 
+
+\section{Automatiseret Test}
+Denne forklaring er baseret på Visual Studio 2022. For at køre testene, skal fanen 'Test' vælges og derefter 'Run All Tests'. 
+Det er implementeret 26 test i produktet, alle skulle bestå. 
+
+\section{Powershell}
+For at lette udviklingen og udgivelse, blev der oprette nogle powershell scrips. For at køre disse, kræves det at Powershells ExecutionPolicy sætts til Bypass, undefined eller unrestricted via Set-ExecutionPolicy <Policy> i Powershell. 
+Hvis dette ikke ønskes at gøre eller ikke kan gøres, så kan teksten i filerne kopiers over til lokalle oprettede filer og kørt eller sat direkte ind i Powershell ISE og kørt igennem ISE'en.
 
 \section{Docker}
+\label{setup:docker}
+Docker skal være installeret og kørende på maskinen, som skal køre produktet. \\
+Der ligger powershell-scripts under mappen /Data/Docker/\{rabbitmq/seq/sql\}. Når disse køres, vil der blive oprettet de nødvendige docker containers. 
+I seq mappen findes der to powershell filer. Den eneste forskel er, at seqNoPassword ikke sætter en kodeord på Seq. Gruden til dette, er fordi der opstod problemer med SEQ med kodeord på udviklerens ene computer. 
 
 \section{Project-Setup}
 %ensure the correct projects are selected for multi start-up
+For at sætte de rigtige projekter til at starte op, skal der højre-klikkes på løsningen 'ApprenticeTest' og vælges 'Properties' i Visual Studio. Under 'Startup Project' skal vælges 'Multiple startup projects:'. Her skal UserFrontend.Frontend, Catering.DataProcessingPlatform, Catering.API og UserPlatform sættes til 'Start' i Action kolonnen. \\
+Før projekterne startes op, burde RabbitMQ docker container'en havde kørt i minimum 30 sekunder for at sikre, at den er klar til at modtage forbindelser. 
 
-\section{Frontend}
+\section{Database}
+For at oprette og tilføre migrations til de nødvendige databaser, henvises der til scriptet 'contexthandler.ps1'\footnote{For at benytte scriptet, skal maskinen have EntityFramework Core command-line tools installeret.} i roden af løsningen. Siden migrations allerede findes, skal der trykkes det følgende: 
+\begin{itemize}
+    \item U -> Enter, U -> Enter
+    \item U -> Enter, C -> Enter
+\end{itemize}
+Dette vil skabe databaserne, hvis de ikke findes, og opdaterer dem. \\
+Hvis porten ikke er ændret, kan der oprettes forbindelse til database-serveren på 127.0.0.1,1443, brugernavnet er 'sa' og kodeordet er 'Test123!'.
 
-\chapter{Realiseret Tidsplan}
+\section{Seq}
+For at logge ind på Seq, skal brugernavnet 'admin' og kodeordet 'Test123!' angives. Dens GUI er placeret, hvis porten ikke er blevet ændret, på http://localhost:81.\\
+For at oprette en signal for et bestemt kilde, skal der vælges en log, se figur \ref{fig:guide:seq:que}, og trykkes på den. Derefter find ProgramSource og tryk på fluebenet. Dette vil åbne en liste, se figur \ref{fig:guide:seq:sig}, og tryk på 'Add to signal'. På højre siden vil en menu åbnes, her skal der trykkes på gemmeikonnet, se figur \ref{fig:guide:seq:add}. Dette vil placer signallet for kilden under ProgramSource, se figur \ref{fig:guide:seq:source}, og dermed kan logs fra denne kilde hurtig kunne filtes frem.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\columnwidth]{images/guide/seq/seqquery.PNG}
+    \caption{Log og signal oversigt}
+    \label{fig:guide:seq:que}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\columnwidth]{images/guide/seq/seqsig.PNG}
+    \caption{Tilfør kilde til signal}
+    \label{fig:guide:seq:sig}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\columnwidth]{images/guide/seq/seqsigadd.PNG}
+    \caption{Oprettelse af signal}
+    \label{fig:guide:seq:add}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\columnwidth]{images/guide/seq/seqsigsource.PNG}
+    \caption{Liste over kilder}
+    \label{fig:guide:seq:source}
+\end{figure}\\
+For at søge på logs skal query-vinduet i toppen benyttes, se figur \ref{fig:guide:seq:search}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\columnwidth]{images/guide/seq/seqqueryseach.PNG}
+    \caption{Query}
+    \label{fig:guide:seq:search}
+\end{figure}
+%explain how to use it
 
-\chapter{Diskussion}
-\label{dis}
+\section{RabbitMQ}
+Den brugte RabbitMQ Docker Image kommer med RabbitMQ Management. Denne kan logges ind på http://localhost:15673/, hvis porten ikke er blevet ændret, med brugernavnet 'guest' og kodeordet 'guest'. GUI'en tillader at se oprettede queues, forbindelser, hvor mange beskeder der i systemet og mere. 
 
-\chapter{Konklusion}
-\label{con}
+\section{User}
+
+\subsection{REST-API}
+Det forventes at brugeren vil benytte den fremviste Swagger for at interagere med API'et. 
+For at benytte REST-API'et kræves det først at brugeren enten benytter Login-endpointet, hvis brugeren allerede har en bruger, eller CreateUser i User-sektionen. 
+Begge endpoints returner et objekt, der indeholde flere felter. Værdien i Token skal bruges til at logge ind med, for at få adgang til alle andre endpoints.
+For at benytte Token henvises der til figurerne \ref{fig:guide:user:jwt:login} og \ref{fig:guide:user:jwt}. Ordet 'token' skal udskifte med strengen i 'Token' fra CreateUser eller Login. Ordet 'Bearer' skal altid være først. \\
+Endpointed Logout i User-sektionen forventer RefreshToken, som kom fra kaldet til Login/CreateUser.
+Når dette endpoint er kaldt, kan de andre endpoint stadigvæk kaldes indtil login JWT løber ud. Kaldet betyder at den modtaget refresh JWT ikke længere kan bruges i endpointet RefeshToken i User.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{images/guide/frontend/userrestlogin.PNG}
+    \caption{Login}
+    \label{fig:guide:user:jwt:login}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{images/guide/urest/userresttoken.PNG}
+    \caption{Opsætning af JWT}
+    \label{fig:guide:user:jwt}
+\end{figure}
+
+\subsection{Frontend}
+
+\subsubsection{Brugeroprettelse}
+For at oprette en bruger, skal der trykkes på 'Create User' på venstre side og derefter udfylde felterne og trykke på knappen 'Create', se figur \ref{fig:guide:user:create}. \\
+Kodeordet skal være mellem 8 og 128 tegn, indeholde minimum 1 stor og 1 lille bogstav, minimum 1 tal og en eller flere af de følgende særlige tegn ! + - \# . , * \^{}.\\
+En eller begge af Phone og Email skal være udfyldt. På nuværende tidspunkt validere koden ikke om de overholder krav for at rigtige telefonnummer eller email-adresse. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{images/guide/frontend/usercreate.PNG}
+    \caption{Brugeroprettelse}
+    \label{fig:guide:user:create}
+\end{figure}
+Hvis brugeren kan oprettes, vil brugeren blive automatisk logged ind og overført til Home-siden. 
+%Evt. fejl bliver ikke vist på nuværende tidspunkt.
+
+\subsubsection{Login}
+For at logge ind, skal der tykkes på 'Login' på venstre side, hvorefter felterne skal udfyldes og trykke på 'Login'-knappen. Hvis det lykkes, bliver brugeren automatisk overført til Home-siden.
+
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{images/guide/frontend/userlogin.PNG}
+    \caption{Login}
+    \label{fig:guide:user:login}
+\end{figure}
+
+\subsubsection{Bestil Menu}
+For at oprette en bestilling, kræves det at brugeren er logget ind og derefter går til 'Place Orders' på venstre side. På denne side vises alle menuer. For at vælge en menu, skal der trykkes på 'Select Menu'. Dette vil fremvise en form nederst på siden, hvor brugeren skal indtaste en dato og tid og derefter trykke på knappen 'Place order'. Datoen skal være minimum to dage frem. Hvis ordren bliver oprettet, vil formen forsvinde. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\columnwidth]{images/guide/frontend/usermenu.PNG}
+    \caption{Oversigt over menuer}
+    \label{fig:guide:user:menuoverview}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\columnwidth]{images/guide/frontend/usermenuplace.PNG}
+    \caption{En menu valgt}
+    \label{fig:guide:user:orderplace}
+\end{figure}
+
+\subsubsection{Ordreoversigt}
+For at se ordreoversigten, kræves det at brugeren er logget ind og derefter vælger 'Placed Orders' på venstre siden. Dette vil åbne en ny side, der fremviser alle ordre brugeren har bestilt, se figur \ref{fig:guide:user:orderoverview}.  
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\columnwidth]{images/guide/frontend/userorder.PNG}
+    \caption{Orderoversigt}
+    \label{fig:guide:user:orderoverview}
+\end{figure}
+
+\subsubsection{Logud}
+For at logge ud, skal brugeren først være logged ind. Derefter skal der trykkes på 'Logoff' på venstre siden og derefter på knappen 'Logoff'. Når dette er gjort, vil brugeren blive sendt over til Home-siden, se figur \ref{fig:guide:user:logoff}. 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\columnwidth]{images/guide/frontend/userlogoff.PNG}
+    \caption{Logud}
+    \label{fig:guide:user:logoff}
+\end{figure}
+
+\section{Catering}
+
+\subsection{REST-API}
+REST-API'et for Catering har intet sikkerhed på sig og dermed skal brugeren ikke gøre noget, for at kunne benytte de fremviste endpoints i Swagger. 
 
 \printbibliography[title={Referencer}]
 
+
 \appendix
 
-\chapter{Tidsplan}
-\label{ap:time}
+\chapter{Kravspecifikationer}
 
-\chapter{Dagbog}
-\label{ap:daybook}
+\begin{table}[!ht]
+\centering
+\begin{tabular}{llll}
+Id              & Category          & Requirement                                                    & Priority  \\
+Cat-Factory-1   & Factory           & Entity factories, one for each aggregate root                  & 1         \\
+Cat-Factory-1-a & Factory           & Can produce Dish                                               & 1         \\
+Cat-Factory-1-b & Factory           & Can produce Menu                                               & 1         \\
+Cat-Factory-1-c & Factory           & Can produce Order                                              & 1         \\
+Cat-Factory-1-d & Factory           & Can produce Customer                                           & 1         \\
+Result-1        & ResultPattern     & Implementation of Result Pattern                               & 1         \\
+Result-1-a      & ResultPattern     & Can map to HTTP type                                           & 2         \\
+Repo-1          & RepositoryPattern & Generic interface with CRUD                                    & 1         \\
+Repo-1-a        & RepositoryPattern & Generic interface with CQRS                                    & 1         \\
+Repo-1-b        & RepositoryPattern & Generic interface, constrained to aggregate root               & 1         \\
+Repo-2          & RepositoryPattern & Base implementation of generic interfaces                      & 1         \\
+Cat-Repo-1      & RepositoryPattern & Interface for Unit of Work                                     & 1         \\
+Cat-Repo-2      & RepositoryPattern & Entityframework Unit of Work                                   & 2         \\
+Cat-Repo-3      & RepositoryPattern & Customer EF repo                                               & 1         \\
+Cat-Repo-4      & RepositoryPattern & Menu EF repo                                                   & 1         \\
+Cat-Repo-5      & RepositoryPattern & Dish EF repo                                                   & 1         \\
+Cat-Repo-6      & RepositoryPattern & Order EF repo                                                  & 1         \\
+Factory-1       & Factory           & All factories use ResultPattern to prevent handling exceptions & 1         \\
+Error-1         & Error Handling    & All errors are logged to an external service                   & 2         \\
+Log-1           & Logning           & All exceptions are logged                                      & 2         \\
+Cat-Service-1   & Service           & Can add user                                                   & 1         \\
+Cat-Service-2   & Service           & Can remove user                                                & 1         \\
+Cat-Service-3   & Service           & Can add dish                                                   & 1         \\
+Cat-Service-4   & Service           & Can remove dish                                                & 1         \\
+Cat-Service-5   & Service           & Can add menu                                                   & 1         \\
+Cat-Service-6   & Service           & Can remove menu                                                & 1         \\
+Cat-Service-7   & Service           & Can add order                                                  & 1         \\
+Cat-Service-8   & Service           & Can remove order                                               & 1         \\
+Cat-Service-9   & Service           & Can pull all menues and transform them                         & 1         \\
+Cat-Service-10  & Service           & Can pull single menu                                           & 1         \\
+Cat-Service-11  & Service           & Can pull single customer                                       & 1         \\
+Cat-Com-1       & Communication     & Can read from RabbitMQ                                         & 2         \\
+Cat-Com-2       & Communication     & Can answer a RPC call                                          & 3         \\
+Cat-Com-2-a     & Communication     & Can answer RPC call for menues                                 & 3         \\
+Cat-Service-12  & Service           & Service for User                                               & 1         \\
+Cat-Service-13  & Service           & Service for Menu                                               & 1         \\
+Cat-Service-14  & Service           & Service for Dish                                               & 1         \\
+Cat-Service-15  & Service           & Service for Order                                              & 1         \\
+Log-2           & Logning           & All entity creations are logged                                & 3         \\
+Log-3           & Logning           & All entity deletions are logged                                & 3         \\
+Log-4           & Logning           & All entity changes are logged                                  & 3         \\
+User-Repo-1     & RepositoryPattern & Interface for Unit of Work                                     & 1         \\
+User-Repo-2     & RepositoryPattern & Entityframework Unit of Work                                   & 1         \\
+User-Repo-3     & RepositoryPattern & User EF repo                                                   & 1         \\
+User-Service-1  & Service           & Can create user                                                & 1         \\
+User-Service-2  & Service           & Can remove user                                                & 99        \\
+User-Service-3  & Service           & Can login                                                      & 3         \\
+User-Service-4  & Service           & Can place order                                                & 1         \\
+User-Service-5  & Service           & Can see orders                                                 & 2         \\
+Cat-Service-12  & Service           & Can add orders to menu                                         & 1         \\
+Cat-Service-13  & Service           & Can add orders to customer                                     & 1         \\
+User-Factory-1  & Factory           & Can produce User                                               & 1         
+\end{tabular}
+    \caption{Kravspecifikationer Del 1}
+    \label{plan:reqtest:req:items1}
+\end{table}
+\begin{table}[!ht]
+\centering
+\begin{tabular}{llll}
+Security-1      & Security          & Can hash and salt password                                     & 1         \\
+User-Service-6  & Service           & Can logout                                                     & 3         \\
+Security-2      & Security          & Can generate login JWT                                         & 1         \\
+Security-3      & Security          & REST-API middleware validates if user has logged in if needed  & 3         \\
+User-Endpoint-1 & Endpoint          & Can login                                                      & 1         \\
+User-Endpoint-2 & Endpoint          & Can logout                                                     & 3         \\
+User-Endpoint-3 & Endpoint          & Can get list of menues                                         & 1         \\
+User-Endpoint-4 & Endpoint          & Can place order                                                & 1         \\
+User-Endpoint-5 & Endpoint          & Can create user                                                & 1         \\
+User-Endpoint-6 & Endpoint          & Can see orders                                                 & 1         \\
+User-Frontend-1 & Frontend          & Can login if not logged in                                     & 3         \\
+User-Frontend-2 & Frontend          & Can logout if logged in                                        & 3         \\
+User-Frontend-3 & Frontend          & Can create user if not logged in                               & 3         \\
+Security-4      & Security          & Validate all user input and sanitise as needed                 & 2         \\
+User-Frontend   & Frontend          & Logged in user can see their orders                            & 3         \\
+User-Frontend   & Frontend          & Logged in user can place orders                                & 3         \\
+Cat-Rules-1     & DDD               & Menu cannot be modifed if future orders have been placed       & 2         \\
+Security-4      & Security          & Password is validated                                          & 1         \\
+Security-5      & Security          & Can get salt from salted and hashed password                   & 1         \\
+User-Factory-2  & Factory           & Can produce Token                                              & 3         \\
+Cat-Endpoint-1  & Endpoint          & Can get all menues                                             & 4         \\
+Cat-Endpoint-2  & Endpoint          & Can get all dishes                                             & 4         \\
+Cat-Endpoint-3  & Endpoint          & Can place dish                                                 & 4         \\
+Cat-Endpoint-4  & Endpoint          & Can place menu                                                 & 4         \\
+User-Endpoint-7 & Endpoint          & Can update user                                                & 4         \\
+User-Frontend-4 & Frontend          & Can update user if logged in                                   & 4         \\
+User-Frontend-5 & Frontend          & Can see all menues if logged in                                & 4         \\
+Cat-Endpoint-5  & Endpoint          & Can login                                                      & 99        \\
+Cat-Factory-2   & Factory           & Can create employee                                            & 99        \\
+Cat-Service-16  & Service           & Service for Employee                                           & 99        \\
+Cat-Repo-7      & RepositoryPattern & Employee EF repo                                               & 99        \\
+Cat-Com-2-b     & Communication     & Can answer RPC call for customer orders                        & 3         \\
+Cat-Com-3       & Communication     & Only got RPC calls                                             & 4         \\
+Cat-Com-3-a     & Communication     & Can fetch dishes                                               & 4         \\
+Cat-Com-3-b     & Communication     & Can fetch menues                                               & 4         \\
+Cat-Com-3-c     & Communication     & Can create menues                                              & 4         \\
+Cat-Com-3-d     & Communication     & Can create dishes                                              & 4         \\
+Cat-Com-2-c     & Communication     & Can fetch menues for display                                   & 3         \\
+Cat-Com-2-d     & Communication     & Can place order                                                & 3         \\
+Cat-Com-2-e     & Communication     & Can create customer                                            & 3         \\
+Cat-Com-2-f     & Communication     & Can update customer                                            & 3         \\
+Cat-Com-3-e     & Communication     & Can create employee                                            & 99        \\
+Cat-Service-16  & Service           & Can update customer's location                                 & 3         \\
+User-Service-6  & Service           & Can update user's location                                     & 3         \\
+Security-6      & Security          & Employees have different roles                                 & 99        \\
+Security-6-a    & Security          & Can only see orders                                            & 99        \\
+Security-6-b    & Security          & Can create and modify dishes and menues                        & 99       
+\end{tabular}
+    \caption{Kravspecifikationer Del 2}
+    \label{plan:reqtest:req:items2}
+\end{table}
 
-\section{9/4/24}
-Startet på hovedforløb 6. \\
-Skrevet problemformulering og case. \\
-Oprettet projekt og indsat basisk struktur med nogle modeller. \\
-Net gik ned, typisk. \\
-Glemte at lave git init først. \\
-Net kom tilbage, lavet commit. \\
-Lavet tidsplan udkast. \\
+\chapter{Test Sager}
 
-\section{10/4/24}
-Planen er at få skrevet krav- og testspecificationerne for Catering-delen af projektet. Catering-delen skal have lavet sine modeller færdige, sine factories og datacontext og adgang. \\
-Shared projektet skal have interfaces og implementationer for CQRS, Resultpattern og repository pattern. \\
-På sammen tid skal der laves docker images for MSSQL, RabbitMQ og Serilogger. \\
-Ellers skal der skrives på rapporterne. \\
-\\
-Fik lavet det der var planlagt.
-
-\section{11/4/24}
-Planen er at få lavet rabbit-delen for catering. \\
-Få skrevet mere rapport. \\
-Databasen for User-delen og dataadgang. Factories for dens modeller. \\
-\\
-Fik ikke skrevet rapport, da EntityFramework Core var problematisk. Den nye måde at gøre Value Object på viste sig at være lidt besværligt. Det tog noget tid at kunne lave migations og apply dem til en database via et konsol program, da jeg ikke havde kendskab til dette i forvejen. 
-
-\section{12/4/24}
-Målet i dag er at få færdiggjort krav- og testspecifiktionerne. \\
-Få begyndt på REST-API'et og user-data-processing-delen. \\
-\\
-Fik færdiggjort krav-og testspecificationerne, kan godt være der kommer noget mere på et tidspunkt.\\
-User-data-procescing-delen virker til at fungere som det skal. \\
-Fået begyndt på REST-API'et og tilført en ny kontekst-model for refresh-tokens. \\
-
-\section{15/4/24}
-Færdiggør user REST-API, forbedring til rabbitmq, få skrevet på rapporterne og lavet powershell script får datakontekst ændringer. 
-Primære arbejde kommer nok til at ligge at få JWT til at virker. \\
-\\
-REST-API anses for at være færdig for nu, ting vil nok komme som arbejdet på frontend-delen starter op. Powerschell script lavet. JWT tog mindre tid at indføre end regnet med. Den planlagte ændring til RabbitMq gik fint. Valgte at indsætte endnu en RPC, drillede lidt at få den til at virke, forkerte consumer modtog data'en. Process-rapporten blev skrevet på.
-
-
+\begin{table}[!ht]
+\centering
+    \adjustbox{max width=\textheight, angle=270, scale={1}{0.69}}{
+\begin{tabular}{lll}
+Id              & Description                                                     & Criteria                                                                                  \\
+Cat-Factory-1-a & Get ResultDish                                                  & Should return either SuccessResullt or BadRequest                                         \\
+Cat-Factory-1-b & Get ResultMenu                                                  & Should return either SuccessResullt or BadRequest                                         \\
+Cat-Factory-1-c & Get ResultOrder                                                 & Should return either SuccessResullt or BadRequest                                         \\
+Cat-Factory-1-d & Get ResultCustomer                                              & Should return either SuccessResullt or BadRequest                                         \\
+Cat-Service-1   & Create customer  and get Result                                 & Throws no exceptions                                                                      \\
+Cat-Service-3   & Create dish and get Result                                      & Throws no exceptions                                                                      \\
+Cat-Service-5   & Create menu and get Result                                      & Throws no exceptions                                                                      \\
+Cat-Service-7   & Create order and get Result                                     & Throws no exceptions                                                                      \\
+Cat-Service-9   & Can get all orders transformed                                  & Collection of data, if none found empty                                                   \\
+Cat-Service-12  & When creating order, add id to menu                             & Throws no exceptions                                                                      \\
+Cat-Service-13  & When creating order, add id to customer                         & Throws no exceptions                                                                      \\
+Log-2           & Read logs for each method call and chek if any logs are present & A single log should be present                                                            \\
+Log-3           & Read logs for each method call and chek if any logs are present & A single log should be present                                                            \\
+Log-4           & Read logs for each method call and chek if any logs are present & A single log should be present                                                            \\
+User-Factory-1  & Get ResultUser                                                  & Should return either SuccessResullt or BadRequest                                         \\
+User-Service-1  & Create user and get Result                                      & Throws no exceptions                                                                      \\
+User-Service-3  & Can login and gets a token                                      & It should take a minimum of 500 ms every time and the token should be valid               \\
+User-Service-4  & Can place order                                                 & Throws no exceptions                                                                      \\
+User-Service-5  & Can see orders                                                  & Throws no exceptions                                                                      \\
+Security-1      & Can hash and salt a password                                    & Password should be unique for each run                                                    \\
+Security-2      & Can generate a JWT                                              & Only generate JWT for valid login else BadRequest                                         \\
+User-Endpoint-3 & Returns a collection of transformed menues or empty             & Throws no exceptions                                                                      \\
+User-Endpoint-4 & Can place an order                                              & Throws no exceptions                                                                      \\
+Cat-Rules-1     & Cannot modify menu if it is in use                              & Returns InvalidRequest if the menu has orders for today or in the future                  \\
+Security-5      & Can relog in                                                    & Can use the salt of a salted-hashed password to generate the same salted-hashed password  \\
+Security-4      & The password requirements are tested                            & Each rule broken rule should return a unique binary value                                 \\
+User-Factory-2  & Get ResultToken                                                 & Should return either SuccessResullt or BadRequest                                         \\
+User-Service-6  & User location has been changed.                                 & Null and white-space strings should not change the location                               \\
+Cat-Service-16  & Customer location has been changed.                             & Null and white-space strings should not change the location                               \\
+User-Endpoint-1 & Attemp to log in                                                & 200 with Auth data if valid user else 401                                                 \\
+Result-1-a      & Mapping ResultT/Result to correct HTTPResponse                  & Correct mapping. 200 should have data, all non-200 and non-204 should carry the errors    \\
+User-Factory-1  & Get ResultUser                                                  & Should return either SuccessResullt or BadRequest                                        
+\end{tabular}
+}
+    \caption{Test Cases}
+    \label{plan:reqtest:test:cases}
+\end{table}
 
 \end{document}
