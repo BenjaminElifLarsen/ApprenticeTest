@@ -1,15 +1,15 @@
 function Add-Migration-Catering {
     $name = Read-Host "Enter migration name:"
     echo $name
-    dotnet ef migrations add $name --project .\Catering.Models\ --startup-project .\CateringDataProcessingPlatform\;
+    dotnet ef migrations add $name --project .\Catering.Models\ --startup-project .\Catering.DataProcessingPlatform\;
 }
 
 function Remove-Migration-Catering {
-    dotnet ef migrations remove --project .\Catering.Models\ --startup-project .\CateringDataProcessingPlatform\;
+    dotnet ef migrations remove --project .\Catering.Models\ --startup-project .\Catering.DataProcessingPlatform\;
 }
 
 function Update-Database-Catering {
-    dotnet ef database update --project .\Catering.Models\ --startup-project .\CateringDataProcessingPlatform\;
+    dotnet ef database update --project .\Catering.Models\ --startup-project .\Catering.DataProcessingPlatform\;
 }
 
 function Add-Migration-User {
