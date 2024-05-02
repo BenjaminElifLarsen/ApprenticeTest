@@ -8,4 +8,5 @@ public enum MenuFactoryErrors
     OneOrMoreDishesDoNotExist = 0b1000,
     OneOrMoreDishesDoNotHaveAPrice = 0b10000,
     OneOrMoreDishesHaveInvalidAmount = 0b100000,
+    NoDishes = 0b1000000,
 }

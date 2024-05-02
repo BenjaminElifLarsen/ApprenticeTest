@@ -14,7 +14,9 @@ public sealed class MenuFactory : IMenuFactory
             flag += MenuFactoryErrors.RequestIsNull;
             return new BadRequestResult<Menu>(flag);
         }
-        if(!request.Parts.Any(x => validationData.KnownDishes.Any(xx => x.Id == xx.Id)))
+        if(!request.Parts.Any()) 
+            flag += MenuFactoryErrors.NoDishes;
+        if(request.Parts.Any() && !request.Parts.Any(x => validationData.KnownDishes.Any(xx => x.Id == xx.Id)))
         {
             flag += MenuFactoryErrors.OneOrMoreDishesDoNotExist;
         }
