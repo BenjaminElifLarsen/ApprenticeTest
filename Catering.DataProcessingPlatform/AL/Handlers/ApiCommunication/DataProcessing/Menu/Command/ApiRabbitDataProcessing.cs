@@ -24,6 +24,12 @@ internal partial class ApiRabbitDataProcessing
         else
         {
             unitOfWork.MenuRepository.Create(result.Data);
+            foreach (var menuDish in result.Data.Parts)
+            {
+                var dish = unitOfWork.DishRepository.GetSingleAsync(x => x.Id == menuDish.Dish.Id).Result;
+                dish.AddMenu(result.Data.Id);
+                unitOfWork.DishRepository.Update(dish);
+            }
             unitOfWork.Commit();
         }
         _logger.Debug("{Identifier}: Processed request {@MenuCreation}", _identifier, command);

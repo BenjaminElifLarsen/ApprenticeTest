@@ -27,7 +27,9 @@ public sealed class Menu : IAggregateRoot
     {
         _name = name;
         _description = description;
+        _id = Guid.NewGuid();
         _parts = [];
+        _orders = [];
     }
 
     public bool AddOrder(Guid id, DateTime time)
